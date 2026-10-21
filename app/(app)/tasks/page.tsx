@@ -1,13 +1,22 @@
-import { Card, Empty } from "@/components/card";
+import { Suspense } from "react";
+import { connection } from "next/server";
 import { PageHeader } from "@/components/page-header";
+import { TaskBoard } from "@/components/tasks/task-board";
+import { todayVN } from "@/lib/date";
+import { getTasks } from "@/lib/notion/queries";
 
 export default function TasksPage() {
   return (
     <div className="mx-auto max-w-5xl">
-      <PageHeader title="Tasks" subtitle="Việc chưa xong, nhóm theo dự án." />
-      <Card>
-        <Empty>Danh sách task sẽ có ở Bước 5.</Empty>
-      </Card>
+      <PageHeader title="Tasks" subtitle="Việc chưa xong, nhóm theo dự án. Thêm/sửa task trong Notion." />
+      <Suspense fallback={<div className="h-48 animate-pulse rounded-2xl border border-line bg-surface" />}>
+        <TasksContent />
+      </Suspense>
     </div>
   );
+}
+
+async function TasksContent() {
+  await connection(); // nhãn "Quá hạn / Còn N ngày" phụ thuộc ngày hôm nay
+  return <TaskBoard tasks={await getTasks()} today={todayVN()} />;
 }

@@ -3,6 +3,7 @@ import { connection } from "next/server";
 import { Card, Empty } from "@/components/card";
 import { FieldBadge } from "@/components/field-badge";
 import { PageHeader } from "@/components/page-header";
+import { TopTasks } from "@/components/tasks/top-tasks";
 import { daysBetween, formatDay, greetingVN, longDateVN, todayVN } from "@/lib/date";
 import { getKnowledge, getRecentDailyLogs, getTasks } from "@/lib/notion/queries";
 import type { Knowledge, Task } from "@/lib/notion/types";
@@ -89,22 +90,17 @@ function TopThreeCard({ top }: { top: TopThree }) {
     >
       {top.items.length === 0 ? (
         <Empty>Không còn việc nào chưa xong.</Empty>
-      ) : (
+      ) : top.source === "daily" ? (
         <ol className="space-y-2">
-          {top.source === "daily"
-            ? top.items.map((item, i) => (
-                <li key={i} className="flex gap-3">
-                  <Index n={i + 1} />
-                  <span>{item}</span>
-                </li>
-              ))
-            : top.items.map((task, i) => (
-                <li key={task.id} className="flex gap-3">
-                  <Index n={i + 1} />
-                  <TaskLink task={task} />
-                </li>
-              ))}
+          {top.items.map((item, i) => (
+            <li key={i} className="flex gap-3">
+              <Index n={i + 1} />
+              <span>{item}</span>
+            </li>
+          ))}
         </ol>
+      ) : (
+        <TopTasks tasks={top.items} />
       )}
     </Card>
   );
