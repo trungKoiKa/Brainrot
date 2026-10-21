@@ -24,6 +24,15 @@ async function dataSourceId(envName: string): Promise<string> {
   return id;
 }
 
+/** Các lựa chọn của một property select trong schema (vd. "Lĩnh vực", "Dự án"). */
+export async function selectOptions(envName: string, property: string): Promise<string[]> {
+  "use cache";
+  cacheLife("days");
+  const ds = await notion().dataSources.retrieve({ data_source_id: await dataSourceId(envName) });
+  const prop = ds.properties[property];
+  return prop?.type === "select" ? prop.select.options.map((o) => o.name) : [];
+}
+
 async function queryAll(envName: string): Promise<PageObjectResponse[]> {
   const pages = await collectPaginatedAPI(notion().dataSources.query, {
     data_source_id: await dataSourceId(envName),
