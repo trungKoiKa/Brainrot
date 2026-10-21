@@ -1,0 +1,20 @@
+# Code dự án: giữ LF trong repo và working copy
+* text=auto eol=lf
+*.exe binary
+*.png binary
+*.jpg binary
+*.ico binary
+
+# File do Harness quản lý: giữ nguyên byte như lúc cài (manifest băm theo byte),
+# nếu không clone sang máy khác `harness doctor` sẽ báo bị sửa
+.harness-core/** -text
+.agents/** -text
+docs/README.md -text
+docs/WORKFLOW.md -text
+docs/patterns/** -text
+docs/product/README.md -text
+docs/plans/README.md -text
+docs/plans/active/README.md -text
+docs/plans/completed/README.md -text
+docs/decisions/README.md -text
+docs/templates/** -text

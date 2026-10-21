@@ -22,3 +22,7 @@ next-env.d.ts
 npm-debug.log*
 .DS_Store
 Thumbs.db
+
+# Harness core maintenance binary
+scripts/bin/harness
+scripts/bin/harness.exe

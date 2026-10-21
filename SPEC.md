@@ -115,7 +115,7 @@ Lời chào theo buổi + ngày (tiếng Việt). 4 khối:
 
 1. **Đếm ngược đồ án** — "Còn N ngày đến hạn nộp đồ án (06/12/2026)". Đọc từ `THESIS_DEADLINE`.
 2. **3 việc hôm nay** — quy tắc:
-   - Nếu Daily Log có bản ghi **hôm qua** và trường "Ngày mai 3 việc" không rỗng → hiển thị nội dung đó (tách dòng).
+   - Nếu Daily Log có bản ghi **hôm qua** và trường "Ngày mai 3 việc" không rỗng → hiển thị nội dung đó (tách dòng). Đây là chữ tự do nên **không có nút tích**; kèm link mở trang Daily Log hôm qua. *(chốt 22/10/2026)*
    - Ngược lại → lấy từ Tasks: `Trạng thái ≠ Xong`, sắp theo Ưu tiên (Cao > Vừa > Thấp) rồi Deadline gần nhất (task không có deadline xếp cuối), lấy 3.
    - Task hiển thị kèm nút tích "xong" (xem 7.2).
 3. **Deadline 14 ngày tới** — task chưa Xong có Deadline ≤ hôm nay + 14 ngày, sắp theo deadline. Quá hạn → tô đỏ + "Quá hạn N ngày". Hôm nay → "Hôm nay".
@@ -154,6 +154,7 @@ Hiển thị "N node · M link" như ảnh tham khảo. Graph ban đầu sẽ th
 - Tinh thần giống ảnh tham khảo ("Nathan's Brain Console"): sidebar trái, card bo góc, tiêu đề chữ có chân (serif), chữ nội dung sans-serif, khoảng trắng rộng. **Không sao chép y hệt.**
 - **Sáng / tối:** mặc định theo hệ điều hành (`prefers-color-scheme`); nút đổi ở góc dưới sidebar; lựa chọn lưu trong `localStorage` (bọc try/catch); không nhấp nháy sai theme khi tải trang.
 - Màu định nghĩa bằng CSS variables/token cho cả 2 theme; graph cũng đổi màu nền theo theme.
+- Mỗi giá trị "Lĩnh vực" có một màu cố định (CSS variable), dùng chung cho badge ở Today và node ở Brain. *(chốt 22/10/2026)*
 - Desktop-first (≥ 1280px là chuẩn); dưới 768px sidebar thu thành thanh trên, không cần graph đẹp trên mobile.
 
 ## 9. Xử lý lỗi & hiệu năng
