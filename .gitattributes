@@ -1,0 +1,6 @@
+# Giữ LF trong repo và working copy để Harness không báo file bị lệch (drift) do CRLF trên Windows
+* text=auto eol=lf
+*.exe binary
+*.png binary
+*.jpg binary
+*.ico binary
