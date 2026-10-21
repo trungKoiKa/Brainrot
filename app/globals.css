@@ -1,0 +1,90 @@
+@import "tailwindcss";
+
+/* dark: variant theo thuộc tính data-theme trên <html> (do script chống nháy đặt) */
+@custom-variant dark (&:where([data-theme="dark"], [data-theme="dark"] *));
+
+/* ---------- Token màu: theme sáng ---------- */
+:root,
+[data-theme="light"] {
+  --background: #f6f4ef;
+  --surface: #ffffff;
+  --surface-muted: #efece5;
+  --line: #e2ddd3;
+  --foreground: #1f1d1a;
+  --muted: #6f6a61;
+  --accent: #3b5bdb;
+  --accent-soft: #e5eafb;
+  --danger: #c92a2a;
+  --danger-soft: #fdecec;
+
+  /* Lĩnh vực (Knowledge) — dùng chung cho badge và node graph */
+  --field-cv: #1971c2;
+  --field-agent: #7048e8;
+  --field-edge: #2b8a3e;
+  --field-thesis: #e8590c;
+  --field-life: #c2255c;
+  --field-other: #868e96;
+
+  color-scheme: light;
+}
+
+/* ---------- Token màu: theme tối ---------- */
+[data-theme="dark"] {
+  --background: #141413;
+  --surface: #1d1c1a;
+  --surface-muted: #262522;
+  --line: #34322e;
+  --foreground: #ece9e2;
+  --muted: #9c978d;
+  --accent: #91a7ff;
+  --accent-soft: #232a45;
+  --danger: #ff8787;
+  --danger-soft: #3a1f1f;
+
+  --field-cv: #4dabf7;
+  --field-agent: #9775fa;
+  --field-edge: #69db7c;
+  --field-thesis: #ffa94d;
+  --field-life: #f783ac;
+  --field-other: #adb5bd;
+
+  color-scheme: dark;
+}
+
+/* Không có JS: vẫn theo hệ điều hành */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme]) {
+    --background: #141413;
+    --surface: #1d1c1a;
+    --surface-muted: #262522;
+    --line: #34322e;
+    --foreground: #ece9e2;
+    --muted: #9c978d;
+    --accent: #91a7ff;
+    --accent-soft: #232a45;
+    --danger: #ff8787;
+    --danger-soft: #3a1f1f;
+    color-scheme: dark;
+  }
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-surface: var(--surface);
+  --color-surface-muted: var(--surface-muted);
+  --color-line: var(--line);
+  --color-foreground: var(--foreground);
+  --color-muted: var(--muted);
+  --color-accent: var(--accent);
+  --color-accent-soft: var(--accent-soft);
+  --color-danger: var(--danger);
+  --color-danger-soft: var(--danger-soft);
+
+  --font-sans: var(--font-inter);
+  --font-serif: var(--font-lora);
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+}
