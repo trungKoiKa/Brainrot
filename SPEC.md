@@ -103,7 +103,7 @@ Có `.env.example` (không chứa giá trị bí mật) trong repo.
 
 - 1 mật khẩu (`APP_PASSWORD`). Trang `/login` nhập mật khẩu.
 - Đúng → set cookie httpOnly, secure, ký bằng `AUTH_SECRET`, hạn 30 ngày.
-- `middleware.ts` chặn mọi route (trừ `/login` và static assets) nếu thiếu cookie hợp lệ.
+- `proxy.ts` (Next.js 16 đổi tên từ `middleware.ts`, chức năng như cũ) chặn mọi route (trừ `/login` và static assets) nếu thiếu cookie hợp lệ.
 - Không có tài khoản, không có database, không có OAuth.
 
 ## 7. Các trang
