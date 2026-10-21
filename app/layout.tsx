@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
 import { Inter, Lora } from "next/font/google";
-import { Sidebar } from "@/components/sidebar";
 import { THEME_INIT_SCRIPT } from "@/lib/theme";
 import "./globals.css";
 
@@ -30,10 +29,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
         {/* Đặt data-theme trước khi trình duyệt vẽ trang → không nháy sai theme */}
         <script dangerouslySetInnerHTML={{ __html: THEME_INIT_SCRIPT }} />
       </head>
-      <body className="min-h-full font-sans md:flex">
-        <Sidebar />
-        <main className="flex-1 px-4 py-6 md:px-10 md:py-10">{children}</main>
-      </body>
+      <body className="min-h-full font-sans">{children}</body>
     </html>
   );
 }
