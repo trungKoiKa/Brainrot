@@ -10,6 +10,8 @@ export type GraphNode = {
   url?: string;
   /** Lĩnh vực — quyết định màu của node field/note */
   field?: string | null;
+  /** Dự án — quyết định màu của node project/task */
+  project?: string | null;
 };
 
 export type GraphLink = {

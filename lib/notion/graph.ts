@@ -52,9 +52,9 @@ export async function getBrainGraph(): Promise<GraphData> {
   const usedProjects = new Set(openTasks.map((t) => t.project));
   const nodes: GraphNode[] = [
     ...fields.filter((f) => usedFields.has(f)).map((f): GraphNode => ({ id: fieldId(f), kind: "field", label: f, field: f })),
-    ...projects.filter((p) => usedProjects.has(p)).map((p): GraphNode => ({ id: projectId(p), kind: "project", label: p })),
+    ...projects.filter((p) => usedProjects.has(p)).map((p): GraphNode => ({ id: projectId(p), kind: "project", label: p, project: p })),
     ...notes.map((n): GraphNode => ({ id: n.id, kind: "note", label: n.title || "(Chưa đặt tên)", url: n.url, field: n.field })),
-    ...openTasks.map((t): GraphNode => ({ id: t.id, kind: "task", label: t.title || "(Chưa đặt tên)", url: t.url })),
+    ...openTasks.map((t): GraphNode => ({ id: t.id, kind: "task", label: t.title || "(Chưa đặt tên)", url: t.url, project: t.project })),
   ];
   const known = new Set(nodes.map((n) => n.id));
 
