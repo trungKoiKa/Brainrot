@@ -41,10 +41,9 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
 
 Đọc `SPEC.md` trước khi làm bất cứ việc gì. SPEC là nguồn sự thật về phạm vi; không tự thêm tính năng ngoài SPEC.
 
-> **Trạng thái: v0.1 đã xong (22/10/2026) và ĐÓNG BĂNG đến khi nộp đồ án 06/12/2026** (SPEC mục 2).
-> Production: https://brainrot-blue.vercel.app. Trong thời gian đóng băng chỉ sửa lỗi làm hỏng việc dùng hằng ngày;
-> tính năng mới → ghi vào danh sách v0.2 trong `docs/plans/completed/v0.1.md`, không code. Nếu Trung yêu cầu
-> tính năng mới, nhắc về việc đóng băng trước khi làm.
+> **Trạng thái:** v0.1 xong 22/10/2026 (production https://brainrot-blue.vercel.app). Trung đã **bỏ đóng băng**
+> và đang làm **v0.2**: phạm vi ở `SPEC-v0.2.md` (bổ sung `SPEC.md`), tiến độ ở `docs/plans/active/v0.2.md`.
+> Đọc cả hai SPEC. Thấy việc test lấn thời gian đồ án (hạn 06/12/2026) → nhắc Trung.
 
 ## Thứ tự ưu tiên khi hướng dẫn mâu thuẫn
 
@@ -60,8 +59,8 @@ Harness tự nói repo sở hữu quy trình riêng, nên khi lệch nhau thì q
 - **Sản phẩm:** nguồn sự thật là `SPEC.md` ở gốc repo. Không tách SPEC ra `docs/product/` ở v0.1.
 - **Quyết định thiết kế/sản phẩm** Trung đã chốt → cập nhật thẳng vào `SPEC.md` (SPEC yêu cầu vậy).
   `docs/decisions/` chỉ dùng cho quyết định kỹ thuật lâu dài (ví dụ cách gọi Notion API), dùng template `docs/templates/decision.md`.
-- **Plan:** plan v0.1 đã xong, lưu ở `docs/plans/completed/v0.1.md` (kết quả, giới hạn đã biết, ý tưởng v0.2).
-  Việc lớn tiếp theo (v0.2) → tạo plan mới trong `docs/plans/active/` theo `docs/templates/exec-plan.md`.
+- **Plan:** v0.1 ở `docs/plans/completed/v0.1.md`; v0.2 ở `docs/plans/active/v0.2.md` — cập nhật sau mỗi bước.
+- **Bằng chứng từ v0.2:** thêm `npm test` (vitest) và ảnh chụp thật 1440×900 ở 2 theme cho mọi thay đổi giao diện.
 - **Bằng chứng hoàn thành (proof):** `npm run build` + `npm run lint` không lỗi, và Trung test tay theo
   danh sách ở cuối mỗi bước. Không thêm framework test ở v0.1 (giữ ít dependency).
 - **Git:** Trung cho phép agent tự tạo nhánh, commit, push, mở PR và **tự merge PR** vào `main`

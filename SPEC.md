@@ -2,7 +2,8 @@
 
 > Tài liệu thiết kế đã chốt (grill session 22/10/2026). Claude Code dùng file này để lập plan và implement.
 > Mọi thay đổi phạm vi phải được Trung đồng ý và cập nhật vào file này trước khi code.
-> **Trạng thái:** v0.1 hoàn thành 22/10/2026 (đạt tiêu chí 1–5 mục 11; tiêu chí 6 đang theo dõi), đóng băng đến 06/12/2026.
+> **Trạng thái:** v0.1 hoàn thành 22/10/2026 (đạt tiêu chí 1–5 mục 11; tiêu chí 6 đang theo dõi).
+> Trung bỏ đóng băng cùng ngày; phạm vi tiếp theo: `SPEC-v0.2.md`.
 
 ## 1. Mục đích
 
