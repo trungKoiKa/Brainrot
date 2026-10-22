@@ -4,10 +4,12 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { ThemeToggle } from "./theme-toggle";
 
+// Thứ tự v0.2: Brain là trang chủ (SPEC-v0.2 mục 2)
 const NAV = [
-  { href: "/", label: "Today" },
+  { href: "/", label: "Brain" },
+  { href: "/today", label: "Today" },
   { href: "/tasks", label: "Tasks" },
-  { href: "/brain", label: "Brain" },
+  { href: "/planner", label: "Planner" },
 ] as const;
 
 export function Sidebar() {

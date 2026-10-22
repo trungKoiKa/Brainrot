@@ -7,9 +7,10 @@ Dữ liệu đọc từ Notion (Tasks, Knowledge, Daily Log). Phạm vi và quy�
 
 | Trang | Nội dung |
 |---|---|
-| `/` Today | Đếm ngược đồ án · 3 việc hôm nay · deadline 14 ngày · kiến thức mới |
+| `/` Brain | Graph 3D kiến thức và dự án (trang chủ từ v0.2; `/brain` cũ tự chuyển về đây) |
+| `/today` | Đếm ngược đồ án · 3 việc hôm nay · deadline 14 ngày · kiến thức mới |
 | `/tasks` | Task chưa xong theo dự án, lọc, tích "xong" (ghi lên Notion) |
-| `/brain` | Graph 3D kiến thức và dự án |
+| `/planner` | Kế hoạch tuần (đang tích hợp, v0.2) |
 
 Production: <https://brainrot-blue.vercel.app> (cần mật khẩu).
 
