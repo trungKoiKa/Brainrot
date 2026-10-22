@@ -39,7 +39,7 @@ npm test        # unit test (vitest)
 | Biến | Ý nghĩa |
 |---|---|
 | `NOTION_TOKEN` | Token của internal integration (bí mật) |
-| `NOTION_TASKS_DB` · `NOTION_KNOWLEDGE_DB` · `NOTION_DAILY_DB` | **Database ID** (không phải data source ID — code tự tra) |
+| `NOTION_TASKS_DB` · `NOTION_KNOWLEDGE_DB` · `NOTION_DAILY_DB` · `NOTION_IDEAS_DB` | **Database ID** (không phải data source ID — code tự tra) |
 | `NOTION_ROOT_PAGE` | ID trang gốc "Second Brain — Anh Trung" |
 | `APP_PASSWORD` | Mật khẩu vào web (bí mật) |
 | `AUTH_SECRET` | Chuỗi ngẫu nhiên ≥ 32 ký tự để ký cookie (bí mật). Tạo: `node -e "console.log(require('crypto').randomBytes(32).toString('base64url'))"` |

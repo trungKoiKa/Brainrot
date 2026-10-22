@@ -48,9 +48,15 @@ xuất/nhập JSON, hoàn tác khi xóa.
 
 ## 4. Các tính năng v0.2 khác (làm sau Planner, theo thứ tự)
 
-1. **Ghi nhanh** trên Today: ô ghi Daily Log cuối ngày (Xong / Rơi / Học được / Ngày mai 3 việc / Tập thể dục)
-   và ghi nhanh ý tưởng → Notion. Ý tưởng lưu ở **database "Ideas" mới** trong trang Second Brain
-   (Ý tưởng · Ngày · Trạng thái: Mới / Đang nghĩ / Bỏ / Thành task). Agent hỏi Trung trước khi tạo database. *(chốt 22/10/2026)*
+1. **Ghi nhanh** trên Today *(chốt 22/10/2026)*:
+   - **Ý tưởng:** 1 ô nhập + Enter → tạo trang trong database **Ideas** (đã tạo 22/10/2026, ID
+     `309f392afcb24f67993d75f5934fe278`, biến `NOTION_IDEAS_DB`): Ý tưởng = nội dung, Ngày = hôm nay (giờ VN),
+     Trạng thái = Mới. Chỉ ghi, chưa có trang xem/sửa ý tưởng trên web (xem trong Notion).
+   - **Daily Log hôm nay:** form đủ 5 trường (Xong · Rơi / chưa xong · Học được · Ngày mai 3 việc · Tập thể dục).
+     Mỗi ngày **1 bản ghi**: đã có bản ghi Date = hôm nay → mở form thấy sẵn nội dung, lưu = **cập nhật**; chưa có → tạo
+     mới (Ngày = "dd/mm/yyyy", Date = hôm nay). "Ngày mai 3 việc" mỗi việc một dòng → sáng hôm sau thành khối 3 việc.
+   - Lưu xong: báo "Đã lưu" và làm mới cache Daily Log; lỗi → giữ nguyên nội dung đã gõ + báo lỗi.
+   - Giới hạn: mỗi trường ≤ 2000 ký tự (giới hạn một đoạn text của Notion).
 2. **Thêm/sửa task trên web** (Notion Tasks): tạo nhanh, đổi Ưu tiên / Deadline / Dự án / Ghi chú. Xóa: vẫn làm trong Notion.
 3. **Tìm kiếm trên Brain**: ô "Tìm trang", gõ tên → camera bay tới node.
 4. **Google Calendar "Next up"** trên Today: cần Trung tạo OAuth client trên Google Cloud. Làm cuối.

@@ -4,6 +4,7 @@ import { Card, Empty } from "@/components/card";
 import { FieldBadge } from "@/components/field-badge";
 import { PageHeader } from "@/components/page-header";
 import { TopTasks } from "@/components/tasks/top-tasks";
+import { QuickCapture } from "@/components/quick-capture";
 import { daysBetween, formatDay, greetingVN, longDateVN, todayVN } from "@/lib/date";
 import { anyStale, getKnowledge, getRecentDailyLogs, getTasks } from "@/lib/notion/data";
 import { StaleBanner } from "@/components/stale-banner";
@@ -44,6 +45,9 @@ async function TodayContent() {
         <TopThreeCard top={pickTopThree(today, logs, tasks)} />
         <DeadlinesCard items={upcomingDeadlines(today, tasks)} />
         <KnowledgeCard notes={latestKnowledge(knowledge)} />
+        <Card title="Ghi nhanh" className="lg:col-span-2">
+          <QuickCapture todayLog={logs.find((l) => l.date === today) ?? null} />
+        </Card>
       </div>
     </>
   );
