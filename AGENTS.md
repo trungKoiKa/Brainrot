@@ -41,6 +41,11 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
 
 Đọc `SPEC.md` trước khi làm bất cứ việc gì. SPEC là nguồn sự thật về phạm vi; không tự thêm tính năng ngoài SPEC.
 
+> **Trạng thái: v0.1 đã xong (22/10/2026) và ĐÓNG BĂNG đến khi nộp đồ án 06/12/2026** (SPEC mục 2).
+> Production: https://brainrot-blue.vercel.app. Trong thời gian đóng băng chỉ sửa lỗi làm hỏng việc dùng hằng ngày;
+> tính năng mới → ghi vào danh sách v0.2 trong `docs/plans/completed/v0.1.md`, không code. Nếu Trung yêu cầu
+> tính năng mới, nhắc về việc đóng băng trước khi làm.
+
 ## Thứ tự ưu tiên khi hướng dẫn mâu thuẫn
 
 1. Yêu cầu của Trung trong chat.
@@ -55,8 +60,8 @@ Harness tự nói repo sở hữu quy trình riêng, nên khi lệch nhau thì q
 - **Sản phẩm:** nguồn sự thật là `SPEC.md` ở gốc repo. Không tách SPEC ra `docs/product/` ở v0.1.
 - **Quyết định thiết kế/sản phẩm** Trung đã chốt → cập nhật thẳng vào `SPEC.md` (SPEC yêu cầu vậy).
   `docs/decisions/` chỉ dùng cho quyết định kỹ thuật lâu dài (ví dụ cách gọi Notion API), dùng template `docs/templates/decision.md`.
-- **Plan:** plan v0.1 (8 bước theo mục 12 SPEC) nằm ở `docs/plans/active/v0.1.md`.
-  Cập nhật tiến độ ở đó sau mỗi bước; xong v0.1 thì chuyển sang `docs/plans/completed/`.
+- **Plan:** plan v0.1 đã xong, lưu ở `docs/plans/completed/v0.1.md` (kết quả, giới hạn đã biết, ý tưởng v0.2).
+  Việc lớn tiếp theo (v0.2) → tạo plan mới trong `docs/plans/active/` theo `docs/templates/exec-plan.md`.
 - **Bằng chứng hoàn thành (proof):** `npm run build` + `npm run lint` không lỗi, và Trung test tay theo
   danh sách ở cuối mỗi bước. Không thêm framework test ở v0.1 (giữ ít dependency).
 - **Git:** Trung cho phép agent tự tạo nhánh, commit, push, mở PR và **tự merge PR** vào `main`

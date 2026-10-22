@@ -2,7 +2,8 @@
 
 Web cá nhân của Trung: mở ra là biết hôm nay làm 3 việc gì, deadline nào sắp tới, đã học được gì.
 Dữ liệu đọc từ Notion (Tasks, Knowledge, Daily Log). Phạm vi và quyết định: [`SPEC.md`](SPEC.md),
-[`docs/decisions/`](docs/decisions/), tiến độ: [`docs/plans/active/v0.1.md`](docs/plans/active/v0.1.md).
+[`docs/decisions/`](docs/decisions/), kết quả v0.1: [`docs/plans/completed/v0.1.md`](docs/plans/completed/v0.1.md).
+**v0.1 xong 22/10/2026, đóng băng đến 06/12/2026.**
 
 | Trang | Nội dung |
 |---|---|
