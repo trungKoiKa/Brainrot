@@ -119,5 +119,6 @@ npm install
 npm run dev      # http://localhost:3000
 npm run build
 npm run lint
+npm test                      # vitest: lib Brainrot + planner (từ v0.2)
 scripts/bin/harness doctor    # kiểm tra Harness còn nguyên vẹn
 ```
