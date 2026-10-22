@@ -11,7 +11,7 @@ const BrainGraph = dynamic(() => import("./brain-graph"), {
 
 export function BrainView({ data }: { data: GraphData }) {
   return (
-    <div className="h-[70vh] min-h-96 overflow-hidden rounded-2xl border border-line">
+    <div className="h-[72vh] min-h-96 overflow-hidden rounded-2xl border border-line">
       <BrainGraph data={data} />
     </div>
   );

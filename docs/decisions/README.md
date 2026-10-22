@@ -13,3 +13,4 @@ documents here as real choices are accepted, then index them in this file.
 
 - [0001](0001-notion-query-via-data-source.md): Gọi Notion API theo data source, chỉ qua `lib/notion/`.
 - [0002](0002-cache-with-use-cache-and-tags.md): Cache Notion bằng `"use cache"` 5 phút + tag; trang render lúc request.
+- [0003](0003-field-colors.md): Màu Lĩnh vực: 4 slot đã kiểm định + xám trung tính; mở rộng qua `lib/fields.ts`.
