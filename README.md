@@ -31,6 +31,7 @@ Kiểm tra trước khi commit:
 ```bash
 npm run lint
 npm run build
+npm test        # unit test (vitest)
 ```
 
 ## Biến môi trường
