@@ -3,13 +3,14 @@
 import { useState } from "react";
 import { compareTasks } from "@/lib/today";
 import type { Priority, Task } from "@/lib/notion/types";
+import { PRIORITIES } from "@/lib/task-form";
+import { EditTaskForm, NewTaskForm } from "./task-forms";
 import { ErrorNotice, TaskRow } from "./task-row";
 import { useTaskCompletion } from "./use-task-completion";
 
 // Thứ tự giống select "Dự án" trong Notion (SPEC mục 4)
 const PROJECT_ORDER = ["Đồ án", "Học AI", "Sản phẩm", "Sức khỏe", "Thực tập", "Khác"];
 const NO_PROJECT = "Không có dự án";
-const PRIORITIES: Priority[] = ["Cao", "Vừa", "Thấp"];
 
 const projectOf = (t: Task) => t.project ?? NO_PROJECT;
 const projectRank = (p: string) => {
@@ -17,8 +18,9 @@ const projectRank = (p: string) => {
   return i === -1 ? PROJECT_ORDER.length : i;
 };
 
-export function TaskBoard({ tasks: initial, today }: { tasks: Task[]; today: string }) {
+export function TaskBoard({ tasks: initial, projects: allProjects, today }: { tasks: Task[]; projects: string[]; today: string }) {
   const { tasks, complete, error, dismissError } = useTaskCompletion(initial);
+  const [editing, setEditing] = useState<string | null>(null);
   const [project, setProject] = useState<string | null>(null);
   const [priority, setPriority] = useState<Priority | null>(null);
 
@@ -36,6 +38,8 @@ export function TaskBoard({ tasks: initial, today }: { tasks: Task[]; today: str
   return (
     <div>
       {error && <ErrorNotice message={error} onDismiss={dismissError} />}
+
+      <NewTaskForm projects={allProjects} />
 
       <div className="mb-6 space-y-3">
         <FilterRow label="Dự án" value={project} options={projects} onChange={setProject} />
@@ -55,9 +59,13 @@ export function TaskBoard({ tasks: initial, today }: { tasks: Task[]; today: str
                 <span className="font-sans text-xs font-normal text-muted">{g.tasks.length} việc</span>
               </h2>
               <ul className="divide-y divide-line">
-                {g.tasks.map((t) => (
-                  <TaskRow key={t.id} task={t} today={today} onComplete={complete} />
-                ))}
+                {g.tasks.map((t) =>
+                  editing === t.id ? (
+                    <EditTaskForm key={t.id} task={t} projects={allProjects} onClose={() => setEditing(null)} />
+                  ) : (
+                    <TaskRow key={t.id} task={t} today={today} onComplete={complete} onEdit={() => setEditing(t.id)} />
+                  ),
+                )}
               </ul>
             </section>
           ))}
