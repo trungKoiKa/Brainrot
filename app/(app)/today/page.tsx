@@ -138,7 +138,7 @@ function NextUpCard({ calendar, now, today }: { calendar: CalendarResult; now: D
         <ul className="divide-y divide-line">
           {items.map((e) => (
             <li key={e.id} className="flex gap-3 py-2 first:pt-0 last:pb-0">
-              <span className="w-24 shrink-0 font-mono text-xs leading-6 text-muted">{timeRange(e)}</span>
+              <span className="w-24 shrink-0 text-xs leading-6 tabular-nums text-muted">{timeRange(e)}</span>
               <div className="min-w-0 flex-1">
                 {e.url ? (
                   <ExternalLink href={e.url} className="hover:text-accent">
