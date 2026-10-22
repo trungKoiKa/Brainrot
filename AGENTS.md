@@ -41,9 +41,9 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
 
 Đọc `SPEC.md` trước khi làm bất cứ việc gì. SPEC là nguồn sự thật về phạm vi; không tự thêm tính năng ngoài SPEC.
 
-> **Trạng thái:** v0.1 xong 22/10/2026 (production https://brainrot-blue.vercel.app). Trung đã **bỏ đóng băng**
-> và đang làm **v0.2**: phạm vi ở `SPEC-v0.2.md` (bổ sung `SPEC.md`), tiến độ ở `docs/plans/active/v0.2.md`.
-> Đọc cả hai SPEC. Thấy việc test lấn thời gian đồ án (hạn 06/12/2026) → nhắc Trung.
+> **Trạng thái:** v0.1 và **v0.2 xong 22/10/2026** (production https://brainrot-blue.vercel.app; tag `v0.1.0`, `v0.2.0`).
+> Phạm vi: `SPEC.md` + `SPEC-v0.2.md`; kết quả ở `docs/plans/completed/`. Chưa có v0.3 — Trung tạm dừng để tập trung
+> đồ án (hạn 06/12/2026). Yêu cầu mới → ghi vào "Follow-ups" của `docs/plans/completed/v0.2.md`, chốt SPEC trước khi code.
 
 ## Thứ tự ưu tiên khi hướng dẫn mâu thuẫn
 
@@ -59,7 +59,7 @@ Harness tự nói repo sở hữu quy trình riêng, nên khi lệch nhau thì q
 - **Sản phẩm:** nguồn sự thật là `SPEC.md` ở gốc repo. Không tách SPEC ra `docs/product/` ở v0.1.
 - **Quyết định thiết kế/sản phẩm** Trung đã chốt → cập nhật thẳng vào `SPEC.md` (SPEC yêu cầu vậy).
   `docs/decisions/` chỉ dùng cho quyết định kỹ thuật lâu dài (ví dụ cách gọi Notion API), dùng template `docs/templates/decision.md`.
-- **Plan:** v0.1 ở `docs/plans/completed/v0.1.md`; v0.2 ở `docs/plans/active/v0.2.md` — cập nhật sau mỗi bước.
+- **Plan:** v0.1, v0.2 ở `docs/plans/completed/`. Phiên bản mới → plan mới trong `docs/plans/active/`, cập nhật sau mỗi bước.
 - **Bằng chứng từ v0.2:** thêm `npm test` (vitest) và ảnh chụp thật 1440×900 ở 2 theme cho mọi thay đổi giao diện.
 - **Bằng chứng hoàn thành (proof):** `npm run build` + `npm run lint` không lỗi, và Trung test tay theo
   danh sách ở cuối mỗi bước. Không thêm framework test ở v0.1 (giữ ít dependency).

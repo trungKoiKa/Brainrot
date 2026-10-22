@@ -2,6 +2,8 @@
 
 > Bổ sung cho `SPEC.md` (v0.1). Mục nào không nhắc ở đây thì giữ nguyên như v0.1.
 > Trung duyệt ngày 22/10/2026.
+>
+> **Trạng thái:** v0.2 hoàn thành 22/10/2026 (tag `v0.2.0`, PR #15–#23). Kết quả: `docs/plans/completed/v0.2.md`.
 
 ## 1. Thay đổi ràng buộc so với v0.1
 
