@@ -2,6 +2,7 @@ import { Suspense } from "react";
 import { connection } from "next/server";
 import { BrainView } from "@/components/brain/brain-view";
 import { PageHeader } from "@/components/page-header";
+import { StaleBanner } from "@/components/stale-banner";
 import { getBrainGraph } from "@/lib/notion/graph";
 
 export default function BrainPage() {
@@ -17,5 +18,11 @@ export default function BrainPage() {
 
 async function BrainContent() {
   await connection(); // không gọi Notion lúc build
-  return <BrainView data={await getBrainGraph()} />;
+  const { stale, ...graph } = await getBrainGraph();
+  return (
+    <>
+      <StaleBanner show={stale} />
+      <BrainView data={graph} />
+    </>
+  );
 }

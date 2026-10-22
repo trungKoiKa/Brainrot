@@ -5,8 +5,9 @@ import { FieldBadge } from "@/components/field-badge";
 import { PageHeader } from "@/components/page-header";
 import { TopTasks } from "@/components/tasks/top-tasks";
 import { daysBetween, formatDay, greetingVN, longDateVN, todayVN } from "@/lib/date";
-import { getKnowledge, getRecentDailyLogs, getTasks } from "@/lib/notion/queries";
-import type { Knowledge, Task } from "@/lib/notion/types";
+import { anyStale, getKnowledge, getRecentDailyLogs, getTasks } from "@/lib/notion/data";
+import { StaleBanner } from "@/components/stale-banner";
+import type { DailyLog, Knowledge, Task } from "@/lib/notion/types";
 import {
   deadlineLabel,
   latestKnowledge,
@@ -31,11 +32,13 @@ async function TodayContent() {
   await connection();
   const now = new Date();
   const today = todayVN(now);
-  const [tasks, knowledge, logs] = await Promise.all([getTasks(), getKnowledge(), getRecentDailyLogs()]);
+  const loaded = await Promise.all([getTasks(), getKnowledge(), getRecentDailyLogs()]);
+  const [tasks, knowledge, logs] = loaded.map((l) => l.data) as [Task[], Knowledge[], DailyLog[]];
 
   return (
     <>
       <PageHeader title={`${greetingVN(now)}, Trung`} subtitle={longDateVN(now)} />
+      <StaleBanner show={anyStale(...loaded)} />
       <div className="grid gap-5 lg:grid-cols-2">
         <ThesisCountdown today={today} />
         <TopThreeCard top={pickTopThree(today, logs, tasks)} />
