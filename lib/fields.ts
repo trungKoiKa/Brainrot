@@ -1,14 +1,16 @@
-// Màu cố định cho từng Lĩnh vực (SPEC mục 8) — dùng chung cho badge (Today) và node graph (Brain).
-// Giá trị là tên CSS variable khai báo trong app/globals.css cho cả 2 theme.
-const FIELD_VARS: Record<string, string> = {
-  "Computer Vision": "--field-cv",
-  "AI Agent": "--field-agent",
-  "Embedded/Edge AI": "--field-edge",
-  "Đồ án": "--field-thesis",
-  "Kỹ năng sống": "--field-life",
-  Khác: "--field-other",
+// Màu cố định cho Lĩnh vực — dùng chung cho badge (Today), node + chip (Brain). Xem docs/decisions/0003.
+//
+// Chỉ có 4 slot màu phân biệt được chắc chắn ở cả 2 theme (đã kiểm bằng validator dataviz).
+// Lĩnh vực không có trong bảng (kể cả lĩnh vực mới thêm trong Notion) → xám trung tính.
+// Muốn đổi lĩnh vực được tô màu: sửa bảng dưới, KHÔNG thêm slot thứ 5 (sẽ trùng màu).
+const FIELD_SLOTS: Record<string, 1 | 2 | 3 | 4> = {
+  "Computer Vision": 1,
+  "AI Agent": 2,
+  "Embedded/Edge AI": 3,
+  "Đồ án": 4,
 };
 
 export function fieldColorVar(field: string | null): string {
-  return (field && FIELD_VARS[field]) || "--field-other";
+  const slot = field ? FIELD_SLOTS[field] : undefined;
+  return slot ? `--field-${slot}` : "--field-neutral";
 }

@@ -18,4 +18,10 @@ export type GraphLink = {
   kind: "belongs" | "mention";
 };
 
-export type GraphData = { nodes: GraphNode[]; links: GraphLink[] };
+export type GraphData = {
+  nodes: GraphNode[];
+  links: GraphLink[];
+  /** Mọi giá trị trong schema (kể cả chưa có trang nào) — cho hàng chip chú thích */
+  fields: string[];
+  projects: string[];
+};

@@ -17,13 +17,13 @@
   --danger: #c92a2a;
   --danger-soft: #fdecec;
 
-  /* Lĩnh vực (Knowledge) — dùng chung cho badge và node graph */
-  --field-cv: #1971c2;
-  --field-agent: #7048e8;
-  --field-edge: #2b8a3e;
-  --field-thesis: #e8590c;
-  --field-life: #c2255c;
-  --field-other: #868e96;
+  /* Lĩnh vực — 4 slot màu phân loại + 1 xám trung tính (docs/decisions/0003).
+     Đã chạy validator dataviz (--pairs all, nền #f6f4ef): normal-vision ΔE 19.6, CVD ΔE 13. */
+  --field-1: #2a78d6; /* xanh dương */
+  --field-2: #e87ba4; /* hồng */
+  --field-3: #008300; /* xanh lá */
+  --field-4: #eda100; /* vàng hổ phách */
+  --field-neutral: #a19d94;
 
   color-scheme: light;
 }
@@ -41,12 +41,13 @@
   --danger: #ff8787;
   --danger-soft: #3a1f1f;
 
-  --field-cv: #4dabf7;
-  --field-agent: #9775fa;
-  --field-edge: #69db7c;
-  --field-thesis: #ffa94d;
-  --field-life: #f783ac;
-  --field-other: #adb5bd;
+  /* Cùng 4 màu, bước tối hơn cho nền tối (validator, nền #141413): normal-vision ΔE 19.3, CVD ΔE 6.9
+     → bắt buộc có cách nhận diện thứ hai: tên cụm trên graph + chip chú thích */
+  --field-1: #3987e5;
+  --field-2: #d55181;
+  --field-3: #008300;
+  --field-4: #c98500;
+  --field-neutral: #6d6a63;
 
   color-scheme: dark;
 }

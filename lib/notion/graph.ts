@@ -30,7 +30,7 @@ async function mentionedPageIds(pageId: string): Promise<string[]> {
 }
 
 /**
- * Node: Lĩnh vực, Dự án (lấy từ lựa chọn trong schema), mỗi trang Knowledge, mỗi Task chưa xong.
+ * Node: Lĩnh vực, Dự án (giá trị trong schema có ít nhất 1 thành viên), mỗi trang Knowledge, mỗi Task chưa xong.
  * Link: note → lĩnh vực, task → dự án, trang A → trang B khi A mention B.
  * Chỉ quét nội dung trang Knowledge (SPEC 7.3) để giới hạn số request.
  */
@@ -47,9 +47,12 @@ export async function getBrainGraph(): Promise<GraphData> {
   ]);
   const openTasks = tasks.filter((t) => t.status !== "Xong");
 
+  // Chỉ vẽ cụm có ít nhất 1 thành viên, tránh nhãn lơ lửng không nối gì (chip chú thích vẫn liệt kê đủ)
+  const usedFields = new Set(notes.map((n) => n.field));
+  const usedProjects = new Set(openTasks.map((t) => t.project));
   const nodes: GraphNode[] = [
-    ...fields.map((f): GraphNode => ({ id: fieldId(f), kind: "field", label: f, field: f })),
-    ...projects.map((p): GraphNode => ({ id: projectId(p), kind: "project", label: p })),
+    ...fields.filter((f) => usedFields.has(f)).map((f): GraphNode => ({ id: fieldId(f), kind: "field", label: f, field: f })),
+    ...projects.filter((p) => usedProjects.has(p)).map((p): GraphNode => ({ id: projectId(p), kind: "project", label: p })),
     ...notes.map((n): GraphNode => ({ id: n.id, kind: "note", label: n.title || "(Chưa đặt tên)", url: n.url, field: n.field })),
     ...openTasks.map((t): GraphNode => ({ id: t.id, kind: "task", label: t.title || "(Chưa đặt tên)", url: t.url })),
   ];
@@ -71,5 +74,5 @@ export async function getBrainGraph(): Promise<GraphData> {
     }
   }
 
-  return { nodes, links };
+  return { nodes, links, fields, projects };
 }
