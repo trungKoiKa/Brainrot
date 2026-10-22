@@ -65,7 +65,11 @@ xuất/nhập JSON, hoàn tác khi xóa.
    - Dự án chọn trong các lựa chọn hiện có của select "Dự án" (không tạo dự án mới từ web).
    - Lưu xong: làm mới cache Tasks; lỗi → giữ nội dung đã gõ + báo lỗi. Tên/Ghi chú ≤ 2000 ký tự.
    - Xóa task: vẫn làm trong Notion.
-3. **Tìm kiếm trên Brain**: ô "Tìm trang", gõ tên → camera bay tới node.
+3. **Tìm kiếm trên Brain** *(chốt 22/10/2026)*: ô "Tìm trang" ở góc trên graph, phím `/` để nhảy vào ô.
+   - Tìm trong **mọi node**: trang Knowledge, task chưa xong, Lĩnh vực, Dự án.
+   - Khớp **không dấu, một phần** ("do an" → "Đồ án"); ưu tiên tên bắt đầu bằng chuỗi gõ, rồi đầu từ, rồi ở giữa.
+   - Danh sách thả xuống tối đa 8 kết quả (chấm màu + loại); ↑↓ chọn, Enter/bấm → camera bay tới node.
+   - Node được chọn + các node nối trực tiếp giữ màu, còn lại mờ đi; ✕ hoặc Esc bỏ chọn.
 4. **Google Calendar "Next up"** trên Today: cần Trung tạo OAuth client trên Google Cloud. Làm cuối.
 
 Mỗi tính năng: chốt chi tiết vào file này trước khi code.

@@ -6,7 +6,9 @@ import ForceGraph3D, { type ForceGraphMethods, type LinkObject, type NodeObject 
 import * as THREE from "three";
 import { forceX, forceY, forceZ } from "d3-force-3d";
 import { fieldColorVar, projectColorVar } from "@/lib/fields";
+import { neighborhood } from "@/lib/graph-search";
 import type { GraphData, GraphLink, GraphNode } from "@/lib/graph-types";
+import { GraphSearch } from "./graph-search";
 
 type Palette = Record<string, string>;
 type Node = NodeObject<GraphNode>;
@@ -53,13 +55,14 @@ function useSize<T extends HTMLElement>() {
 const escapeHtml = (s: string) =>
   s.replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]!);
 
-const MIN_DISTANCE = 180; // khoảng cách camera tối thiểu (đơn vị của graph)
+const MIN_DISTANCE = 180;
+const DIM = 0.85; // mức trộn về màu nền của node/link bị làm mờ khi đang chọn một node // khoảng cách camera tối thiểu (đơn vị của graph)
 
 const isHub = (n: GraphNode) => n.kind === "field" || n.kind === "project";
 const idOf = (end: string | number | Node | undefined) => (typeof end === "object" ? String(end.id) : String(end));
 
 /** Nhãn cụm cố định trên graph: chấm màu + tên (vẽ ra canvas rồi làm sprite, không cần thư viện chữ). */
-function makeLabel(text: string, dotColor: string, textColor: string): THREE.Sprite {
+function makeLabel(text: string, dotColor: string, textColor: string, opacity = 1): THREE.Sprite {
   const ratio = 4;
   const fontSize = 15 * ratio;
   const font = `600 ${fontSize}px ${getComputedStyle(document.body).fontFamily}`;
@@ -85,7 +88,7 @@ function makeLabel(text: string, dotColor: string, textColor: string): THREE.Spr
   // sizeAttenuation: false → chữ giữ cỡ cố định trên màn hình, không bé đi khi ở xa camera
   const sprite = new THREE.Sprite(
     // depthTest: false + renderOrder cao → nhãn luôn nằm trên, không bị quả cầu che
-    new THREE.SpriteMaterial({ map: texture, transparent: true, depthWrite: false, depthTest: false, sizeAttenuation: false }),
+    new THREE.SpriteMaterial({ map: texture, transparent: true, opacity, depthWrite: false, depthTest: false, sizeAttenuation: false }),
   );
   sprite.renderOrder = 10;
   const screenHeight = 0.03; // tỉ lệ so với chiều cao khung graph (~20px chữ ở khung 650px)
@@ -109,6 +112,9 @@ export default function BrainGraph({ data }: { data: GraphData }) {
     nodes: data.nodes.map((n) => ({ ...n })),
     links: data.links.map((l) => ({ ...l })),
   }));
+
+  const [selected, setSelected] = useState<GraphNode | null>(null);
+  const highlight = useMemo(() => (selected ? neighborhood(selected.id, data.links) : null), [selected, data.links]);
 
   const degree = useMemo(() => {
     const d = new Map<string, number>();
@@ -142,14 +148,21 @@ export default function BrainGraph({ data }: { data: GraphData }) {
     fg.d3ReheatSimulation();
   }, [ready]);
   const colorById = useMemo(() => new Map(data.nodes.map((n) => [n.id, colorOf(n)])), [data.nodes, colorOf]);
+  const dimmed = useCallback((id: string) => Boolean(highlight && !highlight.has(id)), [highlight]);
+  const shownColor = useCallback(
+    (color: string, dim: boolean) => (dim && palette ? soften(color, palette["--background"], DIM) : color),
+    [palette],
+  );
 
   // Nhãn phải vẽ lại khi đổi theme → accessor đổi danh tính theo palette
   // Trả rỗng → thư viện vẽ quả cầu mặc định (three-forcegraph: `if (customObj && !extendObj)`),
   // nhưng kiểu .d.ts bắt buộc Object3D nên phải ép kiểu.
   const hubObject = useCallback(
     (n: Node) =>
-      (palette && isHub(n) ? makeLabel(n.label, colorOf(n), palette["--foreground"]) : undefined) as THREE.Object3D,
-    [palette, colorOf],
+      (palette && isHub(n)
+        ? makeLabel(n.label, colorOf(n), palette["--foreground"], dimmed(String(n.id)) ? 0.25 : 1)
+        : undefined) as THREE.Object3D,
+    [palette, colorOf, dimmed],
   );
 
   /**
@@ -183,6 +196,12 @@ export default function BrainGraph({ data }: { data: GraphData }) {
     if (node) focus(node);
   }
 
+  /** Chọn từ ô tìm: bay tới node + làm nổi node và các node nối trực tiếp. */
+  function selectNode(n: GraphNode) {
+    setSelected(n);
+    focusHub(n.id);
+  }
+
   const memberCount = (kind: "note" | "task", key: "field" | "project", value: string) =>
     data.links.filter(
       (l) => l.kind === "belongs" && l.target === `${key}:${value}` && data.nodes.find((n) => n.id === l.source)?.kind === kind,
@@ -209,11 +228,16 @@ export default function BrainGraph({ data }: { data: GraphData }) {
           nodeRelSize={4}
           nodeResolution={16}
           nodeVal={(n) => (n.kind === "note" ? 1.2 + (degree.get(n.id) ?? 0) * 0.6 : 0.7 + (degree.get(n.id) ?? 0) * 0.3)}
-          nodeColor={(n) => colorOf(n)}
+          nodeColor={(n) => shownColor(colorOf(n), dimmed(String(n.id)))}
           nodeOpacity={0.92}
           nodeThreeObject={hubObject}
           nodeLabel={(n) => escapeHtml(isHub(n) ? `${n.label} — bấm để zoom` : n.label)}
-          linkColor={(l) => colorById.get(idOf(l.source)) ?? palette["--muted"]}
+          linkColor={(l) =>
+            shownColor(
+              colorById.get(idOf(l.source)) ?? palette["--muted"],
+              Boolean(selected) && idOf(l.source) !== selected?.id && idOf(l.target) !== selected?.id,
+            )
+          }
           linkOpacity={0.35}
           linkDirectionalParticles={(l) => (l.kind === "mention" ? 2 : 0)}
           linkDirectionalParticleWidth={1.6}
@@ -228,12 +252,21 @@ export default function BrainGraph({ data }: { data: GraphData }) {
         />
       )}
 
-      {/* Lớp phủ: số liệu + gợi ý (không chặn chuột lên graph) */}
-      <div className="pointer-events-none absolute inset-x-0 top-0 flex flex-wrap justify-between gap-2 p-4 text-xs text-muted">
-        <span className="font-mono">
-          {pageCount} trang · {data.links.length} link
+      {/* Lớp phủ: ô tìm + số liệu + gợi ý (chỉ ô tìm nhận chuột, phần còn lại không chặn graph) */}
+      <div className="pointer-events-none absolute inset-x-0 top-0 flex flex-wrap items-start justify-between gap-2 p-4 text-xs text-muted">
+        <GraphSearch
+          nodes={data.nodes}
+          colorOf={colorOf}
+          selected={selected}
+          onSelect={selectNode}
+          onClear={() => setSelected(null)}
+        />
+        <span className="flex flex-col items-end gap-1 pt-1.5">
+          <span className="font-mono">
+            {pageCount} trang · {data.links.length} link
+          </span>
+          <span className="hidden sm:inline">Kéo để xoay · cuộn để zoom · bấm cụm hoặc trang</span>
         </span>
-        <span className="hidden sm:inline">Kéo để xoay · cuộn để zoom · bấm cụm hoặc trang</span>
       </div>
 
       {/* Chú thích: chip theo cụm, bấm để bay tới (màu là cách nhận diện thứ nhất, tên + số là thứ hai) */}
