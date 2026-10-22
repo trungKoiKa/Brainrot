@@ -3,7 +3,8 @@ import { connection } from "next/server";
 import { PageHeader } from "@/components/page-header";
 import { TaskBoard } from "@/components/tasks/task-board";
 import { todayVN } from "@/lib/date";
-import { getTasks } from "@/lib/notion/queries";
+import { StaleBanner } from "@/components/stale-banner";
+import { getTasks } from "@/lib/notion/data";
 
 export default function TasksPage() {
   return (
@@ -18,5 +19,11 @@ export default function TasksPage() {
 
 async function TasksContent() {
   await connection(); // nhãn "Quá hạn / Còn N ngày" phụ thuộc ngày hôm nay
-  return <TaskBoard tasks={await getTasks()} today={todayVN()} />;
+  const { data, stale } = await getTasks();
+  return (
+    <>
+      <StaleBanner show={stale} />
+      <TaskBoard tasks={data} today={todayVN()} />
+    </>
+  );
 }

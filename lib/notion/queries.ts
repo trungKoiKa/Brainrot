@@ -7,9 +7,14 @@ import type { DailyLog, Knowledge, Priority, Task, TaskStatus } from "./types";
 
 export const TAGS = { tasks: "tasks", knowledge: "knowledge", daily: "daily" } as const;
 
-// Cache 5 phút (SPEC mục 3). Sau 5 phút, request kế tiếp vẫn nhận bản cũ ngay
-// và Next tải bản mới ở nền; nếu Notion lỗi lúc đó, bản cũ được giữ.
+/** Kết quả đọc Notion: hàm có cache KHÔNG ném lỗi, để lỗi không bị cache như dữ liệu. */
+export type Result<T> = { ok: true; data: T } | { ok: false; error: string };
+
+// Cache 5 phút (SPEC mục 3). Kết quả lỗi chỉ giữ 30 giây để sớm thử lại Notion.
 const FIVE_MINUTES = { stale: 300, revalidate: 300, expire: 60 * 60 * 24 * 7 };
+const ERROR_LIFE = { stale: 0, revalidate: 30, expire: 60 };
+
+const errorMessage = (e: unknown) => (e instanceof Error ? e.message : String(e));
 
 /**
  * Notion API 2025-09-03 query theo data source, không theo database.
@@ -24,13 +29,18 @@ async function dataSourceId(envName: string): Promise<string> {
   return id;
 }
 
-/** Các lựa chọn của một property select trong schema (vd. "Lĩnh vực", "Dự án"). */
+/** Các lựa chọn của một property select trong schema (vd. "Lĩnh vực", "Dự án"); lỗi → []. */
 export async function selectOptions(envName: string, property: string): Promise<string[]> {
   "use cache";
-  cacheLife("days");
-  const ds = await notion().dataSources.retrieve({ data_source_id: await dataSourceId(envName) });
-  const prop = ds.properties[property];
-  return prop?.type === "select" ? prop.select.options.map((o) => o.name) : [];
+  try {
+    const ds = await notion().dataSources.retrieve({ data_source_id: await dataSourceId(envName) });
+    const prop = ds.properties[property];
+    cacheLife("days");
+    return prop?.type === "select" ? prop.select.options.map((o) => o.name) : [];
+  } catch {
+    cacheLife(ERROR_LIFE);
+    return [];
+  }
 }
 
 async function queryAll(envName: string): Promise<PageObjectResponse[]> {
@@ -40,60 +50,84 @@ async function queryAll(envName: string): Promise<PageObjectResponse[]> {
   return pages.filter(isFullPage);
 }
 
-export async function getTasks(): Promise<Task[]> {
+export async function tasksResult(): Promise<Result<Task[]>> {
   "use cache";
-  cacheLife(FIVE_MINUTES);
   cacheTag(TAGS.tasks);
-  const pages = await queryAll("NOTION_TASKS_DB");
-  return pages.map(({ id, url: pageUrl, properties: p }) => ({
-    id,
-    url: pageUrl,
-    title: text(p, "Việc"),
-    project: select(p, "Dự án"),
-    status: select(p, "Trạng thái") as TaskStatus | null,
-    priority: select(p, "Ưu tiên") as Priority | null,
-    deadline: date(p, "Deadline"),
-    note: text(p, "Ghi chú"),
-  }));
+  try {
+    const pages = await queryAll("NOTION_TASKS_DB");
+    cacheLife(FIVE_MINUTES);
+    return {
+      ok: true,
+      data: pages.map(({ id, url: pageUrl, properties: p }) => ({
+        id,
+        url: pageUrl,
+        title: text(p, "Việc"),
+        project: select(p, "Dự án"),
+        status: select(p, "Trạng thái") as TaskStatus | null,
+        priority: select(p, "Ưu tiên") as Priority | null,
+        deadline: date(p, "Deadline"),
+        note: text(p, "Ghi chú"),
+      })),
+    };
+  } catch (e) {
+    cacheLife(ERROR_LIFE);
+    return { ok: false, error: errorMessage(e) };
+  }
 }
 
-export async function getKnowledge(): Promise<Knowledge[]> {
+export async function knowledgeResult(): Promise<Result<Knowledge[]>> {
   "use cache";
-  cacheLife(FIVE_MINUTES);
   cacheTag(TAGS.knowledge);
-  const pages = await queryAll("NOTION_KNOWLEDGE_DB");
-  return pages.map(({ id, url: pageUrl, created_time, properties: p }) => ({
-    id,
-    url: pageUrl,
-    title: text(p, "Chủ đề"),
-    field: select(p, "Lĩnh vực"),
-    level: select(p, "Mức hiểu"),
-    summary: text(p, "Tóm tắt"),
-    source: url(p, "Nguồn"),
-    learnedOn: date(p, "Ngày học"),
-    createdTime: created_time,
-  }));
+  try {
+    const pages = await queryAll("NOTION_KNOWLEDGE_DB");
+    cacheLife(FIVE_MINUTES);
+    return {
+      ok: true,
+      data: pages.map(({ id, url: pageUrl, created_time, properties: p }) => ({
+        id,
+        url: pageUrl,
+        title: text(p, "Chủ đề"),
+        field: select(p, "Lĩnh vực"),
+        level: select(p, "Mức hiểu"),
+        summary: text(p, "Tóm tắt"),
+        source: url(p, "Nguồn"),
+        learnedOn: date(p, "Ngày học"),
+        createdTime: created_time,
+      })),
+    };
+  } catch (e) {
+    cacheLife(ERROR_LIFE);
+    return { ok: false, error: errorMessage(e) };
+  }
 }
 
 /** Chỉ cần vài bản ghi gần nhất (Today dùng bản ghi hôm qua). */
-export async function getRecentDailyLogs(limit = 7): Promise<DailyLog[]> {
+export async function dailyLogsResult(limit = 7): Promise<Result<DailyLog[]>> {
   "use cache";
-  cacheLife(FIVE_MINUTES);
   cacheTag(TAGS.daily);
-  const res = await notion().dataSources.query({
-    data_source_id: await dataSourceId("NOTION_DAILY_DB"),
-    sorts: [{ property: "Date", direction: "descending" }],
-    page_size: limit,
-  });
-  return res.results.filter(isFullPage).map(({ id, url: pageUrl, properties: p }) => ({
-    id,
-    url: pageUrl,
-    title: text(p, "Ngày"),
-    date: date(p, "Date"),
-    done: text(p, "Xong"),
-    dropped: text(p, "Rơi / chưa xong"),
-    learned: text(p, "Học được"),
-    tomorrowTop3: text(p, "Ngày mai 3 việc"),
-    exercised: checkbox(p, "Tập thể dục"),
-  }));
+  try {
+    const res = await notion().dataSources.query({
+      data_source_id: await dataSourceId("NOTION_DAILY_DB"),
+      sorts: [{ property: "Date", direction: "descending" }],
+      page_size: limit,
+    });
+    cacheLife(FIVE_MINUTES);
+    return {
+      ok: true,
+      data: res.results.filter(isFullPage).map(({ id, url: pageUrl, properties: p }) => ({
+        id,
+        url: pageUrl,
+        title: text(p, "Ngày"),
+        date: date(p, "Date"),
+        done: text(p, "Xong"),
+        dropped: text(p, "Rơi / chưa xong"),
+        learned: text(p, "Học được"),
+        tomorrowTop3: text(p, "Ngày mai 3 việc"),
+        exercised: checkbox(p, "Tập thể dục"),
+      })),
+    };
+  } catch (e) {
+    cacheLife(ERROR_LIFE);
+    return { ok: false, error: errorMessage(e) };
+  }
 }

@@ -3,7 +3,8 @@ import { cacheLife, cacheTag } from "next/cache";
 import { collectPaginatedAPI, isFullBlock, type BlockObjectResponse, type RichTextItemResponse } from "@notionhq/client";
 import type { GraphData, GraphLink, GraphNode } from "@/lib/graph-types";
 import { notion } from "./client";
-import { TAGS, getKnowledge, getTasks, selectOptions } from "./queries";
+import { anyStale, getKnowledge, getTasks } from "./data";
+import { TAGS, selectOptions } from "./queries";
 
 const fieldId = (name: string) => `field:${name}`;
 const projectId = (name: string) => `project:${name}`;
@@ -16,17 +17,28 @@ function richTextOf(block: BlockObjectResponse): RichTextItemResponse[] {
   return [];
 }
 
-/** Trang được nhắc tới (mention / link_to_page) trong các block cấp 1 của một trang. */
+/**
+ * Trang được nhắc tới (mention / link_to_page) trong các block cấp 1 của một trang.
+ * Cache riêng từng trang; lỗi → [] (chỉ thiếu link, không làm hỏng cả graph).
+ */
 async function mentionedPageIds(pageId: string): Promise<string[]> {
-  const blocks = await collectPaginatedAPI(notion().blocks.children.list, { block_id: pageId });
-  const ids = new Set<string>();
-  for (const block of blocks.filter(isFullBlock)) {
-    if (block.type === "link_to_page" && block.link_to_page.type === "page_id") ids.add(block.link_to_page.page_id);
-    for (const rt of richTextOf(block)) {
-      if (rt.type === "mention" && rt.mention.type === "page") ids.add(rt.mention.page.id);
+  "use cache";
+  cacheTag(TAGS.knowledge);
+  try {
+    const blocks = await collectPaginatedAPI(notion().blocks.children.list, { block_id: pageId });
+    const ids = new Set<string>();
+    for (const block of blocks.filter(isFullBlock)) {
+      if (block.type === "link_to_page" && block.link_to_page.type === "page_id") ids.add(block.link_to_page.page_id);
+      for (const rt of richTextOf(block)) {
+        if (rt.type === "mention" && rt.mention.type === "page") ids.add(rt.mention.page.id);
+      }
     }
+    cacheLife({ stale: 300, revalidate: 300, expire: 60 * 60 * 24 * 7 });
+    return [...ids];
+  } catch {
+    cacheLife({ stale: 0, revalidate: 30, expire: 60 });
+    return [];
   }
-  return [...ids];
 }
 
 /**
@@ -34,18 +46,21 @@ async function mentionedPageIds(pageId: string): Promise<string[]> {
  * Link: note → lĩnh vực, task → dự án, trang A → trang B khi A mention B.
  * Chỉ quét nội dung trang Knowledge (SPEC 7.3) để giới hạn số request.
  */
-export async function getBrainGraph(): Promise<GraphData> {
-  "use cache";
-  cacheLife({ stale: 300, revalidate: 300, expire: 60 * 60 * 24 * 7 });
-  cacheTag(TAGS.knowledge, TAGS.tasks);
-
-  const [fields, projects, notes, tasks] = await Promise.all([
-    selectOptions("NOTION_KNOWLEDGE_DB", "Lĩnh vực"),
-    selectOptions("NOTION_TASKS_DB", "Dự án"),
+export async function getBrainGraph(): Promise<GraphData & { stale: boolean }> {
+  const [notesLoaded, tasksLoaded, schemaFields, schemaProjects] = await Promise.all([
     getKnowledge(),
     getTasks(),
+    selectOptions("NOTION_KNOWLEDGE_DB", "Lĩnh vực"),
+    selectOptions("NOTION_TASKS_DB", "Dự án"),
   ]);
-  const openTasks = tasks.filter((t) => t.status !== "Xong");
+  const notes = notesLoaded.data;
+  const openTasks = tasksLoaded.data.filter((t) => t.status !== "Xong");
+
+  // Đọc schema lỗi → dùng các giá trị đang có trong dữ liệu
+  const fields = schemaFields.length ? schemaFields : [...new Set(notes.flatMap((n) => (n.field ? [n.field] : [])))];
+  const projects = schemaProjects.length
+    ? schemaProjects
+    : [...new Set(openTasks.flatMap((t) => (t.project ? [t.project] : [])))];
 
   // Chỉ vẽ cụm có ít nhất 1 thành viên, tránh nhãn lơ lửng không nối gì (chip chú thích vẫn liệt kê đủ)
   const usedFields = new Set(notes.map((n) => n.field));
@@ -74,5 +89,5 @@ export async function getBrainGraph(): Promise<GraphData> {
     }
   }
 
-  return { nodes, links, fields, projects };
+  return { nodes, links, fields, projects, stale: anyStale(notesLoaded, tasksLoaded) };
 }
