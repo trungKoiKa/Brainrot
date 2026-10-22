@@ -1,54 +1,35 @@
 /* Planner (từ trungKoiKa/planner) — toàn bộ style giới hạn trong .planner để không đè các trang khác.
    Sinh từ tokens.css + base.css + app.css của repo gốc; :root/html/body đã đổi thành & (= .planner). */
 .planner {
+  /* Ánh xạ sang token Brainrot (app/globals.css) → tự đổi theo theme sáng/tối của Brainrot.
+     --line, --accent, --accent-soft: không khai báo lại, dùng thẳng biến cùng tên của Brainrot. */
   & {
-    --bg: #f4f1ea;
-    --paper: #fbfaf6;
-    --ink: #1c1a17;
-    --ink-soft: #56514a;
-    --ink-faint: #928b80;
-    --line: #e2ddd2;
-    --line-strong: #d2ccbe;
-    --accent: #b5482e;
-    --accent-soft: #e9d9d2;
-    --good: #4f7a4a;
-    --good-soft: #dde7da;
-    --heat-0: #ece7dc;
-    --heat-1: #e7c8bc;
-    --heat-2: #d89e85;
-    --heat-3: #c66f4e;
-    --control-bg: #fbfaf6;
-    --dot: rgba(28, 26, 23, 0.07);
-    --overlay: rgba(28, 26, 23, 0.32);
-    --r: 10px;
-    --shadow: 0 1px 2px rgba(28, 26, 23, 0.04), 0 8px 24px -12px rgba(28, 26, 23, 0.12);
-    --serif-display: 'Fraunces', Georgia, serif;
-    --serif: 'Newsreader', Georgia, serif;
-    --mono: 'JetBrains Mono', ui-monospace, monospace;
-    color-scheme: light;
+    --bg: var(--background);
+    --paper: var(--surface);
+    --ink: var(--foreground);
+    --ink-soft: var(--muted);
+    --ink-faint: color-mix(in srgb, var(--muted) 65%, var(--background));
+    --line-strong: color-mix(in srgb, var(--line) 75%, var(--foreground));
+    --on-accent: var(--surface); /* chữ trên nền accent/good: trắng (sáng), gần đen (tối) — như nút đăng nhập */
+    --good: var(--field-3);
+    --good-soft: color-mix(in srgb, var(--field-3) 16%, var(--surface));
+    --heat-0: var(--surface-muted);
+    --heat-1: color-mix(in srgb, var(--accent) 30%, var(--surface-muted));
+    --heat-2: color-mix(in srgb, var(--accent) 60%, var(--surface-muted));
+    --heat-3: var(--accent);
+    --control-bg: var(--surface);
+    --dot: color-mix(in srgb, var(--foreground) 6%, transparent);
+    --overlay: color-mix(in srgb, black 45%, transparent);
+    --r: 12px;
+    --shadow: none; /* card Brainrot phẳng, chỉ có viền */
+    --serif-display: var(--font-lora), Georgia, serif;
+    --serif: var(--font-inter), system-ui, sans-serif; /* Inter + Lora có subset tiếng Việt → sửa lỗi tách dấu */
+    --mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
   }
 
+  /* Theme tối: xanh lá field-3 (#008300) quá tối để làm chữ trên nền tối → pha sáng từ token, không ghi cứng */
   :root[data-theme='dark'] & {
-    --bg: #1a1815;
-    --paper: #231f1b;
-    --ink: #ece7dd;
-    --ink-soft: #b3ab9e;
-    --ink-faint: #847d70;
-    --line: #332f29;
-    --line-strong: #463f37;
-    --accent: #d46a4e;
-    --accent-soft: #3a2a23;
-    --good: #7ba874;
-    --good-soft: #2a3626;
-    --heat-0: #2a2621;
-    --heat-1: #432c22;
-    --heat-2: #77432d;
-    --heat-3: #a85a3c;
-    --control-bg: #2a2621;
-    --dot: rgba(236, 231, 221, 0.05);
-    --overlay: rgba(0, 0, 0, 0.5);
-    --shadow: 0 1px 2px rgba(0, 0, 0, 0.2), 0 8px 24px -12px rgba(0, 0, 0, 0.5);
-    color-scheme: dark;
+    --good: color-mix(in srgb, var(--field-3) 55%, var(--foreground));
   }
 
   *,
@@ -65,11 +46,8 @@
 
   & {
     font-family: var(--serif);
-    font-size: 17px;
+    font-size: 16px;
     line-height: 1.45;
-    background-image: radial-gradient(var(--dot) 1px, transparent 1px);
-    background-size: 18px 18px;
-    min-height: 100vh;
     -webkit-font-smoothing: antialiased;
   }
 
@@ -96,10 +74,9 @@
   }
 
   /* ---------- layout ---------- */
+  /* Brainrot: bỏ max-width/padding riêng để planner thẳng lề với tiêu đề trang (layout do (app)/layout quản lý) */
   .shell {
-    max-width: 980px;
-    margin: 0 auto;
-    padding: 20px 16px 80px;
+    padding: 0 0 80px;
   }
 
   .section {
@@ -196,12 +173,12 @@
   .btn.primary {
     background: var(--accent);
     border-color: var(--accent);
-    color: #fff;
+    color: var(--on-accent);
   }
 
   .btn.primary:hover:not(:disabled) {
     filter: brightness(1.08);
-    color: #fff;
+    color: var(--on-accent);
   }
 
   .btn.danger {
@@ -321,8 +298,8 @@
     content: '';
     width: 9px;
     height: 5px;
-    border-left: 2px solid #fff;
-    border-bottom: 2px solid #fff;
+    border-left: 2px solid var(--on-accent);
+    border-bottom: 2px solid var(--on-accent);
     transform: rotate(-45deg) translate(1px, -1px);
   }
 
@@ -535,7 +512,7 @@
   .step.done .step-num {
     background: var(--good);
     border-color: var(--good);
-    color: #fff;
+    color: var(--on-accent);
   }
 
   .demo {
@@ -558,7 +535,7 @@
   .demo .chip.on {
     background: var(--accent);
     border-color: var(--accent);
-    color: #fff;
+    color: var(--on-accent);
   }
 
   /* ---------- day strip ---------- */
@@ -837,7 +814,7 @@
   .day-toggle.on {
     background: var(--accent);
     border-color: var(--accent);
-    color: #fff;
+    color: var(--on-accent);
   }
 
   .day-group {

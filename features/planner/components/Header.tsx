@@ -1,4 +1,3 @@
-import { APP_NAME, SUPPORT_URL } from '../config'
 import { navigate, type Route } from '../lib/route'
 import { currentWeekStart, formatRange, shiftWeek, weekLabel } from '../lib/week'
 import { selectWeekStart, usePlanner } from '../store/usePlanner'
@@ -18,10 +17,7 @@ export default function Header({ route }: { route: Route }) {
 
   return (
     <header className="header">
-      <a className="logo" href="#" onClick={() => navigate('plan')} style={{ color: 'inherit', textDecoration: 'none' }}>
-        {APP_NAME}<span>.</span>
-      </a>
-
+      {/* Brainrot: bỏ logo "weekly." — tiêu đề "Planner" nằm ở PageHeader của trang */}
       {route === 'plan' && (
         <div className="week-picker">
           <span className="label">📅 {weekLabel(weekStart)}</span>
@@ -35,7 +31,6 @@ export default function Header({ route }: { route: Route }) {
       )}
 
       <nav className="header-nav">
-        <a className="btn ghost" href={SUPPORT_URL} target="_blank" rel="noreferrer">♥ Support</a>
         <SettingsMenu />
         {/* Brainrot: không có đồng bộ Supabase — dữ liệu chỉ ở trình duyệt này */}
         <span className="status">Saved in this browser</span>
