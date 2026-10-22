@@ -4,7 +4,8 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import ForceGraph3D, { type ForceGraphMethods, type LinkObject, type NodeObject } from "react-force-graph-3d";
 import * as THREE from "three";
-import { fieldColorVar } from "@/lib/fields";
+import { forceX, forceY, forceZ } from "d3-force-3d";
+import { fieldColorVar, projectColorVar } from "@/lib/fields";
 import type { GraphData, GraphLink, GraphNode } from "@/lib/graph-types";
 
 type Palette = Record<string, string>;
@@ -52,6 +53,8 @@ function useSize<T extends HTMLElement>() {
 const escapeHtml = (s: string) =>
   s.replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]!);
 
+const MIN_DISTANCE = 180; // khoảng cách camera tối thiểu (đơn vị của graph)
+
 const isHub = (n: GraphNode) => n.kind === "field" || n.kind === "project";
 const idOf = (end: string | number | Node | undefined) => (typeof end === "object" ? String(end.id) : String(end));
 
@@ -79,11 +82,21 @@ function makeLabel(text: string, dotColor: string, textColor: string): THREE.Spr
 
   const texture = new THREE.CanvasTexture(ctx.canvas);
   texture.colorSpace = THREE.SRGBColorSpace;
-  const sprite = new THREE.Sprite(new THREE.SpriteMaterial({ map: texture, transparent: true, depthWrite: false }));
-  const scale = 0.06; // đơn vị thế giới trên mỗi pixel canvas
-  sprite.scale.set(width * scale, height * scale, 1);
+  // sizeAttenuation: false → chữ giữ cỡ cố định trên màn hình, không bé đi khi ở xa camera
+  const sprite = new THREE.Sprite(
+    // depthTest: false + renderOrder cao → nhãn luôn nằm trên, không bị quả cầu che
+    new THREE.SpriteMaterial({ map: texture, transparent: true, depthWrite: false, depthTest: false, sizeAttenuation: false }),
+  );
+  sprite.renderOrder = 10;
+  const screenHeight = 0.03; // tỉ lệ so với chiều cao khung graph (~20px chữ ở khung 650px)
+  sprite.scale.set((width / height) * screenHeight, screenHeight, 1);
   sprite.center.set(dot / width, 0.5); // chấm màu nằm đúng vị trí node
   return sprite;
+}
+
+/** Màu nhạt hơn của một màu (trộn về phía màu nền) — task "màu nhạt" theo SPEC 7.3. */
+function soften(color: string, background: string, amount = 0.45): string {
+  return `#${new THREE.Color(color).lerp(new THREE.Color(background), amount).getHexString()}`;
 }
 
 export default function BrainGraph({ data }: { data: GraphData }) {
@@ -110,11 +123,24 @@ export default function BrainGraph({ data }: { data: GraphData }) {
     (n: GraphNode): string => {
       if (!palette) return "#888";
       if (n.kind === "field" || n.kind === "note") return palette[fieldColorVar(n.field ?? null)];
-      if (n.kind === "project") return palette["--foreground"];
-      return palette["--field-neutral"]; // task: màu nhạt (SPEC 7.3)
+      const projectColor = palette[projectColorVar(n.project ?? null)];
+      return n.kind === "project" ? projectColor : soften(projectColor, palette["--background"]);
     },
     [palette],
   );
+
+  // Lực mô phỏng: hút mọi node về tâm (3 trục) để các cụm không trôi xa nhau, đẩy nhẹ, link ngắn
+  const ready = Boolean(palette && width > 0);
+  useEffect(() => {
+    const fg = graphRef.current;
+    if (!ready || !fg) return;
+    fg.d3Force("charge")?.strength(-70);
+    fg.d3Force("link")?.distance((l: Link) => (l.kind === "mention" ? 40 : 26));
+    fg.d3Force("x", forceX(0).strength(0.035));
+    fg.d3Force("y", forceY(0).strength(0.035));
+    fg.d3Force("z", forceZ(0).strength(0.035));
+    fg.d3ReheatSimulation();
+  }, [ready]);
   const colorById = useMemo(() => new Map(data.nodes.map((n) => [n.id, colorOf(n)])), [data.nodes, colorOf]);
 
   // Nhãn phải vẽ lại khi đổi theme → accessor đổi danh tính theo palette
@@ -125,6 +151,21 @@ export default function BrainGraph({ data }: { data: GraphData }) {
       (palette && isHub(n) ? makeLabel(n.label, colorOf(n), palette["--foreground"]) : undefined) as THREE.Object3D,
     [palette, colorOf],
   );
+
+  /**
+   * Đưa camera vừa khung nhưng không gần hơn MIN_DISTANCE: khi graph ít node, zoomToFit
+   * phóng quá sát làm mỗi quả cầu to khổng lồ.
+   */
+  function fitCamera() {
+    const fg = graphRef.current;
+    if (!fg) return;
+    const box = fg.getGraphBbox();
+    if (!box) return;
+    const center = { x: (box.x[0] + box.x[1]) / 2, y: (box.y[0] + box.y[1]) / 2, z: (box.z[0] + box.z[1]) / 2 };
+    const radius = Math.hypot(box.x[1] - box.x[0], box.y[1] - box.y[0], box.z[1] - box.z[0]) / 2;
+    const distance = Math.max(radius * 2.4, MIN_DISTANCE);
+    fg.cameraPosition({ x: center.x, y: center.y, z: center.z + distance }, center, 800);
+  }
 
   function focus(node: Node) {
     const { x = 0, y = 0, z = 0 } = node;
@@ -147,10 +188,17 @@ export default function BrainGraph({ data }: { data: GraphData }) {
       (l) => l.kind === "belongs" && l.target === `${key}:${value}` && data.nodes.find((n) => n.id === l.source)?.kind === kind,
     ).length;
   const pageCount = data.nodes.filter((n) => !isHub(n)).length;
+  // Chỉ hiện chip của cụm đang có trang (giống ảnh tham khảo); cụm trống gom thành 1 dòng
+  const fieldAll = data.fields.map((name) => ({ name, count: memberCount("note", "field", name) }));
+  const projectAll = data.projects.map((name) => ({ name, count: memberCount("task", "project", name) }));
+  const fieldChips = fieldAll.filter((c) => c.count > 0);
+  const projectChips = projectAll.filter((c) => c.count > 0);
+  const emptyNames = [...fieldAll, ...projectAll].filter((c) => c.count === 0).map((c) => c.name);
+  const emptyCount = emptyNames.length;
 
   return (
     <div ref={containerRef} className="relative h-full w-full">
-      {palette && width > 0 && (
+      {ready && palette && (
         <ForceGraph3D<GraphNode, GraphLink>
           ref={graphRef}
           width={width}
@@ -160,7 +208,7 @@ export default function BrainGraph({ data }: { data: GraphData }) {
           showNavInfo={false}
           nodeRelSize={4}
           nodeResolution={16}
-          nodeVal={(n) => (isHub(n) ? 0.6 : 1 + (degree.get(n.id) ?? 0) * 0.8)}
+          nodeVal={(n) => (n.kind === "note" ? 1.2 + (degree.get(n.id) ?? 0) * 0.6 : 0.7 + (degree.get(n.id) ?? 0) * 0.3)}
           nodeColor={(n) => colorOf(n)}
           nodeOpacity={0.92}
           nodeThreeObject={hubObject}
@@ -174,7 +222,7 @@ export default function BrainGraph({ data }: { data: GraphData }) {
           onEngineStop={() => {
             if (fitted.current) return;
             fitted.current = true;
-            graphRef.current?.zoomToFit(600, 40);
+            fitCamera();
           }}
           onNodeClick={handleClick}
         />
@@ -189,28 +237,33 @@ export default function BrainGraph({ data }: { data: GraphData }) {
       </div>
 
       {/* Chú thích: chip theo cụm, bấm để bay tới (màu là cách nhận diện thứ nhất, tên + số là thứ hai) */}
-      <div className="absolute inset-x-0 bottom-0 flex items-center gap-2 overflow-x-auto p-4">
-        <GroupLabel>Lĩnh vực</GroupLabel>
-        {data.fields.map((f) => (
+      <div className="absolute inset-x-0 bottom-0 flex flex-wrap items-center gap-2 p-4">
+        {fieldChips.length > 0 && <GroupLabel>Lĩnh vực</GroupLabel>}
+        {fieldChips.map(({ name, count }) => (
           <LegendChip
-            key={`f-${f}`}
-            label={f}
-            count={memberCount("note", "field", f)}
-            color={`var(${fieldColorVar(f)})`}
-            onClick={() => focusHub(`field:${f}`)}
+            key={`f-${name}`}
+            label={name}
+            count={count}
+            color={`var(${fieldColorVar(name)})`}
+            onClick={() => focusHub(`field:${name}`)}
           />
         ))}
-        <GroupLabel>Dự án</GroupLabel>
-        {data.projects.map((p) => (
+        {projectChips.length > 0 && <GroupLabel>Dự án</GroupLabel>}
+        {projectChips.map(({ name, count }) => (
           <LegendChip
-            key={`p-${p}`}
-            label={p}
-            count={memberCount("task", "project", p)}
-            color="var(--foreground)"
+            key={`p-${name}`}
+            label={name}
+            count={count}
+            color={`var(${projectColorVar(name)})`}
             hollow
-            onClick={() => focusHub(`project:${p}`)}
+            onClick={() => focusHub(`project:${name}`)}
           />
         ))}
+        {emptyCount > 0 && (
+          <span className="text-xs text-muted" title={emptyNames.join(", ")}>
+            +{emptyCount} cụm chưa có trang
+          </span>
+        )}
       </div>
     </div>
   );

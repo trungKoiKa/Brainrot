@@ -30,6 +30,9 @@ Accepted (Trung chốt 22/10/2026)
    Kết quả validator: sáng — mắt thường ΔE 19.6, mù màu ΔE 13; tối — mắt thường ΔE 19.3, mù màu ΔE 6.9.
 2. Mọi Lĩnh vực khác (Kỹ năng sống, Khác, và lĩnh vực mới thêm trong Notion) → `--field-neutral` (xám).
 3. Gán Lĩnh vực → slot ở **một chỗ**: `FIELD_SLOTS` trong `lib/fields.ts`.
+3b. *(bổ sung 22/10/2026, sau khi Trung thấy graph toàn một màu)* Dự án dùng **cùng 4 slot theo chủ đề**
+   (`PROJECT_SLOTS`): Học AI = 1 (xanh dương), Sản phẩm = 2, Thực tập = 3, Đồ án = 4 (vàng, trùng Lĩnh vực Đồ án);
+   Sức khỏe, Khác → xám. Task lấy màu dự án, trộn 45% về màu nền ("Task màu nhạt", SPEC 7.3).
 4. Màu luôn có cách nhận diện thứ hai: tên cụm vẽ cố định trên graph + chip chú thích có tên và số lượng
    (bắt buộc vì ΔE mù màu ở theme tối nằm trong vùng 6–8; một số màu dưới 3:1 tương phản trên nền sáng).
 5. Không bao giờ tự sinh màu thứ 5+ bằng thuật toán.

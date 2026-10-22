@@ -156,7 +156,9 @@ Hiển thị "N node · M link" như ảnh tham khảo. Graph ban đầu sẽ th
 - Màu định nghĩa bằng CSS variables/token cho cả 2 theme; graph cũng đổi màu nền theo theme.
 - Mỗi giá trị "Lĩnh vực" có một màu cố định (CSS variable), dùng chung cho badge ở Today và node ở Brain. *(chốt 22/10/2026)*
   Chỉ 4 màu phân biệt được chắc chắn (đã kiểm bằng validator): CV, AI Agent, Edge AI, Đồ án có màu riêng;
-  các lĩnh vực còn lại xám, nhận diện bằng tên cụm + chip. Xem `docs/decisions/0003-field-colors.md`. *(chốt 22/10/2026)*
+  các lĩnh vực còn lại xám, nhận diện bằng tên cụm + chip. Dự án dùng cùng 4 màu theo chủ đề
+  (Học AI xanh dương, Sản phẩm hồng, Thực tập xanh lá, Đồ án vàng; còn lại xám); task = màu dự án nhạt hơn.
+  Xem `docs/decisions/0003-field-colors.md`. *(chốt 22/10/2026)*
 - Brain: tên cụm (Lĩnh vực/Dự án) hiện cố định trên graph, link cùng màu node nguồn, hàng chip chú thích có số lượng
   (bấm để bay tới cụm), tự zoom vừa khung. Chỉ vẽ cụm có ít nhất 1 trang. Ô tìm kiếm: để v0.2. *(chốt 22/10/2026)*
 - Desktop-first (≥ 1280px là chuẩn); dưới 768px sidebar thu thành thanh trên, không cần graph đẹp trên mobile.
