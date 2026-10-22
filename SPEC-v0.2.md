@@ -35,6 +35,8 @@ xuất/nhập JSON, hoàn tác khi xóa.
 - Màu: biến màu của planner được giới hạn trong khung `.planner` và ánh xạ sang token của Brainrot
   (không đè `--line`, `--accent` của Brainrot), đổi theo theme sáng/tối như các trang khác.
 - Font: dùng font của Brainrot (Inter + Lora) thay Fraunces/Newsreader/JetBrains Mono.
+- Chữ giao diện bên trong planner **giữ tiếng Anh**; bỏ logo "weekly." và nút "♥ Support"; trang có tiêu đề
+  "Planner" như các trang khác. *(chốt 22/10/2026)*
 
 **Dữ liệu:**
 - Lưu trong `localStorage` của trình duyệt → **chỉ có trên thiết bị đó**, không đồng bộ máy ↔ điện thoại. (Trung chấp nhận khi chọn cách A.)
