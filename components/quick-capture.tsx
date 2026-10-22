@@ -3,19 +3,7 @@
 import { useActionState, useState } from "react";
 import { addIdeaAction, saveDailyLogAction, type CaptureState } from "@/app/actions/capture";
 import type { DailyLog } from "@/lib/notion/types";
-
-const fieldClass =
-  "w-full rounded-lg border border-line bg-background px-3 py-2 text-sm outline-none focus:border-accent";
-
-function Status({ state }: { state: CaptureState }) {
-  if (!state.message) return null;
-  return (
-    <p role={state.ok ? "status" : "alert"} className={`text-sm ${state.ok ? "text-muted" : "text-danger"}`}>
-      {state.ok ? "✓ " : ""}
-      {state.message}
-    </p>
-  );
-}
+import { Status, fieldClass, primaryButtonClass } from "./form-bits";
 
 /** Khối "Ghi nhanh" trên Today (SPEC-v0.2 4.1): ý tưởng → Ideas, Daily Log hôm nay → Daily Log. */
 export function QuickCapture({ todayLog }: { todayLog: DailyLog | null }) {
@@ -53,7 +41,7 @@ function IdeaForm() {
         <button
           type="submit"
           disabled={pending || !idea.trim()}
-          className="shrink-0 rounded-lg bg-accent px-4 py-2 text-sm font-medium text-surface disabled:opacity-50"
+          className={primaryButtonClass}
         >
           {pending ? "Đang lưu…" : "Lưu"}
         </button>
@@ -111,7 +99,7 @@ function DailyLogForm({ todayLog }: { todayLog: DailyLog | null }) {
           <button
             type="submit"
             disabled={pending}
-            className="ml-auto rounded-lg bg-accent px-4 py-2 text-sm font-medium text-surface disabled:opacity-50"
+            className={`ml-auto ${primaryButtonClass}`}
           >
             {pending ? "Đang lưu…" : todayLog ? "Cập nhật" : "Lưu Daily Log"}
           </button>

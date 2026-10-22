@@ -1,5 +1,5 @@
 import "server-only";
-import { dailyLogsResult, knowledgeResult, tasksResult, type Result } from "./queries";
+import { dailyLogsResult, knowledgeResult, selectOptions, tasksResult, type Result } from "./queries";
 import type { DailyLog, Knowledge, Task } from "./types";
 
 // Lớp đọc mà trang dùng (SPEC mục 9): Notion lỗi → trả bản tốt gần nhất + cờ `stale` để hiện banner.
@@ -30,5 +30,17 @@ export async function load<T>(key: string, fetch: () => Promise<Result<T>>): Pro
 export const getTasks = (): Promise<Loaded<Task[]>> => load("tasks", tasksResult);
 export const getKnowledge = (): Promise<Loaded<Knowledge[]>> => load("knowledge", knowledgeResult);
 export const getRecentDailyLogs = (): Promise<Loaded<DailyLog[]>> => load("daily", () => dailyLogsResult());
+
+/**
+ * Dự án chọn được khi thêm/sửa task: lựa chọn của select "Dự án" + dự án đang gán cho task
+ * (schema cache lâu, nên lựa chọn mới thêm bên Notion vẫn có mặt nếu đã có task dùng).
+ */
+export async function getTaskProjects(tasks?: Task[]): Promise<string[]> {
+  const [schema, used] = await Promise.all([
+    selectOptions("NOTION_TASKS_DB", "Dự án"),
+    tasks ?? getTasks().then((l) => l.data).catch(() => []),
+  ]);
+  return [...new Set([...schema, ...used.flatMap((t) => (t.project ? [t.project] : []))])];
+}
 
 export const anyStale = (...loaded: Loaded<unknown>[]) => loaded.some((l) => l.stale);

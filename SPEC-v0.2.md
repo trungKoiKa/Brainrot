@@ -57,7 +57,14 @@ xuất/nhập JSON, hoàn tác khi xóa.
      mới (Ngày = "dd/mm/yyyy", Date = hôm nay). "Ngày mai 3 việc" mỗi việc một dòng → sáng hôm sau thành khối 3 việc.
    - Lưu xong: báo "Đã lưu" và làm mới cache Daily Log; lỗi → giữ nguyên nội dung đã gõ + báo lỗi.
    - Giới hạn: mỗi trường ≤ 2000 ký tự (giới hạn một đoạn text của Notion).
-2. **Thêm/sửa task trên web** (Notion Tasks): tạo nhanh, đổi Ưu tiên / Deadline / Dự án / Ghi chú. Xóa: vẫn làm trong Notion.
+2. **Thêm/sửa task trên web** (Notion Tasks) *(chốt 22/10/2026)*:
+   - **Tạo:** một hàng ở đầu trang Tasks: Tên (bắt buộc) + Dự án + Ưu tiên + Deadline; Enter/nút Thêm là tạo.
+     Trạng thái mặc định = Chưa làm. Ghi chú thêm sau qua phần sửa.
+   - **Sửa:** nút ✎ riêng mỗi dòng → form sửa mở ngay tại chỗ; bấm tên task vẫn mở trang Notion.
+     Sửa được: Tên, Trạng thái (Chưa làm / Đang làm), Dự án, Ưu tiên, Deadline, Ghi chú. Xong vẫn dùng ô tích.
+   - Dự án chọn trong các lựa chọn hiện có của select "Dự án" (không tạo dự án mới từ web).
+   - Lưu xong: làm mới cache Tasks; lỗi → giữ nội dung đã gõ + báo lỗi. Tên/Ghi chú ≤ 2000 ký tự.
+   - Xóa task: vẫn làm trong Notion.
 3. **Tìm kiếm trên Brain**: ô "Tìm trang", gõ tên → camera bay tới node.
 4. **Google Calendar "Next up"** trên Today: cần Trung tạo OAuth client trên Google Cloud. Làm cuối.
 

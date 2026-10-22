@@ -26,11 +26,13 @@ export function TaskRow({
   task,
   today,
   onComplete,
+  onEdit,
   showProject = false,
 }: {
   task: Task;
   today: string;
   onComplete?: (t: Task) => void;
+  onEdit?: () => void;
   showProject?: boolean;
 }) {
   const done = task.status === "Xong";
@@ -38,7 +40,7 @@ export function TaskRow({
   const overdue = !done && daysLeft !== null && daysLeft < 0;
 
   return (
-    <li className="flex gap-3 py-2.5 first:pt-0 last:pb-0">
+    <li className="group flex gap-3 py-2.5 first:pt-0 last:pb-0">
       {onComplete && <TaskCheckbox task={task} onComplete={onComplete} />}
       <div className="min-w-0 flex-1">
         <a
@@ -61,9 +63,21 @@ export function TaskRow({
               {done ? formatDay(task.deadline) : `${deadlineLabel(daysLeft)} · ${formatDay(task.deadline, true)}`}
             </span>
           )}
+          {task.status === "Đang làm" && <span className="font-medium text-accent">Đang làm</span>}
           {task.note && <span className="truncate">{task.note}</span>}
         </div>
       </div>
+      {onEdit && (
+        <button
+          type="button"
+          onClick={onEdit}
+          aria-label={`Sửa: ${task.title}`}
+          title="Sửa"
+          className="size-7 shrink-0 rounded-md text-muted hover:bg-surface-muted hover:text-foreground"
+        >
+          ✎
+        </button>
+      )}
     </li>
   );
 }
