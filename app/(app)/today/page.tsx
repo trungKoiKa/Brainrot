@@ -6,6 +6,8 @@ import { PageHeader } from "@/components/page-header";
 import { TopTasks } from "@/components/tasks/top-tasks";
 import { QuickCapture } from "@/components/quick-capture";
 import { daysBetween, formatDay, greetingVN, longDateVN, todayVN } from "@/lib/date";
+import { calendarEvents, type CalendarResult } from "@/lib/calendar/google";
+import { pickNextUp, timeRange } from "@/lib/next-up";
 import { anyStale, getKnowledge, getRecentDailyLogs, getTasks } from "@/lib/notion/data";
 import { StaleBanner } from "@/components/stale-banner";
 import type { DailyLog, Knowledge, Task } from "@/lib/notion/types";
@@ -33,7 +35,7 @@ async function TodayContent() {
   await connection();
   const now = new Date();
   const today = todayVN(now);
-  const loaded = await Promise.all([getTasks(), getKnowledge(), getRecentDailyLogs()]);
+  const [calendar, ...loaded] = await Promise.all([calendarEvents(today), getTasks(), getKnowledge(), getRecentDailyLogs()]);
   const [tasks, knowledge, logs] = loaded.map((l) => l.data) as [Task[], Knowledge[], DailyLog[]];
 
   return (
@@ -43,6 +45,7 @@ async function TodayContent() {
       <div className="grid gap-5 lg:grid-cols-2">
         <ThesisCountdown today={today} />
         <TopThreeCard top={pickTopThree(today, logs, tasks)} />
+        <NextUpCard calendar={calendar} now={now} today={today} />
         <DeadlinesCard items={upcomingDeadlines(today, tasks)} />
         <KnowledgeCard notes={latestKnowledge(knowledge)} />
         <Card title="Ghi nhanh" className="lg:col-span-2">
@@ -108,6 +111,57 @@ function TopThreeCard({ top }: { top: TopThree }) {
         </ol>
       ) : (
         <TopTasks tasks={top.items} />
+      )}
+    </Card>
+  );
+}
+
+function NextUpCard({ calendar, now, today }: { calendar: CalendarResult; now: Date; today: string }) {
+  if (!calendar.ok) {
+    const message = {
+      "not-configured": "Chưa kết nối Google Calendar (thiếu biến GOOGLE_*).",
+      auth: "Google từ chối quyền đọc lịch — refresh token có thể đã hết hạn hoặc bị thu hồi.",
+      error: "Không đọc được Google Calendar, thử lại sau.",
+    }[calendar.reason];
+    return (
+      <Card title="Next up">
+        <Empty>{message}</Empty>
+      </Card>
+    );
+  }
+  const { day, items } = pickNextUp(calendar.events, now, today);
+  return (
+    <Card title="Next up" action={<span className="text-xs text-muted">{day === "today" ? "Hôm nay" : "Ngày mai"}</span>}>
+      {items.length === 0 ? (
+        <Empty>Hôm nay và ngày mai không còn sự kiện nào.</Empty>
+      ) : (
+        <ul className="divide-y divide-line">
+          {items.map((e) => (
+            <li key={e.id} className="flex gap-3 py-2 first:pt-0 last:pb-0">
+              <span className="w-24 shrink-0 text-xs leading-6 tabular-nums text-muted">{timeRange(e)}</span>
+              <div className="min-w-0 flex-1">
+                {e.url ? (
+                  <ExternalLink href={e.url} className="hover:text-accent">
+                    {e.title}
+                  </ExternalLink>
+                ) : (
+                  e.title
+                )}
+                {(e.ongoing || e.location || e.meetUrl) && (
+                  <div className="mt-1 flex flex-wrap items-center gap-2 text-xs text-muted">
+                    {e.ongoing && <span className="rounded-full bg-accent-soft px-2 py-0.5 font-medium text-accent">Đang diễn ra</span>}
+                    {e.meetUrl && (
+                      <ExternalLink href={e.meetUrl} className="text-accent hover:underline">
+                        Vào họp ↗
+                      </ExternalLink>
+                    )}
+                    {e.location && <span className="truncate">{e.location}</span>}
+                  </div>
+                )}
+              </div>
+            </li>
+          ))}
+        </ul>
       )}
     </Card>
   );
@@ -195,7 +249,7 @@ function TodaySkeleton() {
     <>
       <PageHeader title="Today" subtitle="Đang tải từ Notion…" />
       <div className="grid gap-5 lg:grid-cols-2">
-        {[0, 1, 2, 3].map((i) => (
+        {[0, 1, 2, 3, 4].map((i) => (
           <div
             key={i}
             className={`h-36 animate-pulse rounded-2xl border border-line bg-surface ${i === 0 ? "h-24 lg:col-span-2" : ""}`}

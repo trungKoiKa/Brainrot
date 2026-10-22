@@ -70,7 +70,15 @@ xuất/nhập JSON, hoàn tác khi xóa.
    - Khớp **không dấu, một phần** ("do an" → "Đồ án"); ưu tiên tên bắt đầu bằng chuỗi gõ, rồi đầu từ, rồi ở giữa.
    - Danh sách thả xuống tối đa 8 kết quả (chấm màu + loại); ↑↓ chọn, Enter/bấm → camera bay tới node.
    - Node được chọn + các node nối trực tiếp giữ màu, còn lại mờ đi; ✕ hoặc Esc bỏ chọn.
-4. **Google Calendar "Next up"** trên Today: cần Trung tạo OAuth client trên Google Cloud. Làm cuối.
+4. **Google Calendar "Next up"** trên Today *(chốt 22/10/2026)*:
+   - Kết nối bằng **OAuth client + refresh token** (Trung chọn), quyền chỉ đọc `calendar.readonly`. Trung tự tạo
+     client, lấy refresh token qua OAuth Playground và tự điền `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`,
+     `GOOGLE_REFRESH_TOKEN` (tùy chọn `GOOGLE_CALENDAR_IDS`, mặc định `primary`). App phải ở trạng thái
+     **In production** trên Google Auth Platform, vì ở Testing refresh token hết hạn sau 7 ngày.
+   - Thẻ "Next up" cạnh "3 việc hôm nay": các sự kiện **còn lại hôm nay** (tối đa 5; giờ, tên, địa điểm hoặc link họp;
+     đang diễn ra → nhãn "Đang diễn ra"). Hết sự kiện hôm nay → hiện **sự kiện sớm nhất ngày mai**.
+   - Bỏ sự kiện đã hủy hoặc Trung đã từ chối. Cache 5 phút. Bấm tên → mở sự kiện trên Google Calendar.
+   - Chưa có biến môi trường → thẻ báo "Chưa kết nối"; Google lỗi → thẻ báo lỗi, các thẻ khác vẫn chạy.
 
 Mỗi tính năng: chốt chi tiết vào file này trước khi code.
 

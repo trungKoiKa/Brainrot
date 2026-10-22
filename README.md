@@ -41,6 +41,8 @@ npm test        # unit test (vitest)
 | `NOTION_TOKEN` | Token của internal integration (bí mật) |
 | `NOTION_TASKS_DB` · `NOTION_KNOWLEDGE_DB` · `NOTION_DAILY_DB` · `NOTION_IDEAS_DB` | **Database ID** (không phải data source ID — code tự tra) |
 | `NOTION_ROOT_PAGE` | ID trang gốc "Second Brain — Anh Trung" |
+| `GOOGLE_CLIENT_ID` · `GOOGLE_CLIENT_SECRET` · `GOOGLE_REFRESH_TOKEN` | OAuth client + refresh token chỉ đọc lịch (bí mật). Thiếu → thẻ Next up báo "Chưa kết nối" |
+| `GOOGLE_CALENDAR_IDS` | Tùy chọn, các calendar ID cách nhau bởi dấu phẩy; mặc định `primary` |
 | `APP_PASSWORD` | Mật khẩu vào web (bí mật) |
 | `AUTH_SECRET` | Chuỗi ngẫu nhiên ≥ 32 ký tự để ký cookie (bí mật). Tạo: `node -e "console.log(require('crypto').randomBytes(32).toString('base64url'))"` |
 | `THESIS_DEADLINE` | Hạn nộp đồ án, dạng `YYYY-MM-DD` |
