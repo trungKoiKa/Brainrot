@@ -1,19 +1,16 @@
 "use server";
 
-import { cookies } from "next/headers";
 import { updateTag } from "next/cache";
-import { SESSION_COOKIE, verifySessionToken } from "@/lib/auth";
 import { markTaskDone } from "@/lib/notion/mutations";
 import { TAGS } from "@/lib/notion/queries";
+import { SESSION_EXPIRED, isSignedIn } from "@/lib/session";
 
 export type CompleteTaskResult = { ok: true } | { ok: false; error: string };
 
 const PAGE_ID = /^[0-9a-f]{8}-?[0-9a-f]{4}-?[0-9a-f]{4}-?[0-9a-f]{4}-?[0-9a-f]{12}$/i;
 
 export async function completeTask(pageId: string): Promise<CompleteTaskResult> {
-  // Server Action là một endpoint POST riêng → tự kiểm tra đăng nhập, không chỉ dựa vào proxy
-  const session = (await cookies()).get(SESSION_COOKIE)?.value;
-  if (!(await verifySessionToken(session))) return { ok: false, error: "Phiên đăng nhập đã hết, hãy đăng nhập lại." };
+  if (!(await isSignedIn())) return { ok: false, error: SESSION_EXPIRED };
   if (typeof pageId !== "string" || !PAGE_ID.test(pageId)) return { ok: false, error: "ID task không hợp lệ." };
 
   try {

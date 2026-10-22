@@ -20,7 +20,7 @@ const errorMessage = (e: unknown) => (e instanceof Error ? e.message : String(e)
  * Notion API 2025-09-03 query theo data source, không theo database.
  * Env chứa database ID (SPEC mục 5) → tra data source ID một lần rồi cache lâu.
  */
-async function dataSourceId(envName: string): Promise<string> {
+export async function dataSourceId(envName: string): Promise<string> {
   "use cache";
   cacheLife("days");
   const db = await notion().databases.retrieve({ database_id: requireEnv(envName) });
