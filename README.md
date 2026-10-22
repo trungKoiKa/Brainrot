@@ -10,6 +10,8 @@ Dữ liệu đọc từ Notion (Tasks, Knowledge, Daily Log). Phạm vi và quy�
 | `/tasks` | Task chưa xong theo dự án, lọc, tích "xong" (ghi lên Notion) |
 | `/brain` | Graph 3D kiến thức và dự án |
 
+Production: <https://brainrot-blue.vercel.app> (cần mật khẩu).
+
 Stack: Next.js 16 (App Router) · TypeScript · Tailwind v4 · `@notionhq/client` · `react-force-graph-3d` · Vercel.
 
 ## Chạy trên máy
