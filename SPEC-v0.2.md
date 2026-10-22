@@ -36,7 +36,7 @@ xuất/nhập JSON, hoàn tác khi xóa.
 - Các trang con của planner (Plan / Stats / Archive) giữ router dạng `#` bên trong `/planner`.
 - Màu: **giữ bảng màu gốc của repo planner** (nền giấy kem, accent đỏ đất; bộ màu tối gốc) — Trung đổi lại 23/10/2026
   vì bản ánh xạ sang token Brainrot quá đơn sắc. Biến màu giới hạn trong khung `.planner` (không đè `--line`,
-  `--accent` của các trang khác) và vẫn đổi sáng/tối theo nút theme của Brainrot.
+  `--accent` của các trang khác) và vẫn đổi sáng/tối theo nút theme của Brainrot. Có cả nền chấm bi gốc phủ vùng nội dung trang `/planner`.
 - Font: dùng font của Brainrot (Inter + Lora) thay Fraunces/Newsreader/JetBrains Mono.
 - Chữ giao diện bên trong planner **giữ tiếng Anh**; bỏ logo "weekly." và nút "♥ Support"; trang có tiêu đề
   "Planner" như các trang khác. *(chốt 22/10/2026)*

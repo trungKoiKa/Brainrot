@@ -1,5 +1,17 @@
 /* Planner (từ trungKoiKa/planner) — toàn bộ style giới hạn trong .planner để không đè các trang khác.
    Sinh từ tokens.css + base.css + app.css của repo gốc; :root/html/body đã đổi thành & (= .planner). */
+/* Nền chấm bi của repo gốc (base.css: body). Gắn vào khung .planner-page (app/(app)/planner/page.tsx) phủ cả
+   vùng nội dung; không dùng main:has(.planner) vì Next giữ trang vừa rời ở dạng ẩn trong DOM → chấm bi dính sang trang khác. */
+.planner-page {
+  --planner-dot: rgba(28, 26, 23, 0.07);
+  background-image: radial-gradient(var(--planner-dot) 1px, transparent 1px);
+  background-size: 18px 18px;
+}
+
+:root[data-theme='dark'] .planner-page {
+  --planner-dot: rgba(236, 231, 221, 0.05);
+}
+
 .planner {
   /* Màu gốc của repo planner (src/styles/tokens.css, commit e175dcc) — Trung chọn giữ màu cũ (23/10/2026).
      Khai báo trong .planner nên không đè token cùng tên (--line, --accent…) của các trang Brainrot khác.
