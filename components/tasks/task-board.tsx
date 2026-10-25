@@ -18,15 +18,28 @@ const projectRank = (p: string) => {
   return i === -1 ? PROJECT_ORDER.length : i;
 };
 
-export function TaskBoard({ tasks: initial, projects: allProjects, today }: { tasks: Task[]; projects: string[]; today: string }) {
+export function TaskBoard({
+  tasks: initial,
+  projects: allProjects,
+  today,
+  initialProject = null,
+}: {
+  tasks: Task[];
+  projects: string[];
+  today: string;
+  initialProject?: string | null;
+}) {
   const { tasks, complete, error, dismissError } = useTaskCompletion(initial);
   const [editing, setEditing] = useState<string | null>(null);
-  const [project, setProject] = useState<string | null>(null);
+  const [project, setProject] = useState<string | null>(initialProject);
   const [priority, setPriority] = useState<Priority | null>(null);
 
   const open = tasks.filter((t) => t.status !== "Xong");
   const done = tasks.filter((t) => t.status === "Xong");
-  const projects = [...new Set(open.map(projectOf))].sort((a, b) => projectRank(a) - projectRank(b));
+  // Dự án đang lọc (vd. mở từ Dashboard) luôn có chip, kể cả khi không còn task mở → thấy được bộ lọc đang bật
+  const projects = [...new Set([...open.map(projectOf), ...(project ? [project] : [])])].sort(
+    (a, b) => projectRank(a) - projectRank(b),
+  );
 
   const visible = open
     .filter((t) => (project ? projectOf(t) === project : true))

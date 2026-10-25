@@ -30,6 +30,8 @@ export async function load<T>(key: string, fetch: () => Promise<Result<T>>): Pro
 export const getTasks = (): Promise<Loaded<Task[]>> => load("tasks", tasksResult);
 export const getKnowledge = (): Promise<Loaded<Knowledge[]>> => load("knowledge", knowledgeResult);
 export const getRecentDailyLogs = (): Promise<Loaded<DailyLog[]>> => load("daily", () => dailyLogsResult());
+/** 90 bản ghi gần nhất cho Dashboard (SPEC-v0.3 4.4). */
+export const getDailyLogs90 = (): Promise<Loaded<DailyLog[]>> => load("daily90", () => dailyLogsResult(90));
 
 /**
  * Dự án chọn được khi thêm/sửa task: lựa chọn của select "Dự án" + dự án đang gán cho task

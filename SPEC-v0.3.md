@@ -2,7 +2,7 @@
 
 > Bổ sung cho `SPEC.md` (v0.1) và `SPEC-v0.2.md`. Mục nào không nhắc ở đây thì giữ nguyên.
 >
-> **Trạng thái:** NHÁP 26/10/2026 — chờ Trung duyệt. Các mục *(đề xuất)* và mục 10 là chỗ Trung cần chốt.
+> **Trạng thái:** Trung duyệt 26/10/2026 (đồng ý cả 4 đề xuất mục 10). Đã triển khai, chờ Trung test — xem `docs/plans/active/v0.3.md`.
 > Cảm hứng: ảnh dashboard mẫu của ReUI (Trung gửi 26/10/2026) — 4 thẻ số liệu có sparkline, biểu đồ cột,
 > biểu đồ vùng, biểu đồ cột dày theo ngày và danh sách có thanh tiến độ.
 
@@ -19,9 +19,9 @@ nhiêu, học được gì, nhịp hằng ngày ra sao. Trang chỉ **đọc**; 
 | Chi phí | 0 đồng | **Giữ 0 đồng.** Chỉ dùng phần **miễn phí** của ReUI (component + example `c-*`); block dashboard trả phí (Pro) **không dùng** |
 | Dependency | `zustand`, `@dnd-kit/*`, `date-fns` (Planner); shadcn + ReUI (từ 26/10) | Thêm **`recharts`** qua shadcn `chart` — chỉ dùng trong Dashboard |
 | Database riêng | Không | Vẫn **không** |
-| Schema Notion | Không đổi | *(đề xuất)* thêm 1 thuộc tính **"Ngày xong"** (Date) vào Tasks — xem mục 6 |
+| Schema Notion | Không đổi | Thêm thuộc tính **"Ngày xong"** (Date) vào Tasks — xem mục 6 |
 
-## 3. Điều hướng *(đề xuất)*
+## 3. Điều hướng *(chốt 26/10/2026)*
 
 - Trang mới **`/dashboard`**, tiêu đề "Dashboard", mô tả "Tổng quan việc và học tập."
 - Sidebar: **Brain · Dashboard · Today · Tasks · Planner**, icon `LayoutDashboard` (lucide).
@@ -61,7 +61,7 @@ tăng/giảm so với kỳ trước + một ghi chú ngắn.
 - Mỗi dự án (thứ tự như select "Dự án": Đồ án, Học AI, Sản phẩm, Sức khỏe, Thực tập, Khác, rồi "Không có dự án")
   là một nhóm 2 cột: **Đang làm** và **Chưa làm** (task chưa xong, không phụ thuộc kỳ).
 - Chú thích ở góc phải. Dự án không có task chưa xong → ẩn nhóm. Bấm nhóm → mở `/tasks` lọc theo dự án đó
-  *(đề xuất; cần thêm tham số `?project=` cho trang Tasks)*.
+  qua `/tasks?project=` *(chốt)*; dự án đang lọc luôn có chip trên Tasks, kể cả khi không còn task mở.
 
 ### 4.3 Nhịp làm & học (biểu đồ vùng)
 
@@ -93,11 +93,11 @@ tăng/giảm so với kỳ trước + một ghi chú ngắn.
   Số liệu "hợp lý" với Trung: 2–6 task xong/ngày làm việc, cuối tuần ít hơn, dồn việc Đồ án gần hạn 06/12.
 - **Công tắc Thật / Mẫu** ở đầu trang: Mẫu → mọi khối dùng dữ liệu mẫu (để xem trang "đầy" và để demo).
   Thật → dùng Notion + Planner; khối nào thiếu nguồn thật thì tự dùng mẫu và gắn huy hiệu **"Mẫu"** cạnh tiêu đề.
-- *(đề xuất)* Mặc định **Thật**; lựa chọn nhớ trong `localStorage`. Dữ liệu mẫu **không bao giờ ghi vào Notion**.
+- Mặc định **Thật** *(chốt)*; lựa chọn (và kỳ) nhớ trong `localStorage`. Dữ liệu mẫu **không bao giờ ghi vào Notion**.
 
-## 6. "Ngày xong" cho Tasks *(đề xuất)*
+## 6. "Ngày xong" cho Tasks *(chốt 26/10/2026)*
 
-- Thêm thuộc tính **Date "Ngày xong"** vào database Tasks (agent tạo qua Notion MCP sau khi Trung đồng ý).
+- Thuộc tính **Date "Ngày xong"** đã thêm vào database Tasks qua Notion MCP (26/10/2026).
 - Khi tích xong trên web (`markTaskDone`) → ghi Ngày xong = hôm nay (giờ VN). Sửa trạng thái về Chưa làm/Đang làm
   trên web → xóa Ngày xong. Tích trong Notion thì Trung tự điền (hoặc để trống; task xong không có Ngày xong
   → không tính vào biểu đồ theo thời gian, vẫn tính vào số tồn).
@@ -125,7 +125,7 @@ tăng/giảm so với kỳ trước + một ghi chú ngắn.
 - Đồng bộ Planner giữa thiết bị; nối Planner ↔ Notion Tasks.
 - Kanban cho Tasks (vẫn ở Follow-ups v0.2). LLM (vẫn chờ ngân sách).
 
-## 10. Câu hỏi Trung cần chốt
+## 10. Câu hỏi đã chốt (26/10/2026: đồng ý cả 4)
 
 1. Đặt Dashboard ở `/dashboard`, sidebar sau Brain? *(đề xuất: có; trang chủ vẫn Brain)*
 2. Thêm thuộc tính "Ngày xong" vào Notion Tasks (mục 6)? *(đề xuất: có — không có thì 2 khối luôn là mẫu)*

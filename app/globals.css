@@ -18,6 +18,7 @@
   --accent-soft: #e5eafb;
   --danger: #c92a2a;
   --danger-soft: #fdecec;
+  --good: #2f7d32; /* trạng thái "ổn" (huy hiệu, chấm) — tách khỏi --field-3 để chỉnh riêng cho nền tối */
 
   /* Lĩnh vực — 4 slot màu phân loại + 1 xám trung tính (docs/decisions/0003).
      Đã chạy validator dataviz (--pairs all, nền #f6f4ef): normal-vision ΔE 19.6, CVD ΔE 13. */
@@ -42,6 +43,7 @@
   --accent-soft: #232a45;
   --danger: #ff8787;
   --danger-soft: #3a1f1f;
+  --good: #6cc36c;
 
   /* Cùng 4 màu, bước tối hơn cho nền tối (validator, nền #141413): normal-vision ΔE 19.3, CVD ΔE 6.9
      → bắt buộc có cách nhận diện thứ hai: tên cụm trên graph + chip chú thích */
@@ -67,6 +69,7 @@
     --accent-soft: #232a45;
     --danger: #ff8787;
     --danger-soft: #3a1f1f;
+    --good: #6cc36c;
     color-scheme: dark;
   }
 }
@@ -104,7 +107,7 @@
   --radius: 0.5rem;
   /* màu trạng thái của ReUI (Alert, Badge…) */
   --destructive-foreground: var(--danger);
-  --success: var(--field-3);
+  --success: var(--good);
   --success-foreground: var(--foreground);
   --info: var(--primary);
   --info-foreground: var(--foreground);
