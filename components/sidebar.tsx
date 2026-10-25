@@ -3,18 +3,41 @@
 import { useSyncExternalStore } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { CalendarRangeIcon, LayoutDashboardIcon, ListChecksIcon, NetworkIcon, SunIcon, type LucideIcon } from "lucide-react";
+import {
+  BrainIcon,
+  CalendarRangeIcon,
+  LayoutDashboardIcon,
+  ListChecksIcon,
+  NetworkIcon,
+  SunIcon,
+  type LucideIcon,
+} from "lucide-react";
+import {
+  Sidebar,
+  SidebarContent,
+  SidebarFooter,
+  SidebarGroup,
+  SidebarGroupContent,
+  SidebarGroupLabel,
+  SidebarHeader,
+  SidebarMenu,
+  SidebarMenuButton,
+  SidebarMenuItem,
+  SidebarRail,
+} from "@/components/ui/sidebar";
 import { daysBetween, longDateVN, todayVN } from "@/lib/date";
 import { ThemeToggle } from "./theme-toggle";
 
-// Brain là trang chủ (SPEC-v0.2 mục 2); Dashboard ngay sau Brain (SPEC-v0.3 mục 3)
-const NAV: readonly { href: string; label: string; icon: LucideIcon }[] = [
-  { href: "/", label: "Brain", icon: NetworkIcon },
+// Dashboard đứng đầu (Trung chốt 26/10/2026); trang chủ `/` vẫn là Brain (SPEC-v0.2 mục 2)
+export const NAV: readonly { href: string; label: string; icon: LucideIcon }[] = [
   { href: "/dashboard", label: "Dashboard", icon: LayoutDashboardIcon },
+  { href: "/", label: "Brain", icon: NetworkIcon },
   { href: "/today", label: "Today", icon: SunIcon },
   { href: "/tasks", label: "Tasks", icon: ListChecksIcon },
   { href: "/planner", label: "Planner", icon: CalendarRangeIcon },
 ];
+
+export const isActive = (href: string, pathname: string) => (href === "/" ? pathname === "/" : pathname.startsWith(href));
 
 // Ngày lấy ở trình duyệt (layout có thể được prerender từ lúc build → ngày trên server sẽ cũ).
 // Server trả null → chân sidebar chỉ hiện sau khi hydrate, không lệch HTML.
@@ -26,7 +49,7 @@ function TodayInfo({ thesisDeadline }: { thesisDeadline?: string }) {
   if (!today) return null;
   const left = thesisDeadline ? daysBetween(today, thesisDeadline) : null;
   return (
-    <div className="space-y-0.5 px-3 text-xs text-muted-foreground">
+    <div className="space-y-0.5 px-2 pb-1 text-xs text-muted-foreground group-data-[collapsible=icon]:hidden">
       <p className="font-medium text-foreground">{longDateVN()}</p>
       {left !== null && left > 0 && (
         <p>
@@ -38,44 +61,67 @@ function TodayInfo({ thesisDeadline }: { thesisDeadline?: string }) {
   );
 }
 
-export function Sidebar({ thesisDeadline }: { thesisDeadline?: string }) {
+/** Thanh bên theo mẫu ReUI c-sidebar-2 (Icon Rail): thu gọn còn cột icon, mobile mở dạng ngăn kéo. */
+export function AppSidebar({ thesisDeadline }: { thesisDeadline?: string }) {
   const pathname = usePathname();
 
   return (
-    <aside className="sticky top-0 z-10 flex items-center gap-2 border-b border-line bg-surface px-4 py-2 md:h-screen md:w-60 md:shrink-0 md:flex-col md:items-stretch md:gap-1 md:border-r md:border-b-0 md:px-4 md:py-6">
-      <Link href="/" className="mr-auto whitespace-nowrap font-serif text-lg font-semibold md:mr-0 md:mb-6 md:px-3 md:text-xl">
-        Second Brain
-      </Link>
+    <Sidebar collapsible="icon">
+      <SidebarHeader>
+        <SidebarMenu>
+          <SidebarMenuItem>
+            <SidebarMenuButton size="lg" tooltip="Second Brain" render={<Link href="/" />}>
+              <span
+                aria-hidden="true"
+                className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-sidebar-primary text-sidebar-primary-foreground"
+              >
+                <BrainIcon className="size-4" />
+              </span>
+              <span className="grid min-w-0 flex-1 text-left leading-tight group-data-[collapsible=icon]:sr-only">
+                <span className="truncate font-serif text-base font-semibold">Second Brain</span>
+                <span className="truncate text-xs text-sidebar-foreground/70">Anh Trung</span>
+              </span>
+            </SidebarMenuButton>
+          </SidebarMenuItem>
+        </SidebarMenu>
+      </SidebarHeader>
 
-      <nav className="flex gap-1 md:flex-col">
-        {NAV.map(({ href, label, icon: Icon }) => {
-          const active = href === "/" ? pathname === "/" : pathname.startsWith(href);
-          return (
-            <Link
-              key={href}
-              href={href}
-              aria-current={active ? "page" : undefined}
-              title={label}
-              className={`relative flex items-center gap-3 rounded-lg px-2 py-2 text-sm transition-colors md:px-3 ${
-                active
-                  ? "bg-accent-soft font-medium text-primary md:before:absolute md:before:inset-y-1.5 md:before:-left-4 md:before:w-1 md:before:rounded-r-full md:before:bg-primary"
-                  : "text-muted-foreground hover:bg-surface-muted hover:text-foreground"
-              }`}
-            >
-              <Icon aria-hidden="true" className="size-4 shrink-0" />
-              {/* Mobile: chỉ icon cho gọn thanh trên */}
-              <span className="sr-only md:not-sr-only">{label}</span>
-            </Link>
-          );
-        })}
-      </nav>
+      <SidebarContent role="navigation" aria-label="Điều hướng chính">
+        <SidebarGroup>
+          <SidebarGroupLabel>Menu</SidebarGroupLabel>
+          <SidebarGroupContent>
+            <SidebarMenu>
+              {NAV.map(({ href, label, icon: Icon }) => {
+                const active = isActive(href, pathname);
+                return (
+                  <SidebarMenuItem key={href}>
+                    <SidebarMenuButton
+                      render={<Link href={href} aria-current={active ? "page" : undefined} />}
+                      isActive={active}
+                      tooltip={label}
+                    >
+                      <Icon aria-hidden="true" />
+                      <span>{label}</span>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                );
+              })}
+            </SidebarMenu>
+          </SidebarGroupContent>
+        </SidebarGroup>
+      </SidebarContent>
 
-      <div className="md:mt-auto md:space-y-3 md:border-t md:border-line md:pt-4">
-        <div className="hidden md:block">
-          <TodayInfo thesisDeadline={thesisDeadline} />
-        </div>
-        <ThemeToggle />
-      </div>
-    </aside>
+      <SidebarFooter>
+        <TodayInfo thesisDeadline={thesisDeadline} />
+        <SidebarMenu>
+          <SidebarMenuItem>
+            <ThemeToggle />
+          </SidebarMenuItem>
+        </SidebarMenu>
+      </SidebarFooter>
+
+      {/* Dải kéo ở mép để thu/mở bằng chuột; bàn phím dùng nút ở thanh trên hoặc Ctrl+B */}
+      <SidebarRail />
+    </Sidebar>
   );
 }

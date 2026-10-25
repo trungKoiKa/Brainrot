@@ -1,9 +1,13 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import Link from "next/link";
+import { Maximize2Icon } from "lucide-react";
+import { BrainView } from "@/components/brain/brain-view";
 import { Card, Empty } from "@/components/card";
 import { Badge } from "@/components/reui/badge";
 import { formatDay } from "@/lib/date";
+import type { GraphData } from "@/lib/graph-types";
 import { sampleDashboard } from "@/lib/dashboard/sample";
 import {
   backlogKpi,
@@ -65,7 +69,7 @@ function usePlannerSummary(): PlannerSummary | null {
 
 const fmt = new Intl.NumberFormat("vi-VN");
 
-export function DashboardView({ real: realBase }: { real: Omit<DashInput, "planner"> }) {
+export function DashboardView({ real: realBase, graph }: { real: Omit<DashInput, "planner">; graph: GraphData }) {
   const [mode, setMode] = useState<Mode>(() => readStored<Mode>(MODE_KEY, ["real", "sample"], "real"));
   const [period, setPeriod] = useState<Period>(() => readStored<Period>(PERIOD_KEY, PERIODS, 30));
   const planner = usePlannerSummary();
@@ -165,6 +169,20 @@ export function DashboardView({ real: realBase }: { real: Omit<DashInput, "plann
           sample={logsSample}
         />
       </div>
+
+      {/* Brain nhúng thẳng vào Dashboard (Trung yêu cầu 26/10/2026); luôn là dữ liệu thật */}
+      <Card
+        title="Brain"
+        action={
+          <Link href="/" className="flex items-center gap-1.5 text-sm text-muted-foreground transition-colors hover:text-foreground">
+            <Maximize2Icon aria-hidden="true" className="size-3.5" />
+            Mở toàn màn hình
+          </Link>
+        }
+      >
+        <p className="-mt-3 mb-4 text-sm text-muted-foreground">Bản đồ kiến thức và dự án · luôn là dữ liệu thật</p>
+        <BrainView data={graph} className="h-[28rem] rounded-xl" />
+      </Card>
 
       <div className="grid gap-5 lg:grid-cols-2">
         <Card title="Task theo dự án" action={all && <SampleBadge />}>

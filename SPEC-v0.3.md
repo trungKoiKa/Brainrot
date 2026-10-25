@@ -24,8 +24,11 @@ nhiêu, học được gì, nhịp hằng ngày ra sao. Trang chỉ **đọc**; 
 ## 3. Điều hướng *(chốt 26/10/2026)*
 
 - Trang mới **`/dashboard`**, tiêu đề "Dashboard", mô tả "Tổng quan việc và học tập."
-- Sidebar: **Brain · Dashboard · Today · Tasks · Planner**, icon `LayoutDashboard` (lucide).
+- Sidebar: **Dashboard · Brain · Today · Tasks · Planner** — Dashboard lên đầu *(Trung đổi 26/10/2026)*.
 - Trang chủ `/` **vẫn là Brain**.
+- Sidebar dựng lại bằng shadcn `sidebar` theo mẫu ReUI **c-sidebar-2 (Icon Rail)** *(Trung chọn 26/10/2026)*: ô logo
+  "Second Brain" ở đầu, nhóm "Menu", chân có ngày + đếm ngược đồ án + nút theme. Thu gọn thành cột icon (nút ở thanh
+  trên, dải mép, Ctrl+B; nhớ trong cookie `sidebar_state`). Mobile: nút ☰ mở ngăn kéo. Thanh trên mỗi trang hiện tên trang.
 
 ## 4. Bố cục (desktop 1440px; mobile xếp một cột)
 
@@ -40,7 +43,7 @@ nhiêu, học được gì, nhịp hằng ngày ra sao. Trang chỉ **đọc**; 
 | Cluster Load (cột dày, màu theo mức) | **Nhịp hằng ngày** từ Daily Log (mục 4.4) |
 | Active Lanes (danh sách + thanh tiến độ) | **Dự án Planner tuần này** (mục 4.5) |
 
-Hàng 1: 4 thẻ. Hàng 2: 4.2 (rộng 1/2) + 4.3 (1/2). Hàng 3: 4.4 (2/3) + 4.5 (1/3).
+Hàng 1: 4 thẻ. Hàng 2: **Brain** (4.6, rộng cả hàng). Hàng 3: 4.2 (rộng 1/2) + 4.3 (1/2). Hàng 4: 4.4 (2/3) + 4.5 (1/3).
 
 ### 4.1 Thẻ số liệu (4 thẻ)
 
@@ -84,6 +87,11 @@ tăng/giảm so với kỳ trước + một ghi chú ngắn.
   (dự án chậm nhất ở trên). Tối đa 5 dòng, còn lại "+N dự án".
 - Dữ liệu Planner nằm trong `localStorage` → khối này **chạy ở trình duyệt** (đọc store zustand của Planner),
   thiết bị khác sẽ thấy khác. Chưa có dự án → "Chưa có dự án Planner tuần này" + link `/planner`.
+
+### 4.6 Brain *(Trung yêu cầu 26/10/2026)*
+
+- Thẻ "Brain" nhúng graph 3D của trang Brain (cùng component, cao 28rem): xoay, zoom, tìm trang, bấm cụm như trang Brain.
+- Luôn là dữ liệu thật (không có bản mẫu). Góc phải: "Mở toàn màn hình" → `/`.
 
 ## 5. Dữ liệu mẫu
 
@@ -134,7 +142,7 @@ tăng/giảm so với kỳ trước + một ghi chú ngắn.
 
 ## 11. Tiêu chí hoàn thành v0.3
 
-1. `/dashboard` có đủ 6 khối mục 4, đúng ở 2 theme và mobile; sidebar có mục Dashboard.
+1. `/dashboard` có đủ 7 khối mục 4 (kể cả Brain), đúng ở 2 theme và mobile; sidebar có mục Dashboard.
 2. Chế độ Mẫu: mọi khối có dữ liệu, không lỗi; tải lại cùng ngày → số liệu giống hệt.
 3. Chế độ Thật: số liệu khớp Notion/Planner (đối chiếu tay ít nhất thẻ Việc tồn, Task theo dự án, Planner);
    khối thiếu nguồn thật có huy hiệu "Mẫu".
