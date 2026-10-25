@@ -43,7 +43,9 @@ nhiêu, học được gì, nhịp hằng ngày ra sao. Trang chỉ **đọc**; 
 | Cluster Load (cột dày, màu theo mức) | **Nhịp hằng ngày** từ Daily Log (mục 4.4) |
 | Active Lanes (danh sách + thanh tiến độ) | **Dự án Planner tuần này** (mục 4.5) |
 
-Hàng 1: 4 thẻ. Hàng 2: **Brain** (4.6, rộng cả hàng). Hàng 3: 4.2 (rộng 1/2) + 4.3 (1/2). Hàng 4: 4.4 (2/3) + 4.5 (1/3).
+Thứ tự đọc "số liệu → việc cần làm → học được gì → nhịp hằng ngày" *(Trung chốt 26/10/2026)*:
+Hàng 1: 4 thẻ. Hàng 2: 4.2 Task theo dự án (2/3) + 4.5 Dự án Planner (1/3). Hàng 3: 4.3 Nhịp làm & học (1/2) +
+4.6 Brain (1/2). Hàng 4: 4.4 Nhịp hằng ngày (rộng cả hàng, đủ chỗ cho 90 cột).
 
 ### 4.1 Thẻ số liệu (4 thẻ)
 
@@ -90,7 +92,8 @@ tăng/giảm so với kỳ trước + một ghi chú ngắn.
 
 ### 4.6 Brain *(Trung yêu cầu 26/10/2026)*
 
-- Thẻ "Brain" nhúng graph 3D của trang Brain (cùng component, cao 28rem): xoay, zoom, tìm trang, bấm cụm như trang Brain.
+- Thẻ "Brain" nhúng graph 3D của trang Brain (cùng component): nửa hàng, cao bằng biểu đồ "Nhịp làm & học" bên cạnh;
+  xoay, zoom, tìm trang, bấm cụm như trang Brain.
 - Luôn là dữ liệu thật (không có bản mẫu). Góc phải: "Mở toàn màn hình" → `/`.
 
 ## 5. Dữ liệu mẫu
