@@ -43,7 +43,8 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
 
 > **Trạng thái:** v0.1 và **v0.2 xong 22/10/2026** (production https://brainrot-blue.vercel.app; tag `v0.1.0`, `v0.2.0`).
 > Phạm vi: `SPEC.md` + `SPEC-v0.2.md`; kết quả ở `docs/plans/completed/`. **v0.3 (Dashboard)**: `SPEC-v0.3.md` đã duyệt và triển khai,
-> plan `docs/plans/active/v0.3.md` chờ Trung test — Trung chọn làm tiếp dù đang làm đồ án (26/10/2026).
+> plan `docs/plans/active/v0.3.md` chờ Trung test. **v0.4 (Mục tiêu · Thói quen · Nhìn lại)**: nháp `SPEC-v0.4.md`
+> + plan `docs/plans/active/v0.4.md`, chờ Trung duyệt — Trung chọn làm tiếp dù đang làm đồ án (26/10/2026).
 > Yêu cầu mới → ghi vào "Follow-ups" của plan đang chạy, chốt SPEC trước khi code.
 
 ## Thứ tự ưu tiên khi hướng dẫn mâu thuẫn
