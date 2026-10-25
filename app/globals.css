@@ -102,6 +102,16 @@
   --sidebar-border: var(--line);
   --sidebar-ring: var(--ring);
   --radius: 0.5rem;
+  /* màu trạng thái của ReUI (Alert, Badge…) */
+  --destructive-foreground: var(--danger);
+  --success: var(--field-3);
+  --success-foreground: var(--foreground);
+  --info: var(--primary);
+  --info-foreground: var(--foreground);
+  --warning: var(--field-4);
+  --warning-foreground: var(--foreground);
+  --invert: var(--foreground);
+  --invert-foreground: var(--background);
 }
 
 @theme inline {
@@ -148,6 +158,15 @@
   --font-sans: var(--font-inter);
   --font-serif: var(--font-lora);
   --font-heading: var(--font-inter);
+  --color-invert-foreground: var(--invert-foreground);
+  --color-invert: var(--invert);
+  --color-warning-foreground: var(--warning-foreground);
+  --color-warning: var(--warning);
+  --color-info-foreground: var(--info-foreground);
+  --color-info: var(--info);
+  --color-success-foreground: var(--success-foreground);
+  --color-success: var(--success);
+  --color-destructive-foreground: var(--destructive-foreground);
 }
 
 @layer base {

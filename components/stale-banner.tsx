@@ -1,9 +1,14 @@
+import { TriangleAlertIcon } from "lucide-react";
+import { Alert, AlertDescription, AlertTitle } from "@/components/reui/alert";
+
 /** SPEC mục 9: Notion lỗi nhưng còn bản cũ → hiển thị bản cũ kèm banner này. */
 export function StaleBanner({ show }: { show: boolean }) {
   if (!show) return null;
   return (
-    <p role="status" className="mb-6 rounded-lg border border-line bg-surface-muted px-4 py-3 text-sm text-muted-foreground">
-      ⚠ Không lấy được dữ liệu mới từ Notion — đang hiển thị bản gần nhất. Web sẽ tự thử lại sau ít giây.
-    </p>
+    <Alert variant="warning" role="status" className="mb-6">
+      <TriangleAlertIcon aria-hidden="true" />
+      <AlertTitle>Không lấy được dữ liệu mới từ Notion</AlertTitle>
+      <AlertDescription>Đang hiển thị bản gần nhất. Web sẽ tự thử lại sau ít giây.</AlertDescription>
+    </Alert>
   );
 }
