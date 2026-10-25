@@ -1,3 +1,6 @@
+import { CircleAlertIcon, XIcon } from "lucide-react";
+import { Alert, AlertAction, AlertDescription, AlertTitle } from "@/components/reui/alert";
+import { Button } from "@/components/ui/button";
 import { deadlineLabel } from "@/lib/today";
 import { daysBetween, formatDay } from "@/lib/date";
 import type { Task } from "@/lib/notion/types";
@@ -84,11 +87,15 @@ export function TaskRow({
 
 export function ErrorNotice({ message, onDismiss }: { message: string; onDismiss: () => void }) {
   return (
-    <div role="alert" className="mb-4 flex items-start justify-between gap-3 rounded-lg bg-danger-soft px-3 py-2 text-sm text-danger">
-      <span>{message}</span>
-      <button type="button" onClick={onDismiss} aria-label="Đóng thông báo" className="shrink-0 font-medium">
-        ✕
-      </button>
-    </div>
+    <Alert variant="destructive" className="mb-4">
+      <CircleAlertIcon aria-hidden="true" />
+      <AlertTitle>Lỗi khi lưu lên Notion</AlertTitle>
+      <AlertDescription>{message}</AlertDescription>
+      <AlertAction>
+        <Button variant="ghost" size="icon-xs" onClick={onDismiss} aria-label="Đóng thông báo">
+          <XIcon />
+        </Button>
+      </AlertAction>
+    </Alert>
   );
 }

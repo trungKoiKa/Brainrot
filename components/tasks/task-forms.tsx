@@ -5,6 +5,7 @@ import { createTaskAction, updateTaskAction, type TaskFormState } from "@/app/ac
 import type { Task } from "@/lib/notion/types";
 import { EDITABLE_STATUSES, PRIORITIES } from "@/lib/task-form";
 import { Status, fieldClass, primaryButtonClass } from "../form-bits";
+import { DeadlineField } from "./deadline-field";
 
 // Ô select/date hẹp hơn ô tên; giữ cùng kiểu viền với fieldClass
 const compactField = fieldClass.replace("w-full", "w-auto");
@@ -62,14 +63,7 @@ export function NewTaskForm({ projects }: { projects: string[] }) {
         />
         <Select name="project" label="Dự án" value={values.project} options={projects} empty="Dự án" onChange={set("project")} />
         <Select name="priority" label="Ưu tiên" value={values.priority} options={PRIORITIES} empty="Ưu tiên" onChange={set("priority")} />
-        <input
-          type="date"
-          name="deadline"
-          aria-label="Deadline"
-          value={values.deadline}
-          onChange={(e) => set("deadline")(e.target.value)}
-          className={compactField}
-        />
+        <DeadlineField value={values.deadline} onChange={set("deadline")} triggerClass={compactField} />
         <button type="submit" disabled={pending || !values.title.trim()} className={primaryButtonClass}>
           {pending ? "Đang thêm…" : "Thêm"}
         </button>
@@ -117,14 +111,7 @@ export function EditTaskForm({ task, projects, onClose }: { task: Task; projects
           <Select name="status" label="Trạng thái" value={values.status} options={EDITABLE_STATUSES} onChange={set("status")} />
           <Select name="project" label="Dự án" value={values.project} options={projects} empty="Không có dự án" onChange={set("project")} />
           <Select name="priority" label="Ưu tiên" value={values.priority} options={PRIORITIES} empty="Không ưu tiên" onChange={set("priority")} />
-          <input
-            type="date"
-            name="deadline"
-            aria-label="Deadline"
-            value={values.deadline}
-            onChange={(e) => set("deadline")(e.target.value)}
-            className={compactField}
-          />
+          <DeadlineField value={values.deadline} onChange={set("deadline")} triggerClass={compactField} />
         </div>
         <textarea
           name="note"
