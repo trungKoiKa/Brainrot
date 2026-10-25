@@ -2,10 +2,10 @@ import "server-only";
 import { cacheLife, cacheTag } from "next/cache";
 import { collectPaginatedAPI, isFullPage, type PageObjectResponse } from "@notionhq/client";
 import { notion, requireEnv } from "./client";
-import { checkbox, date, select, text, url } from "./properties";
-import type { DailyLog, Knowledge, Priority, Task, TaskStatus } from "./types";
+import { checkbox, date, multiSelect, number, select, text, url } from "./properties";
+import type { DailyLog, Habit, Knowledge, Priority, Task, TaskStatus } from "./types";
 
-export const TAGS = { tasks: "tasks", knowledge: "knowledge", daily: "daily" } as const;
+export const TAGS = { tasks: "tasks", knowledge: "knowledge", daily: "daily", habits: "habits" } as const;
 
 /** Kết quả đọc Notion: hàm có cache KHÔNG ném lỗi, để lỗi không bị cache như dữ liệu. */
 export type Result<T> = { ok: true; data: T } | { ok: false; error: string };
@@ -103,6 +103,19 @@ export async function knowledgeResult(): Promise<Result<Knowledge[]>> {
   }
 }
 
+const toDailyLog = ({ id, url: pageUrl, properties: p }: PageObjectResponse): DailyLog => ({
+  id,
+  url: pageUrl,
+  title: text(p, "Ngày"),
+  date: date(p, "Date"),
+  done: text(p, "Xong"),
+  dropped: text(p, "Rơi / chưa xong"),
+  learned: text(p, "Học được"),
+  tomorrowTop3: text(p, "Ngày mai 3 việc"),
+  exercised: checkbox(p, "Tập thể dục"),
+  habits: multiSelect(p, "Thói quen"),
+});
+
 /** Chỉ cần vài bản ghi gần nhất (Today dùng bản ghi hôm qua). */
 export async function dailyLogsResult(limit = 7): Promise<Result<DailyLog[]>> {
   "use cache";
@@ -114,19 +127,55 @@ export async function dailyLogsResult(limit = 7): Promise<Result<DailyLog[]>> {
       page_size: limit,
     });
     cacheLife(FIVE_MINUTES);
+    return { ok: true, data: res.results.filter(isFullPage).map(toDailyLog) };
+  } catch (e) {
+    cacheLife(ERROR_LIFE);
+    return { ok: false, error: errorMessage(e) };
+  }
+}
+
+/** Daily Log từ `start` đến `end` (gồm cả hai đầu) — bảng thói quen theo tháng (SPEC-v0.4 3.3). */
+export async function dailyLogsBetweenResult(start: string, end: string): Promise<Result<DailyLog[]>> {
+  "use cache";
+  cacheTag(TAGS.daily);
+  try {
+    const pages = await collectPaginatedAPI(notion().dataSources.query, {
+      data_source_id: await dataSourceId("NOTION_DAILY_DB"),
+      filter: {
+        and: [
+          { property: "Date", date: { on_or_after: start } },
+          { property: "Date", date: { on_or_before: end } },
+        ],
+      },
+    });
+    cacheLife(FIVE_MINUTES);
+    return { ok: true, data: pages.filter(isFullPage).map(toDailyLog) };
+  } catch (e) {
+    cacheLife(ERROR_LIFE);
+    return { ok: false, error: errorMessage(e) };
+  }
+}
+
+/** Database Habits có cấu hình chưa (biến NOTION_HABITS_DB, thêm ở v0.4). */
+export const habitsConfigured = () => Boolean(process.env.NOTION_HABITS_DB);
+
+export async function habitsResult(): Promise<Result<Habit[]>> {
+  "use cache";
+  cacheTag(TAGS.habits);
+  try {
+    const pages = await queryAll("NOTION_HABITS_DB");
+    cacheLife(FIVE_MINUTES);
     return {
       ok: true,
-      data: res.results.filter(isFullPage).map(({ id, url: pageUrl, properties: p }) => ({
-        id,
-        url: pageUrl,
-        title: text(p, "Ngày"),
-        date: date(p, "Date"),
-        done: text(p, "Xong"),
-        dropped: text(p, "Rơi / chưa xong"),
-        learned: text(p, "Học được"),
-        tomorrowTop3: text(p, "Ngày mai 3 việc"),
-        exercised: checkbox(p, "Tập thể dục"),
-      })),
+      data: pages
+        .map(({ id, properties: p }) => ({
+          id,
+          name: text(p, "Tên").trim(),
+          from: date(p, "Từ tháng") ?? "",
+          to: date(p, "Đến tháng"),
+          order: number(p, "Thứ tự") ?? 0,
+        }))
+        .filter((h) => h.name && h.from),
     };
   } catch (e) {
     cacheLife(ERROR_LIFE);

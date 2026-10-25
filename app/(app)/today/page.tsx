@@ -5,10 +5,14 @@ import { FieldBadge } from "@/components/field-badge";
 import { PageHeader } from "@/components/page-header";
 import { TopTasks } from "@/components/tasks/top-tasks";
 import { QuickCapture } from "@/components/quick-capture";
+import { HabitToday } from "@/components/habits/habit-today";
+import { doneHabits, habitsForMonth } from "@/lib/habits";
+import { habitsConfigured } from "@/lib/notion/queries";
+import { monthOf } from "@/lib/period";
 import { daysBetween, formatDay, greetingVN, longDateVN, todayVN } from "@/lib/date";
 import { calendarEvents, type CalendarResult } from "@/lib/calendar/google";
 import { pickNextUp, timeRange } from "@/lib/next-up";
-import { anyStale, getKnowledge, getRecentDailyLogs, getTasks } from "@/lib/notion/data";
+import { anyStale, getHabits, getKnowledge, getRecentDailyLogs, getTasks } from "@/lib/notion/data";
 import { StaleBanner } from "@/components/stale-banner";
 import type { DailyLog, Knowledge, Task } from "@/lib/notion/types";
 import {
@@ -35,21 +39,37 @@ async function TodayContent() {
   await connection();
   const now = new Date();
   const today = todayVN(now);
-  const [calendar, ...loaded] = await Promise.all([calendarEvents(today), getTasks(), getKnowledge(), getRecentDailyLogs()]);
+  const [calendar, habitsLoaded, ...loaded] = await Promise.all([
+    calendarEvents(today),
+    getHabits(),
+    getTasks(),
+    getKnowledge(),
+    getRecentDailyLogs(),
+  ]);
   const [tasks, knowledge, logs] = loaded.map((l) => l.data) as [Task[], Knowledge[], DailyLog[]];
+  const todayLog = logs.find((l) => l.date === today) ?? null;
 
   return (
     <>
       <PageHeader title={`${greetingVN(now)}, Trung`} subtitle={longDateVN(now)} />
-      <StaleBanner show={anyStale(...loaded)} />
+      <StaleBanner show={anyStale(habitsLoaded, ...loaded)} />
       <div className="grid gap-5 lg:grid-cols-2">
         <ThesisCountdown today={today} />
         <TopThreeCard top={pickTopThree(today, logs, tasks)} />
         <NextUpCard calendar={calendar} now={now} today={today} />
         <DeadlinesCard items={upcomingDeadlines(today, tasks)} />
         <KnowledgeCard notes={latestKnowledge(knowledge)} />
+        {habitsConfigured() && (
+          <Card title="Thói quen hôm nay" className="lg:col-span-2">
+            <HabitToday
+              habits={habitsForMonth(habitsLoaded.data, monthOf(today)).map((h) => h.name)}
+              done={todayLog ? doneHabits(todayLog) : []}
+              today={today}
+            />
+          </Card>
+        )}
         <Card title="Ghi nhanh" className="lg:col-span-2">
-          <QuickCapture todayLog={logs.find((l) => l.date === today) ?? null} />
+          <QuickCapture todayLog={todayLog} showExercise={!habitsConfigured()} />
         </Card>
       </div>
     </>

@@ -5,12 +5,15 @@ import { addIdeaAction, saveDailyLogAction, type CaptureState } from "@/app/acti
 import type { DailyLog } from "@/lib/notion/types";
 import { Status, fieldClass, primaryButtonClass } from "./form-bits";
 
-/** Khối "Ghi nhanh" trên Today (SPEC-v0.2 4.1): ý tưởng → Ideas, Daily Log hôm nay → Daily Log. */
-export function QuickCapture({ todayLog }: { todayLog: DailyLog | null }) {
+/**
+ * Khối "Ghi nhanh" trên Today (SPEC-v0.2 4.1): ý tưởng → Ideas, Daily Log hôm nay → Daily Log.
+ * `showExercise` false khi đã có thẻ Thói quen (SPEC-v0.4): bỏ ô "Tập thể dục" để hai nơi không ghi đè nhau.
+ */
+export function QuickCapture({ todayLog, showExercise = true }: { todayLog: DailyLog | null; showExercise?: boolean }) {
   return (
     <div className="space-y-6">
       <IdeaForm />
-      <DailyLogForm key={todayLog?.id ?? "new"} todayLog={todayLog} />
+      <DailyLogForm key={todayLog?.id ?? "new"} todayLog={todayLog} showExercise={showExercise} />
     </div>
   );
 }
@@ -51,7 +54,7 @@ function IdeaForm() {
   );
 }
 
-function DailyLogForm({ todayLog }: { todayLog: DailyLog | null }) {
+function DailyLogForm({ todayLog, showExercise }: { todayLog: DailyLog | null; showExercise: boolean }) {
   // Controlled: lỗi khi lưu thì nội dung đã gõ vẫn còn
   const [values, setValues] = useState({
     done: todayLog?.done ?? "",
@@ -86,16 +89,19 @@ function DailyLogForm({ todayLog }: { todayLog: DailyLog | null }) {
           </label>
         ))}
         <div className="flex flex-wrap items-center gap-4 md:col-span-2">
-          <label className="flex items-center gap-2 text-sm">
-            <input
-              type="checkbox"
-              name="exercised"
-              checked={values.exercised}
-              onChange={(e) => setValues((v) => ({ ...v, exercised: e.target.checked }))}
-              className="size-4 accent-[var(--primary)]"
-            />
-            Tập thể dục
-          </label>
+          {showExercise && (
+            <label className="flex items-center gap-2 text-sm">
+              <input type="hidden" name="exerciseField" value="1" />
+              <input
+                type="checkbox"
+                name="exercised"
+                checked={values.exercised}
+                onChange={(e) => setValues((v) => ({ ...v, exercised: e.target.checked }))}
+                className="size-4 accent-[var(--primary)]"
+              />
+              Tập thể dục
+            </label>
+          )}
           <button
             type="submit"
             disabled={pending}

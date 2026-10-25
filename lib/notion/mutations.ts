@@ -1,9 +1,11 @@
 import "server-only";
 import { isFullPage } from "@notionhq/client";
+import { LEGACY_EXERCISE, toggleHabit } from "@/lib/habits";
 import { formatDay, todayVN } from "@/lib/date";
 import type { DailyLogInput } from "@/lib/quick-capture";
 import type { TaskInput, TaskUpdate } from "@/lib/task-form";
 import { notion, requireEnv } from "./client";
+import { multiSelect } from "./properties";
 import { dataSourceId } from "./queries";
 
 const normalizeId = (id: string) => id.replace(/-/g, "").toLowerCase();
@@ -11,15 +13,17 @@ const normalizeId = (id: string) => id.replace(/-/g, "").toLowerCase();
 /** rich_text / title của Notion; chuỗi rỗng → mảng rỗng (xóa nội dung ô). */
 const richText = (content: string) => (content ? [{ type: "text" as const, text: { content } }] : []);
 
-/** Chỉ cho phép ghi trang nằm trong database Tasks, để không ghi nhầm trang khác. */
-async function assertTaskPage(pageId: string): Promise<void> {
+/** Chỉ cho phép ghi trang nằm trong đúng database (theo biến môi trường), để không ghi nhầm trang khác. */
+async function assertInDatabase(pageId: string, envName: string): Promise<void> {
   const page = await notion().pages.retrieve({ page_id: pageId });
   const parentDb =
     isFullPage(page) && page.parent.type === "data_source_id" ? page.parent.database_id : null;
-  if (!parentDb || normalizeId(parentDb) !== normalizeId(requireEnv("NOTION_TASKS_DB"))) {
-    throw new Error("Trang này không thuộc database Tasks");
+  if (!parentDb || normalizeId(parentDb) !== normalizeId(requireEnv(envName))) {
+    throw new Error(`Trang này không thuộc database ${envName}`);
   }
 }
+
+const assertTaskPage = (pageId: string) => assertInDatabase(pageId, "NOTION_TASKS_DB");
 
 /** Tích xong task (SPEC 7.2): đặt Trạng thái = Xong và Ngày xong = hôm nay (SPEC-v0.3 mục 6). */
 export async function markTaskDone(pageId: string): Promise<void> {
@@ -67,35 +71,92 @@ export async function updateTask(pageId: string, input: TaskUpdate): Promise<voi
  * Daily Log của `day` (YYYY-MM-DD, giờ VN): mỗi ngày 1 bản ghi (SPEC-v0.2 4.1).
  * Đã có bản ghi Date = day → cập nhật; chưa có → tạo mới.
  */
-export async function saveDailyLog(day: string, input: DailyLogInput): Promise<"created" | "updated"> {
+/** Bản ghi Daily Log của `day`, nếu đã có. */
+async function findDailyLog(day: string) {
   const dsId = await dataSourceId("NOTION_DAILY_DB");
   const existing = await notion().dataSources.query({
     data_source_id: dsId,
     filter: { property: "Date", date: { equals: day } },
     page_size: 1,
   });
+  const page = existing.results.find(isFullPage);
+  return { dsId, page };
+}
+
+/** Thuộc tính bắt buộc khi tạo bản ghi Daily Log mới cho `day`. */
+const newDailyLog = (day: string) => ({
+  "Ngày": { title: richText(formatDay(day)) },
+  Date: { date: { start: day } },
+});
+
+/** Cột "Thói quen" + checkbox "Tập thể dục" cũ luôn khớp nhau (SPEC-v0.4 3.1). */
+const habitProperties = (names: string[]) => ({
+  "Thói quen": { multi_select: names.map((name) => ({ name })) },
+  "Tập thể dục": { checkbox: names.includes(LEGACY_EXERCISE) },
+});
+
+export async function saveDailyLog(day: string, input: DailyLogInput): Promise<"created" | "updated"> {
+  const { dsId, page } = await findDailyLog(day);
+  // Ô "Tập thể dục" của Ghi nhanh (nếu có) bật/tắt thói quen cùng tên, giữ nguyên các thói quen khác
+  const exercised = input.exercised;
+  const habits =
+    exercised === null ? null : toggleHabit(page ? multiSelect(page.properties, "Thói quen") : [], LEGACY_EXERCISE, exercised);
   const properties = {
     Xong: { rich_text: richText(input.done) },
     "Rơi / chưa xong": { rich_text: richText(input.dropped) },
     "Học được": { rich_text: richText(input.learned) },
     "Ngày mai 3 việc": { rich_text: richText(input.tomorrowTop3) },
-    "Tập thể dục": { checkbox: input.exercised },
+    ...(habits && habitProperties(habits)),
   };
 
-  const page = existing.results[0];
   if (page) {
     await notion().pages.update({ page_id: page.id, properties });
     return "updated";
   }
   await notion().pages.create({
     parent: { type: "data_source_id", data_source_id: dsId },
-    properties: {
-      ...properties,
-      "Ngày": { title: richText(formatDay(day)) },
-      Date: { date: { start: day } },
-    },
+    properties: { ...properties, ...newDailyLog(day) },
   });
   return "created";
+}
+
+/** Ghi **toàn bộ** thói quen đã làm của `day` (không bật/tắt lẻ → hai lần bấm nhanh không ghi đè nhau sai). */
+export async function setDayHabits(day: string, names: string[]): Promise<void> {
+  const { dsId, page } = await findDailyLog(day);
+  if (page) {
+    await notion().pages.update({ page_id: page.id, properties: habitProperties(names) });
+    return;
+  }
+  await notion().pages.create({
+    parent: { type: "data_source_id", data_source_id: dsId },
+    properties: { ...habitProperties(names), ...newDailyLog(day) },
+  });
+}
+
+/** Thêm thói quen, theo dõi từ tháng `from` (YYYY-MM-01). */
+export async function createHabit(name: string, from: string, order: number): Promise<void> {
+  await notion().pages.create({
+    parent: { type: "data_source_id", data_source_id: await dataSourceId("NOTION_HABITS_DB") },
+    properties: {
+      "Tên": { title: richText(name) },
+      "Từ tháng": { date: { start: from } },
+      "Thứ tự": { number: order },
+    },
+  });
+}
+
+export async function setHabitOrder(pageId: string, order: number): Promise<void> {
+  await assertInDatabase(pageId, "NOTION_HABITS_DB");
+  await notion().pages.update({ page_id: pageId, properties: { "Thứ tự": { number: order } } });
+}
+
+/** Ngừng theo dõi sau tháng `to` (YYYY-MM-01); null = theo dõi lại. Lịch sử Daily Log giữ nguyên. */
+export async function setHabitEnd(pageId: string, to: string | null): Promise<void> {
+  await assertInDatabase(pageId, "NOTION_HABITS_DB");
+  await notion().pages.update({
+    page_id: pageId,
+    properties: { "Đến tháng": { date: to ? { start: to } : null } },
+  });
 }
 
 /** Ý tưởng ghi nhanh → database Ideas (Trạng thái = Mới). */

@@ -56,3 +56,9 @@ export function addDays(day: string, n: number): string {
 export function daysBetween(from: string, to: string): number {
   return Math.round((toUTC(to) - toUTC(from)) / 86_400_000);
 }
+
+/** Thứ Hai của tuần chứa `day` (tuần bắt đầu Thứ Hai). */
+export function mondayOf(day: string): string {
+  const dow = new Date(`${day}T00:00:00Z`).getUTCDay();
+  return addDays(day, -((dow + 6) % 7));
+}

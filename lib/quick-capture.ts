@@ -8,7 +8,8 @@ export type DailyLogInput = {
   dropped: string;
   learned: string;
   tomorrowTop3: string;
-  exercised: boolean;
+  /** null = form không có ô này (thẻ Thói quen lo phần đó, SPEC-v0.4 3.1) → không đụng tới thói quen */
+  exercised: boolean | null;
 };
 
 export type Parsed<T> = { ok: true; data: T } | { ok: false; error: string };
@@ -28,7 +29,8 @@ export function parseDailyLog(form: FormData): Parsed<DailyLogInput> {
     dropped: text(form.get("dropped")),
     learned: text(form.get("learned")),
     tomorrowTop3: text(form.get("tomorrowTop3")),
-    exercised: form.get("exercised") === "on",
+    // checkbox bỏ tích thì không gửi gì → dùng ô ẩn "exerciseField" để biết form có ô này hay không
+    exercised: form.has("exerciseField") ? form.get("exercised") === "on" : null,
   };
   for (const [key, label] of Object.entries(FIELD_LABELS) as [keyof typeof FIELD_LABELS, string][]) {
     if (data[key].length > MAX_TEXT) return { ok: false, error: `"${label}" dài quá ${MAX_TEXT} ký tự.` };
