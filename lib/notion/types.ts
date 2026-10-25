@@ -13,6 +13,10 @@ export type Task = {
   /** YYYY-MM-DD theo giờ Việt Nam */
   deadline: string | null;
   note: string;
+  /** Ngày đánh dấu Xong (YYYY-MM-DD), từ v0.3; task xong trước đó để trống */
+  doneOn: string | null;
+  /** ISO, Notion tự đặt */
+  createdTime: string;
 };
 
 export type Knowledge = {

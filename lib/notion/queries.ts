@@ -58,7 +58,7 @@ export async function tasksResult(): Promise<Result<Task[]>> {
     cacheLife(FIVE_MINUTES);
     return {
       ok: true,
-      data: pages.map(({ id, url: pageUrl, properties: p }) => ({
+      data: pages.map(({ id, url: pageUrl, created_time, properties: p }) => ({
         id,
         url: pageUrl,
         title: text(p, "Việc"),
@@ -67,6 +67,8 @@ export async function tasksResult(): Promise<Result<Task[]>> {
         priority: select(p, "Ưu tiên") as Priority | null,
         deadline: date(p, "Deadline"),
         note: text(p, "Ghi chú"),
+        doneOn: date(p, "Ngày xong"),
+        createdTime: created_time,
       })),
     };
   } catch (e) {

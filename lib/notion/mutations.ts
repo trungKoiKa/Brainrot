@@ -1,6 +1,6 @@
 import "server-only";
 import { isFullPage } from "@notionhq/client";
-import { formatDay } from "@/lib/date";
+import { formatDay, todayVN } from "@/lib/date";
 import type { DailyLogInput } from "@/lib/quick-capture";
 import type { TaskInput, TaskUpdate } from "@/lib/task-form";
 import { notion, requireEnv } from "./client";
@@ -21,12 +21,15 @@ async function assertTaskPage(pageId: string): Promise<void> {
   }
 }
 
-/** Tích xong task (SPEC 7.2): đặt Trạng thái = Xong. */
+/** Tích xong task (SPEC 7.2): đặt Trạng thái = Xong và Ngày xong = hôm nay (SPEC-v0.3 mục 6). */
 export async function markTaskDone(pageId: string): Promise<void> {
   await assertTaskPage(pageId);
   await notion().pages.update({
     page_id: pageId,
-    properties: { "Trạng thái": { status: { name: "Xong" } } },
+    properties: {
+      "Trạng thái": { status: { name: "Xong" } },
+      "Ngày xong": { date: { start: todayVN() } },
+    },
   });
 }
 
@@ -53,6 +56,8 @@ export async function updateTask(pageId: string, input: TaskUpdate): Promise<voi
     properties: {
       ...taskProperties(input),
       "Trạng thái": { status: { name: input.status } },
+      // Form sửa chỉ cho Chưa làm / Đang làm → task mở lại thì bỏ Ngày xong (SPEC-v0.3 mục 6)
+      "Ngày xong": { date: null },
       "Ghi chú": { rich_text: richText(input.note) },
     },
   });

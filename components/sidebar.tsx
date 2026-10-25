@@ -3,13 +3,14 @@
 import { useSyncExternalStore } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { CalendarRangeIcon, ListChecksIcon, NetworkIcon, SunIcon, type LucideIcon } from "lucide-react";
+import { CalendarRangeIcon, LayoutDashboardIcon, ListChecksIcon, NetworkIcon, SunIcon, type LucideIcon } from "lucide-react";
 import { daysBetween, longDateVN, todayVN } from "@/lib/date";
 import { ThemeToggle } from "./theme-toggle";
 
-// Thứ tự v0.2: Brain là trang chủ (SPEC-v0.2 mục 2)
+// Brain là trang chủ (SPEC-v0.2 mục 2); Dashboard ngay sau Brain (SPEC-v0.3 mục 3)
 const NAV: readonly { href: string; label: string; icon: LucideIcon }[] = [
   { href: "/", label: "Brain", icon: NetworkIcon },
+  { href: "/dashboard", label: "Dashboard", icon: LayoutDashboardIcon },
   { href: "/today", label: "Today", icon: SunIcon },
   { href: "/tasks", label: "Tasks", icon: ListChecksIcon },
   { href: "/planner", label: "Planner", icon: CalendarRangeIcon },
@@ -55,7 +56,7 @@ export function Sidebar({ thesisDeadline }: { thesisDeadline?: string }) {
               href={href}
               aria-current={active ? "page" : undefined}
               title={label}
-              className={`relative flex items-center gap-3 rounded-lg px-3 py-2 text-sm transition-colors ${
+              className={`relative flex items-center gap-3 rounded-lg px-2 py-2 text-sm transition-colors md:px-3 ${
                 active
                   ? "bg-accent-soft font-medium text-primary md:before:absolute md:before:inset-y-1.5 md:before:-left-4 md:before:w-1 md:before:rounded-r-full md:before:bg-primary"
                   : "text-muted-foreground hover:bg-surface-muted hover:text-foreground"
