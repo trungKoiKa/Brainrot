@@ -47,7 +47,7 @@ export function TaskBoard({ tasks: initial, projects: allProjects, today }: { ta
       </div>
 
       {groups.length === 0 ? (
-        <p className="rounded-2xl border border-line bg-surface p-6 text-sm text-muted">
+        <p className="rounded-2xl border border-line bg-surface p-6 text-sm text-muted-foreground">
           {open.length === 0 ? "Không còn việc nào chưa xong." : "Không có task nào khớp bộ lọc."}
         </p>
       ) : (
@@ -56,7 +56,7 @@ export function TaskBoard({ tasks: initial, projects: allProjects, today }: { ta
             <section key={g.name} className="rounded-2xl border border-line bg-surface p-5 md:p-6">
               <h2 className="mb-4 flex items-baseline justify-between font-serif text-lg font-semibold">
                 {g.name}
-                <span className="font-sans text-xs font-normal text-muted">{g.tasks.length} việc</span>
+                <span className="font-sans text-xs font-normal text-muted-foreground">{g.tasks.length} việc</span>
               </h2>
               <ul className="divide-y divide-line">
                 {g.tasks.map((t) =>
@@ -75,7 +75,7 @@ export function TaskBoard({ tasks: initial, projects: allProjects, today }: { ta
       {done.length > 0 && (
         <details className="mt-6 rounded-2xl border border-line bg-surface p-5 md:p-6">
           <summary className="cursor-pointer font-serif text-lg font-semibold">
-            Đã xong <span className="font-sans text-sm font-normal text-muted">({done.length})</span>
+            Đã xong <span className="font-sans text-sm font-normal text-muted-foreground">({done.length})</span>
           </summary>
           <ul className="mt-4 divide-y divide-line">
             {done.map((t) => (
@@ -101,11 +101,11 @@ function FilterRow<T extends string>({
 }) {
   const chip = (active: boolean) =>
     `rounded-full border px-3 py-1 text-sm transition-colors ${
-      active ? "border-accent bg-accent-soft text-accent" : "border-line text-muted hover:text-foreground"
+      active ? "border-primary bg-accent-soft text-primary" : "border-line text-muted-foreground hover:text-foreground"
     }`;
   return (
     <div className="flex flex-wrap items-center gap-2" role="group" aria-label={`Lọc theo ${label}`}>
-      <span className="w-16 text-sm text-muted">{label}</span>
+      <span className="w-16 text-sm text-muted-foreground">{label}</span>
       <button type="button" aria-pressed={value === null} className={chip(value === null)} onClick={() => onChange(null)}>
         Tất cả
       </button>

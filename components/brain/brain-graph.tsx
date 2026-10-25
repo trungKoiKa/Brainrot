@@ -15,7 +15,7 @@ type Node = NodeObject<GraphNode>;
 type Link = LinkObject<GraphNode, GraphLink>;
 
 const VARS = [
-  "--background", "--foreground", "--muted", "--accent",
+  "--background", "--foreground", "--muted-foreground", "--primary",
   "--field-1", "--field-2", "--field-3", "--field-4", "--field-neutral",
 ];
 
@@ -234,14 +234,14 @@ export default function BrainGraph({ data }: { data: GraphData }) {
           nodeLabel={(n) => escapeHtml(isHub(n) ? `${n.label} — bấm để zoom` : n.label)}
           linkColor={(l) =>
             shownColor(
-              colorById.get(idOf(l.source)) ?? palette["--muted"],
+              colorById.get(idOf(l.source)) ?? palette["--muted-foreground"],
               Boolean(selected) && idOf(l.source) !== selected?.id && idOf(l.target) !== selected?.id,
             )
           }
           linkOpacity={0.35}
           linkDirectionalParticles={(l) => (l.kind === "mention" ? 2 : 0)}
           linkDirectionalParticleWidth={1.6}
-          linkDirectionalParticleColor={() => palette["--accent"]}
+          linkDirectionalParticleColor={() => palette["--primary"]}
           cooldownTicks={120}
           onEngineStop={() => {
             if (fitted.current) return;
@@ -253,7 +253,7 @@ export default function BrainGraph({ data }: { data: GraphData }) {
       )}
 
       {/* Lớp phủ: ô tìm + số liệu + gợi ý (chỉ ô tìm nhận chuột, phần còn lại không chặn graph) */}
-      <div className="pointer-events-none absolute inset-x-0 top-0 flex flex-wrap items-start justify-between gap-2 p-4 text-xs text-muted">
+      <div className="pointer-events-none absolute inset-x-0 top-0 flex flex-wrap items-start justify-between gap-2 p-4 text-xs text-muted-foreground">
         <GraphSearch
           nodes={data.nodes}
           colorOf={colorOf}
@@ -293,7 +293,7 @@ export default function BrainGraph({ data }: { data: GraphData }) {
           />
         ))}
         {emptyCount > 0 && (
-          <span className="text-xs text-muted" title={emptyNames.join(", ")}>
+          <span className="text-xs text-muted-foreground" title={emptyNames.join(", ")}>
             +{emptyCount} cụm chưa có trang
           </span>
         )}
@@ -303,7 +303,7 @@ export default function BrainGraph({ data }: { data: GraphData }) {
 }
 
 function GroupLabel({ children }: { children: React.ReactNode }) {
-  return <span className="shrink-0 pl-1 text-xs font-medium uppercase tracking-wide text-muted first:pl-0">{children}</span>;
+  return <span className="shrink-0 pl-1 text-xs font-medium uppercase tracking-wide text-muted-foreground first:pl-0">{children}</span>;
 }
 
 function LegendChip({
@@ -326,14 +326,14 @@ function LegendChip({
       onClick={onClick}
       disabled={empty}
       title={empty ? `${label}: chưa có trang nào` : `Bay tới cụm ${label}`}
-      className="flex shrink-0 items-center gap-2 rounded-full border border-line bg-surface/80 px-3 py-1 text-xs text-foreground backdrop-blur transition-colors hover:border-accent disabled:cursor-default disabled:opacity-45 disabled:hover:border-line"
+      className="flex shrink-0 items-center gap-2 rounded-full border border-line bg-surface/80 px-3 py-1 text-xs text-foreground backdrop-blur transition-colors hover:border-primary disabled:cursor-default disabled:opacity-45 disabled:hover:border-line"
     >
       <span
         className="size-2 rounded-full"
         style={hollow ? { boxShadow: `inset 0 0 0 1.5px ${color}` } : { backgroundColor: color }}
       />
       {label}
-      <span className="font-mono text-muted">{count}</span>
+      <span className="font-mono text-muted-foreground">{count}</span>
     </button>
   );
 }

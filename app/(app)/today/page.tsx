@@ -68,16 +68,16 @@ function ThesisCountdown({ today }: { today: string }) {
   const days = daysBetween(today, deadline);
   return (
     <Card className="lg:col-span-2">
-      <p className="text-muted">Đồ án tốt nghiệp</p>
+      <p className="text-muted-foreground">Đồ án tốt nghiệp</p>
       <p className="mt-1 font-serif text-2xl md:text-3xl">
         {days > 0 ? (
           <>
-            Còn <span className="font-semibold text-accent">{days} ngày</span> đến hạn nộp đồ án ({formatDay(deadline)})
+            Còn <span className="font-semibold text-primary">{days} ngày</span> đến hạn nộp đồ án ({formatDay(deadline)})
           </>
         ) : days === 0 ? (
           <span className="font-semibold text-danger">Hôm nay là hạn nộp đồ án ({formatDay(deadline)})</span>
         ) : (
-          <span className="text-muted">Đã qua hạn nộp đồ án {-days} ngày ({formatDay(deadline)})</span>
+          <span className="text-muted-foreground">Đã qua hạn nộp đồ án {-days} ngày ({formatDay(deadline)})</span>
         )}
       </p>
     </Card>
@@ -90,11 +90,11 @@ function TopThreeCard({ top }: { top: TopThree }) {
       title="3 việc hôm nay"
       action={
         top.source === "daily" ? (
-          <ExternalLink href={top.logUrl} className="text-xs text-muted hover:text-accent">
+          <ExternalLink href={top.logUrl} className="text-xs text-muted-foreground hover:text-primary">
             Từ Daily Log hôm qua ↗
           </ExternalLink>
         ) : (
-          <span className="text-xs text-muted">Từ Tasks</span>
+          <span className="text-xs text-muted-foreground">Từ Tasks</span>
         )
       }
     >
@@ -131,27 +131,27 @@ function NextUpCard({ calendar, now, today }: { calendar: CalendarResult; now: D
   }
   const { day, items } = pickNextUp(calendar.events, now, today);
   return (
-    <Card title="Next up" action={<span className="text-xs text-muted">{day === "today" ? "Hôm nay" : "Ngày mai"}</span>}>
+    <Card title="Next up" action={<span className="text-xs text-muted-foreground">{day === "today" ? "Hôm nay" : "Ngày mai"}</span>}>
       {items.length === 0 ? (
         <Empty>Hôm nay và ngày mai không còn sự kiện nào.</Empty>
       ) : (
         <ul className="divide-y divide-line">
           {items.map((e) => (
             <li key={e.id} className="flex gap-3 py-2 first:pt-0 last:pb-0">
-              <span className="w-24 shrink-0 text-xs leading-6 tabular-nums text-muted">{timeRange(e)}</span>
+              <span className="w-24 shrink-0 text-xs leading-6 tabular-nums text-muted-foreground">{timeRange(e)}</span>
               <div className="min-w-0 flex-1">
                 {e.url ? (
-                  <ExternalLink href={e.url} className="hover:text-accent">
+                  <ExternalLink href={e.url} className="hover:text-primary">
                     {e.title}
                   </ExternalLink>
                 ) : (
                   e.title
                 )}
                 {(e.ongoing || e.location || e.meetUrl) && (
-                  <div className="mt-1 flex flex-wrap items-center gap-2 text-xs text-muted">
-                    {e.ongoing && <span className="rounded-full bg-accent-soft px-2 py-0.5 font-medium text-accent">Đang diễn ra</span>}
+                  <div className="mt-1 flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
+                    {e.ongoing && <span className="rounded-full bg-accent-soft px-2 py-0.5 font-medium text-primary">Đang diễn ra</span>}
                     {e.meetUrl && (
-                      <ExternalLink href={e.meetUrl} className="text-accent hover:underline">
+                      <ExternalLink href={e.meetUrl} className="text-primary hover:underline">
                         Vào họp ↗
                       </ExternalLink>
                     )}
@@ -181,7 +181,7 @@ function DeadlinesCard({ items }: { items: DeadlineItem[] }) {
                 <TaskLink task={t} className={overdue ? "text-danger" : undefined} />
                 <span
                   className={`shrink-0 text-xs ${
-                    overdue ? "rounded-full bg-danger-soft px-2 py-0.5 font-medium text-danger" : t.daysLeft === 0 ? "font-medium text-accent" : "text-muted"
+                    overdue ? "rounded-full bg-danger-soft px-2 py-0.5 font-medium text-danger" : t.daysLeft === 0 ? "font-medium text-primary" : "text-muted-foreground"
                   }`}
                 >
                   {deadlineLabel(t.daysLeft)} · {formatDay(t.deadline, true)}
@@ -204,10 +204,10 @@ function KnowledgeCard({ notes }: { notes: Knowledge[] }) {
         <ul className="divide-y divide-line">
           {notes.map((k) => (
             <li key={k.id} className="py-2 first:pt-0 last:pb-0">
-              <ExternalLink href={k.url} className="font-medium hover:text-accent">
+              <ExternalLink href={k.url} className="font-medium hover:text-primary">
                 {k.title || "(Chưa đặt tên)"}
               </ExternalLink>
-              <div className="mt-1 flex flex-wrap items-center gap-2 text-xs text-muted">
+              <div className="mt-1 flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
                 <FieldBadge field={k.field} />
                 {k.level && <span>{k.level}</span>}
               </div>
@@ -221,9 +221,9 @@ function KnowledgeCard({ notes }: { notes: Knowledge[] }) {
 
 function TaskLink({ task, className = "" }: { task: Task; className?: string }) {
   return (
-    <ExternalLink href={task.url} className={`hover:text-accent ${className}`}>
+    <ExternalLink href={task.url} className={`hover:text-primary ${className}`}>
       {task.title || "(Chưa đặt tên)"}
-      {task.project && <span className="ml-2 text-xs text-muted">{task.project}</span>}
+      {task.project && <span className="ml-2 text-xs text-muted-foreground">{task.project}</span>}
     </ExternalLink>
   );
 }
@@ -238,7 +238,7 @@ function ExternalLink({ href, className, children }: { href: string; className?:
 
 function Index({ n }: { n: number }) {
   return (
-    <span className="flex size-6 shrink-0 items-center justify-center rounded-full bg-accent-soft text-xs font-semibold text-accent">
+    <span className="flex size-6 shrink-0 items-center justify-center rounded-full bg-accent-soft text-xs font-semibold text-primary">
       {n}
     </span>
   );

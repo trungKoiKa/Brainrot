@@ -75,14 +75,14 @@ function DailyLogForm({ todayLog }: { todayLog: DailyLog | null }) {
     <details className="group" open={!todayLog}>
       <summary className="cursor-pointer text-sm font-medium">
         Daily Log hôm nay{" "}
-        <span className="font-normal text-muted">{todayLog ? "· đã ghi, bấm để sửa" : "· chưa ghi"}</span>
+        <span className="font-normal text-muted-foreground">{todayLog ? "· đã ghi, bấm để sửa" : "· chưa ghi"}</span>
       </summary>
       <form action={action} className="mt-3 grid gap-3 md:grid-cols-2">
         {fields.map(({ key, label, hint }) => (
           <label key={key} className="space-y-1 text-sm">
-            <span className="text-muted">{label}</span>
+            <span className="text-muted-foreground">{label}</span>
             <textarea name={key} rows={3} value={values[key]} onChange={set(key)} className={fieldClass} />
-            {hint && <span className="text-xs text-muted">{hint}</span>}
+            {hint && <span className="text-xs text-muted-foreground">{hint}</span>}
           </label>
         ))}
         <div className="flex flex-wrap items-center gap-4 md:col-span-2">
@@ -92,7 +92,7 @@ function DailyLogForm({ todayLog }: { todayLog: DailyLog | null }) {
               name="exercised"
               checked={values.exercised}
               onChange={(e) => setValues((v) => ({ ...v, exercised: e.target.checked }))}
-              className="size-4 accent-[var(--accent)]"
+              className="size-4 accent-[var(--primary)]"
             />
             Tập thể dục
           </label>

@@ -100,14 +100,14 @@ export function GraphSearch({
         onFocus={() => setOpen(true)}
         onBlur={() => setOpen(false)}
         onKeyDown={onKeyDown}
-        className="w-full rounded-lg border border-line bg-surface/90 py-1.5 pl-3 pr-8 text-sm text-foreground outline-none backdrop-blur placeholder:text-muted focus:border-accent [&::-webkit-search-cancel-button]:hidden"
+        className="w-full rounded-lg border border-line bg-surface/90 py-1.5 pl-3 pr-8 text-sm text-foreground outline-none backdrop-blur placeholder:text-muted-foreground focus:border-primary [&::-webkit-search-cancel-button]:hidden"
       />
       {(query || selected) && (
         <button
           type="button"
           onClick={clear}
           aria-label="Bỏ tìm kiếm"
-          className="absolute right-1.5 top-1/2 size-6 -translate-y-1/2 rounded text-muted hover:text-foreground"
+          className="absolute right-1.5 top-1/2 size-6 -translate-y-1/2 rounded text-muted-foreground hover:text-foreground"
         >
           ✕
         </button>
@@ -119,7 +119,7 @@ export function GraphSearch({
           className="absolute inset-x-0 top-full z-10 mt-1 overflow-hidden rounded-lg border border-line bg-surface py-1 text-sm shadow-lg"
         >
           {results.length === 0 ? (
-            <li className="px-3 py-2 text-muted">Không có trang nào khớp.</li>
+            <li className="px-3 py-2 text-muted-foreground">Không có trang nào khớp.</li>
           ) : (
             results.map((n, i) => (
               <li
@@ -137,7 +137,7 @@ export function GraphSearch({
               >
                 <span className="size-2 shrink-0 rounded-full" style={{ backgroundColor: colorOf(n) }} />
                 <span className="min-w-0 flex-1 truncate">{n.label}</span>
-                <span className="shrink-0 text-xs text-muted">{KIND_LABEL[n.kind]}</span>
+                <span className="shrink-0 text-xs text-muted-foreground">{KIND_LABEL[n.kind]}</span>
               </li>
             ))
           )}

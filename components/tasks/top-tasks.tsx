@@ -21,10 +21,10 @@ export function TopTasks({ tasks: initial }: { tasks: Task[] }) {
                 href={task.url}
                 target="_blank"
                 rel="noopener noreferrer"
-                className={`hover:text-accent ${done ? "text-muted line-through" : ""}`}
+                className={`hover:text-primary ${done ? "text-muted-foreground line-through" : ""}`}
               >
                 {task.title || "(Chưa đặt tên)"}
-                {task.project && <span className="ml-2 text-xs text-muted no-underline">{task.project}</span>}
+                {task.project && <span className="ml-2 text-xs text-muted-foreground no-underline">{task.project}</span>}
               </a>
             </li>
           );

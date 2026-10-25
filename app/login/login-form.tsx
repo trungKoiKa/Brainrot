@@ -8,7 +8,7 @@ export function LoginForm() {
 
   return (
     <form action={action} className="flex flex-col gap-3">
-      <label htmlFor="password" className="text-sm text-muted">
+      <label htmlFor="password" className="text-sm text-muted-foreground">
         Mật khẩu
       </label>
       <input
@@ -18,7 +18,7 @@ export function LoginForm() {
         required
         autoFocus
         autoComplete="current-password"
-        className="rounded-lg border border-line bg-background px-3 py-2 outline-none focus:border-accent"
+        className="rounded-lg border border-line bg-background px-3 py-2 outline-none focus:border-primary"
       />
       {state.error && (
         <p role="alert" className="rounded-lg bg-danger-soft px-3 py-2 text-sm text-danger">
@@ -28,7 +28,7 @@ export function LoginForm() {
       <button
         type="submit"
         disabled={pending}
-        className="mt-2 rounded-lg bg-accent px-3 py-2 font-medium text-surface transition-opacity disabled:opacity-60"
+        className="mt-2 rounded-lg bg-primary px-3 py-2 font-medium text-surface transition-opacity disabled:opacity-60"
       >
         {pending ? "Đang kiểm tra…" : "Vào"}
       </button>

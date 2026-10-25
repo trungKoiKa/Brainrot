@@ -100,7 +100,7 @@ export function EditTaskForm({ task, projects, onClose }: { task: Task; projects
     <li className="py-2.5 first:pt-0 last:pb-0">
       <form
         action={action}
-        className="space-y-2 rounded-lg border border-accent p-3"
+        className="space-y-2 rounded-lg border border-primary p-3"
         onKeyDown={(e) => e.key === "Escape" && onClose()}
       >
         <input type="hidden" name="id" value={task.id} />
@@ -137,7 +137,7 @@ export function EditTaskForm({ task, projects, onClose }: { task: Task; projects
         />
         <div className="flex flex-wrap items-center gap-2">
           <Status state={state} />
-          <button type="button" onClick={onClose} className="ml-auto rounded-lg px-3 py-2 text-sm text-muted hover:text-foreground">
+          <button type="button" onClick={onClose} className="ml-auto rounded-lg px-3 py-2 text-sm text-muted-foreground hover:text-foreground">
             Hủy
           </button>
           <button type="submit" disabled={pending || !values.title.trim()} className={primaryButtonClass}>
