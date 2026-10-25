@@ -261,6 +261,40 @@ export function PlannerLanes({ lanes, more }: { lanes: { name: string; done: num
   );
 }
 
+// ---------- thói quen (SPEC-v0.4 3.3) ----------
+
+export function HabitBars({
+  rows,
+}: {
+  rows: { name: string; count: number; days: number; pct: number; streak: number; best: number }[];
+}) {
+  return (
+    <ul className="space-y-4">
+      {rows.map((r) => {
+        const tone = pctTone(r.pct);
+        return (
+          <li key={r.name}>
+            <div className="flex items-center gap-2 text-sm">
+              <Dot tone={tone} />
+              <span className="min-w-0 flex-1 truncate font-medium">{r.name}</span>
+              <span className="font-medium tabular-nums">{r.pct}%</span>
+            </div>
+            <Progress
+              value={r.pct}
+              aria-label={`${r.name}: ${r.pct}%`}
+              className="mt-2 [&_[data-slot=progress-indicator]]:bg-(--lane) [&_[data-slot=progress-track]]:h-1.5"
+              style={{ "--lane": TONE_COLOR[tone] } as React.CSSProperties}
+            />
+            <p className="mt-1 text-xs text-muted-foreground tabular-nums">
+              {r.count}/{r.days} ngày · chuỗi {r.streak} · dài nhất {r.best}
+            </p>
+          </li>
+        );
+      })}
+    </ul>
+  );
+}
+
 function Legend({ config }: { config: ChartConfig }) {
   return (
     <div className="mb-3 flex flex-wrap justify-end gap-4 text-xs text-muted-foreground">

@@ -69,7 +69,8 @@ Hơn template:
   ngừng theo dõi **từ tháng sau** (Đến tháng = tháng đang xem). **Đổi tên làm trong Notion** (sửa cả dòng Habits và
   lựa chọn của cột "Thói quen") — Daily Log lưu theo tên, đổi tên trên web sẽ tách rời lịch sử.
 - Bảng tự cuộn tới cột hôm nay; hàng cột nhỏ phía trên: ngày 0% là vạch xám, không tô đỏ.
-- **Dashboard:** thẻ "Thói quen": % từng thói quen trong kỳ đang chọn (7/30/90) + streak dài nhất. Có bản dữ liệu mẫu.
+- **Dashboard:** thẻ "Thói quen" cạnh "Nhịp hằng ngày" (hàng cuối, 1/3): % từng thói quen trong kỳ đang chọn (7/30/90)
+  tính trên số ngày thói quen **được theo dõi** trong kỳ, % trung bình, chuỗi hiện tại + dài nhất. Có bản dữ liệu mẫu.
 
 ## 4. Mục tiêu xếp tầng
 

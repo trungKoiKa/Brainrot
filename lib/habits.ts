@@ -13,10 +13,13 @@ export function doneHabits(log: { habits: string[]; exercised: boolean }): strin
   return log.exercised && !log.habits.includes(LEGACY_EXERCISE) ? [...log.habits, LEGACY_EXERCISE] : log.habits;
 }
 
-/** Thói quen theo dõi trong tháng `month`: Từ tháng ≤ month ≤ Đến tháng (trống = vẫn theo dõi). */
+/** Thói quen có được theo dõi trong tháng `month` không: Từ tháng ≤ month ≤ Đến tháng (trống = vẫn theo dõi). */
+export const isHabitActive = (h: Habit, month: string) => monthOf(h.from) <= month && (h.to === null || monthOf(h.to) >= month);
+
+/** Thói quen theo dõi trong tháng `month`, theo thứ tự. */
 export function habitsForMonth(habits: Habit[], month: string): Habit[] {
   return habits
-    .filter((h) => monthOf(h.from) <= month && (h.to === null || monthOf(h.to) >= month))
+    .filter((h) => isHabitActive(h, month))
     .sort((a, b) => a.order - b.order || a.name.localeCompare(b.name, "vi"));
 }
 

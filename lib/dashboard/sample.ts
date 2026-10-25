@@ -1,11 +1,20 @@
 // Dữ liệu mẫu cho Dashboard (SPEC-v0.3 mục 5): seed cố định → cùng ngày luôn ra cùng số liệu.
 // Chỉ để xem/demo; không bao giờ ghi vào Notion.
 import { addDays } from "@/lib/date";
+import type { Habit } from "@/lib/notion/types";
 import type { DashInput, DashLog, DashTask, PlannerSummary } from "./stats";
 import { mondayOf } from "./stats";
 
 const SEED = 20261206;
 const HISTORY_DAYS = 120;
+// [tên, tỉ lệ làm mỗi ngày có log] — "Tập thể dục" đi theo cờ exercised của log mẫu
+const SAMPLE_HABITS: [string, number][] = [
+  ["Tập thể dục", 0],
+  ["Đọc sách", 0.75],
+  ["Viết nhật ký", 0.55],
+  ["Học tiếng Anh", 0.65],
+  ["Ngủ trước 0h", 0.35],
+];
 
 /** mulberry32: PRNG nhỏ, đủ cho dữ liệu mẫu. */
 function rng(seed: number) {
@@ -58,7 +67,7 @@ export function sampleDashboard(today: string, thesisDeadline = "2026-12-06"): D
   for (let i = 89; i >= 0; i--) {
     const date = addDays(today, -i);
     if (r() < (isWeekend(date) ? 0.6 : 0.85)) {
-      logs.push({ date, doneCount: int(1, 6), exercised: r() < 0.45, dropped: r() < 0.3 });
+      logs.push({ date, doneCount: int(1, 6), exercised: r() < 0.45, dropped: r() < 0.3, habits: [] });
     }
   }
 
@@ -78,5 +87,18 @@ export function sampleDashboard(today: string, thesisDeadline = "2026-12-06"): D
   };
   planner.thisWeek = planner.projects.reduce((s, p) => ({ done: s.done + p.done, total: s.total + p.total }), { done: 0, total: 0 });
 
-  return { today, tasks, knowledge, logs, planner, thesisDeadline };
+  // Thói quen dùng PRNG riêng → thêm phần này không làm đổi số liệu mẫu các khối có sẵn
+  const rh = rng(SEED + 1);
+  const habits: Habit[] = SAMPLE_HABITS.map(([name], i) => ({
+    id: `sample-${i}`,
+    name,
+    from: `${addDays(today, -HISTORY_DAYS).slice(0, 7)}-01`,
+    to: null,
+    order: i + 1,
+  }));
+  for (const log of logs) {
+    log.habits = SAMPLE_HABITS.filter(([name, rate]) => (name === "Tập thể dục" ? log.exercised : rh() < rate)).map(([n]) => n);
+  }
+
+  return { today, tasks, knowledge, logs, planner, thesisDeadline, habits };
 }
