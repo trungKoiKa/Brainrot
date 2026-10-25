@@ -1,6 +1,8 @@
 // Tính số liệu cho Dashboard (SPEC-v0.3 mục 4). Hàm thuần: ngày là chuỗi YYYY-MM-DD theo giờ VN.
 import { addDays, daysBetween, mondayOf } from "@/lib/date";
-import type { TaskStatus } from "@/lib/notion/types";
+import { isHabitActive, streaks } from "@/lib/habits";
+import type { Habit, TaskStatus } from "@/lib/notion/types";
+import { monthOf } from "@/lib/period";
 
 export type Period = 7 | 30 | 90;
 export const PERIODS: Period[] = [7, 30, 90];
@@ -13,7 +15,14 @@ export type DashTask = {
   createdOn: string;
 };
 
-export type DashLog = { date: string; doneCount: number; exercised: boolean; dropped: boolean };
+export type DashLog = {
+  date: string;
+  doneCount: number;
+  exercised: boolean;
+  dropped: boolean;
+  /** Thói quen đã làm trong ngày (đã gộp checkbox "Tập thể dục" cũ) */
+  habits: string[];
+};
 
 export type Tally = { done: number; total: number };
 
@@ -32,6 +41,8 @@ export type DashInput = {
   logs: DashLog[];
   planner: PlannerSummary | null;
   thesisDeadline: string | null;
+  /** Database Habits (SPEC-v0.4); rỗng khi chưa kết nối */
+  habits: Habit[];
 };
 
 export type Tone = "good" | "warn" | "bad";
@@ -180,6 +191,35 @@ export function dailyRhythm({ today, logs }: DashInput, period: Period) {
     exercised: days.filter((d) => d.exercised).length,
     dropped: days.filter((d) => d.dropped).length,
   };
+}
+
+// ---------- thói quen (SPEC-v0.4 3.3) ----------
+
+/**
+ * % từng thói quen trong kỳ: số ngày đã làm / số ngày thói quen **được theo dõi** trong kỳ (thói quen mới thêm
+ * giữa kỳ không bị kéo tụt). Chuỗi (streak) tính trên toàn bộ Daily Log đã tải.
+ */
+export function habitKpis({ today, logs, habits }: DashInput, period: Period) {
+  const days = lastDays(today, period);
+  const rows = [...habits]
+    .sort((a, b) => a.order - b.order || a.name.localeCompare(b.name, "vi"))
+    .map((h) => {
+      const tracked = days.filter((d) => isHabitActive(h, monthOf(d)));
+      const done = new Set(logs.filter((l) => l.habits.includes(h.name)).map((l) => l.date));
+      const count = tracked.filter((d) => done.has(d)).length;
+      const { current, best } = streaks(done, today);
+      return {
+        name: h.name,
+        count,
+        days: tracked.length,
+        pct: tracked.length ? Math.round((count / tracked.length) * 100) : 0,
+        streak: current,
+        best,
+      };
+    })
+    .filter((r) => r.days > 0);
+  const average = rows.length ? Math.round(rows.reduce((s, r) => s + r.pct, 0) / rows.length) : null;
+  return { rows, average };
 }
 
 // ---------- 4.5 dự án Planner tuần này ----------

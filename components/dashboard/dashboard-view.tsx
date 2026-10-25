@@ -13,6 +13,7 @@ import {
   backlogKpi,
   dailyRhythm,
   doneKpi,
+  habitKpis,
   hasDoneDates,
   PERIODS,
   plannerKpi,
@@ -26,7 +27,7 @@ import {
 } from "@/lib/dashboard/stats";
 import { projectProgress, weekProgress } from "@/features/planner/lib/progress";
 import { usePlanner } from "@/features/planner/store/usePlanner";
-import { DailyBars, KpiCard, PlannerLanes, ProjectBars, SampleBadge, WeeklyArea } from "./dashboard-blocks";
+import { DailyBars, HabitBars, KpiCard, PlannerLanes, ProjectBars, SampleBadge, WeeklyArea } from "./dashboard-blocks";
 
 type Mode = "real" | "sample";
 
@@ -84,6 +85,7 @@ export function DashboardView({ real: realBase, graph }: { real: Omit<DashInput,
   const doneSample = all || !hasDoneDates(real.tasks);
   const logsSample = all || real.logs.length === 0;
   const plannerSample = all || real.planner === null;
+  const habitsSample = all || real.habits.length === 0;
   const tasksSrc = all ? sample : real;
   const doneSrc = doneSample ? sample : real;
   const logsSrc = logsSample ? sample : real;
@@ -96,6 +98,8 @@ export function DashboardView({ real: realBase, graph }: { real: Omit<DashInput,
   const thesis = thesisKpi({ ...logsSrc, thesisDeadline: real.thesisDeadline }, period);
   const weekly = weeklyRhythm(weeklySrc);
   const daily = dailyRhythm(logsSrc, period);
+  // Thói quen thật lấy cả danh sách Habits lẫn Daily Log thật; chưa kết nối Habits → mẫu
+  const habitStats = habitKpis(habitsSample ? sample : real, period);
   // Danh sách Planner: chế độ Thật mà chưa có dự án → báo trống (SPEC-v0.3 4.5), không dùng mẫu
   const lanes = all ? plannerLanes(sample.planner as PlannerSummary) : real.planner ? plannerLanes(real.planner) : null;
 
@@ -219,20 +223,48 @@ export function DashboardView({ real: realBase, graph }: { real: Omit<DashInput,
         </Card>
       </div>
 
-      <Card
-        title="Nhịp hằng ngày"
-        action={
-          <span className="flex flex-wrap justify-end gap-1.5">
-            {logsSample && <SampleBadge />}
-            <Badge variant="outline" radius="full">{daily.logged} ngày có log</Badge>
-            <Badge variant="success-light" radius="full">{daily.exercised} ngày tập</Badge>
-            <Badge variant="warning-light" radius="full">{daily.dropped} ngày rơi việc</Badge>
-          </span>
-        }
-      >
-        <p className="-mt-3 mb-4 text-sm text-muted-foreground">Daily Log · số việc xong mỗi ngày</p>
-        <DailyBars days={daily.days} />
-      </Card>
+      <div className="grid gap-5 lg:grid-cols-3">
+        <Card
+          title="Nhịp hằng ngày"
+          className="lg:col-span-2"
+          action={
+            <span className="flex flex-wrap justify-end gap-1.5">
+              {logsSample && <SampleBadge />}
+              <Badge variant="outline" radius="full">{daily.logged} ngày có log</Badge>
+              <Badge variant="success-light" radius="full">{daily.exercised} ngày tập</Badge>
+              <Badge variant="warning-light" radius="full">{daily.dropped} ngày rơi việc</Badge>
+            </span>
+          }
+        >
+          <p className="-mt-3 mb-4 text-sm text-muted-foreground">Daily Log · số việc xong mỗi ngày</p>
+          <DailyBars days={daily.days} />
+        </Card>
+        <Card
+          title="Thói quen"
+          action={
+            <span className="flex items-center gap-1.5">
+              {habitsSample && <SampleBadge />}
+              {habitStats.average !== null && (
+                <Badge variant="outline" radius="full">
+                  TB {habitStats.average}%
+                </Badge>
+              )}
+            </span>
+          }
+        >
+          <p className="-mt-3 mb-4 text-sm text-muted-foreground">
+            {period} ngày ·{" "}
+            <Link href="/goals" className="underline underline-offset-2 hover:text-foreground">
+              xem bảng tháng
+            </Link>
+          </p>
+          {habitStats.rows.length > 0 ? (
+            <HabitBars rows={habitStats.rows} />
+          ) : (
+            <Empty>Chưa có thói quen nào được theo dõi trong kỳ này.</Empty>
+          )}
+        </Card>
+      </div>
     </div>
   );
 }

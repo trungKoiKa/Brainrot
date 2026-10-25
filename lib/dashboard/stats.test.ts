@@ -4,6 +4,7 @@ import {
   backlogKpi,
   change,
   dailyRhythm,
+  habitKpis,
   doneKpi,
   lastDays,
   mondayOf,
@@ -22,7 +23,7 @@ const t = (o: Partial<DashTask> = {}): DashTask => ({
   project: null, status: "Chưa làm", deadline: null, doneOn: null, createdOn: "2026-10-01", ...o,
 });
 const input = (o: Partial<DashInput> = {}): DashInput => ({
-  today, tasks: [], knowledge: [], logs: [], planner: null, thesisDeadline: "2026-12-06", ...o,
+  today, tasks: [], knowledge: [], logs: [], planner: null, thesisDeadline: "2026-12-06", habits: [], ...o,
 });
 
 describe("ngày", () => {
@@ -83,7 +84,7 @@ describe("thẻ số liệu", () => {
   });
 
   it("đồ án: số ngày còn lại + số ngày có log", () => {
-    const logs = [{ date: "2026-10-26", doneCount: 2, exercised: false, dropped: false }];
+    const logs = [{ date: "2026-10-26", doneCount: 2, exercised: false, dropped: false, habits: [] }];
     expect(thesisKpi(input({ logs }), 7)).toMatchObject({ left: 41, logged: 1, tone: "good" });
     expect(thesisKpi(input({ thesisDeadline: "2026-11-05" }), 7).tone).toBe("bad");
   });
@@ -116,7 +117,7 @@ describe("biểu đồ", () => {
   });
 
   it("dailyRhythm: ngày không có log vẫn có cột", () => {
-    const r = dailyRhythm(input({ logs: [{ date: "2026-10-25", doneCount: 3, exercised: true, dropped: true }] }), 7);
+    const r = dailyRhythm(input({ logs: [{ date: "2026-10-25", doneCount: 3, exercised: true, dropped: true, habits: [] }] }), 7);
     expect(r.days).toHaveLength(7);
     expect(r).toMatchObject({ logged: 1, exercised: 1, dropped: 1 });
     expect(r.days.at(-2)).toMatchObject({ date: "2026-10-25", done: 3 });
@@ -135,6 +136,31 @@ describe("biểu đồ", () => {
   });
 });
 
+describe("thói quen", () => {
+  const log = (date: string, habits: string[]) => ({ date, doneCount: 0, exercised: false, dropped: false, habits });
+  const habit = (name: string, from: string, order: number) => ({ id: name, name, from, to: null, order });
+
+  it("% chia cho số ngày được theo dõi trong kỳ; thói quen mới thêm giữa kỳ không bị kéo tụt", () => {
+    const { rows, average } = habitKpis(
+      input({
+        today: "2026-11-02",
+        habits: [habit("Mới", "2026-11-01", 2), habit("Đọc", "2026-10-01", 1)],
+        logs: [log("2026-11-01", ["Đọc", "Mới"]), log("2026-11-02", ["Đọc", "Mới"]), log("2026-10-31", ["Đọc"])],
+      }),
+      7,
+    );
+    expect(rows.map((r) => [r.name, r.count, r.days, r.pct, r.streak])).toEqual([
+      ["Đọc", 3, 7, 43, 3],
+      ["Mới", 2, 2, 100, 2],
+    ]);
+    expect(average).toBe(72);
+  });
+
+  it("chưa có thói quen → không có dòng, average null", () => {
+    expect(habitKpis(input(), 30)).toEqual({ rows: [], average: null });
+  });
+});
+
 describe("dữ liệu mẫu", () => {
   it("cùng ngày → giống hệt nhau, đủ dữ liệu cho mọi khối", () => {
     const a = sampleDashboard(today);
@@ -144,6 +170,8 @@ describe("dữ liệu mẫu", () => {
     expect(a.knowledge.length).toBeGreaterThan(10);
     expect(a.logs.length).toBeGreaterThan(30);
     expect(a.planner?.projects.length).toBe(4);
+    expect(a.habits).toHaveLength(5);
+    expect(a.logs.some((l) => l.habits.length > 0)).toBe(true);
     expect(a.tasks.every((x) => !x.doneOn || x.doneOn <= today)).toBe(true);
   });
 });
