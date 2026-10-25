@@ -1,3 +1,4 @@
+import { CalendarDaysIcon, ChevronLeftIcon, ChevronRightIcon, Undo2Icon } from 'lucide-react'
 import { navigate, type Route } from '../lib/route'
 import { currentWeekStart, formatRange, shiftWeek, weekLabel } from '../lib/week'
 import { selectWeekStart, usePlanner } from '../store/usePlanner'
@@ -20,12 +21,12 @@ export default function Header({ route }: { route: Route }) {
       {/* Brainrot: bỏ logo "weekly." — tiêu đề "Planner" nằm ở PageHeader của trang */}
       {route === 'plan' && (
         <div className="week-picker">
-          <span className="label">📅 {weekLabel(weekStart)}</span>
-          <button className="icon-btn" onClick={() => go(shiftWeek(weekStart, -1))} aria-label="Previous week">‹</button>
+          <span className="label row"><CalendarDaysIcon size={14} aria-hidden />{weekLabel(weekStart)}</span>
+          <button className="icon-btn" onClick={() => go(shiftWeek(weekStart, -1))} aria-label="Previous week"><ChevronLeftIcon size={15} aria-hidden /></button>
           <span className="range">{formatRange(weekStart)}</span>
-          <button className="icon-btn" onClick={() => go(shiftWeek(weekStart, 1))} aria-label="Next week">›</button>
+          <button className="icon-btn" onClick={() => go(shiftWeek(weekStart, 1))} aria-label="Next week"><ChevronRightIcon size={15} aria-hidden /></button>
           {!isCurrent && (
-            <button className="icon-btn" onClick={() => go(currentWeekStart())} aria-label="Back to this week" title="Back to this week">↩</button>
+            <button className="icon-btn" onClick={() => go(currentWeekStart())} aria-label="Back to this week" title="Back to this week"><Undo2Icon size={15} aria-hidden /></button>
           )}
         </div>
       )}
