@@ -170,54 +170,11 @@ export function DashboardView({ real: realBase, graph }: { real: Omit<DashInput,
         />
       </div>
 
-      {/* Brain nhúng thẳng vào Dashboard (Trung yêu cầu 26/10/2026); luôn là dữ liệu thật */}
-      <Card
-        title="Brain"
-        action={
-          <Link href="/" className="flex items-center gap-1.5 text-sm text-muted-foreground transition-colors hover:text-foreground">
-            <Maximize2Icon aria-hidden="true" className="size-3.5" />
-            Mở toàn màn hình
-          </Link>
-        }
-      >
-        <p className="-mt-3 mb-4 text-sm text-muted-foreground">Bản đồ kiến thức và dự án · luôn là dữ liệu thật</p>
-        <BrainView data={graph} className="h-[28rem] rounded-xl" />
-      </Card>
-
-      <div className="grid gap-5 lg:grid-cols-2">
-        <Card title="Task theo dự án" action={all && <SampleBadge />}>
+      {/* Bố cục (Trung chốt 26/10/2026): số liệu → việc cần làm → học được gì → nhịp hằng ngày */}
+      <div className="grid gap-5 lg:grid-cols-3">
+        <Card title="Task theo dự án" className="lg:col-span-2" action={all && <SampleBadge />}>
           <p className="-mt-3 mb-4 text-sm text-muted-foreground">Việc chưa xong · bấm cột để mở Tasks</p>
           <ProjectBars rows={tasksByProject(tasksSrc.tasks)} />
-        </Card>
-        <Card
-          title="Nhịp làm & học"
-          action={
-            <span className="flex items-center gap-2">
-              {doneSample && <SampleBadge />}
-              <ChangeBadge change={weekly.change} />
-            </span>
-          }
-        >
-          <p className="-mt-3 mb-4 text-sm text-muted-foreground">12 tuần · task xong và kiến thức mới · tuần cuối đang diễn ra</p>
-          <WeeklyArea rows={weekly.rows} />
-        </Card>
-      </div>
-
-      <div className="grid gap-5 lg:grid-cols-3">
-        <Card
-          title="Nhịp hằng ngày"
-          className="lg:col-span-2"
-          action={
-            <span className="flex flex-wrap justify-end gap-1.5">
-              {logsSample && <SampleBadge />}
-              <Badge variant="outline" radius="full">{daily.logged} ngày có log</Badge>
-              <Badge variant="success-light" radius="full">{daily.exercised} ngày tập</Badge>
-              <Badge variant="warning-light" radius="full">{daily.dropped} ngày rơi việc</Badge>
-            </span>
-          }
-        >
-          <p className="-mt-3 mb-4 text-sm text-muted-foreground">Daily Log · số việc xong mỗi ngày</p>
-          <DailyBars days={daily.days} />
         </Card>
         <Card title="Dự án Planner" action={all && <SampleBadge />}>
           <p className="-mt-3 mb-4 text-sm text-muted-foreground">Tuần này · chậm nhất ở trên</p>
@@ -233,6 +190,49 @@ export function DashboardView({ real: realBase, graph }: { real: Omit<DashInput,
           )}
         </Card>
       </div>
+
+      <div className="grid gap-5 lg:grid-cols-2">
+        <Card
+          title="Nhịp làm & học"
+          action={
+            <span className="flex items-center gap-2">
+              {doneSample && <SampleBadge />}
+              <ChangeBadge change={weekly.change} />
+            </span>
+          }
+        >
+          <p className="-mt-3 mb-4 text-sm text-muted-foreground">12 tuần · task xong và kiến thức mới · tuần cuối đang diễn ra</p>
+          <WeeklyArea rows={weekly.rows} />
+        </Card>
+        {/* Brain nhúng vào Dashboard, nửa hàng, cao bằng biểu đồ bên cạnh; luôn là dữ liệu thật */}
+        <Card
+          title="Brain"
+          action={
+            <Link href="/" className="flex items-center gap-1.5 text-sm text-muted-foreground transition-colors hover:text-foreground">
+              <Maximize2Icon aria-hidden="true" className="size-3.5" />
+              Mở toàn màn hình
+            </Link>
+          }
+        >
+          <p className="-mt-3 mb-4 text-sm text-muted-foreground">Bản đồ kiến thức và dự án · luôn là dữ liệu thật</p>
+          <BrainView data={graph} className="h-73 rounded-xl" />
+        </Card>
+      </div>
+
+      <Card
+        title="Nhịp hằng ngày"
+        action={
+          <span className="flex flex-wrap justify-end gap-1.5">
+            {logsSample && <SampleBadge />}
+            <Badge variant="outline" radius="full">{daily.logged} ngày có log</Badge>
+            <Badge variant="success-light" radius="full">{daily.exercised} ngày tập</Badge>
+            <Badge variant="warning-light" radius="full">{daily.dropped} ngày rơi việc</Badge>
+          </span>
+        }
+      >
+        <p className="-mt-3 mb-4 text-sm text-muted-foreground">Daily Log · số việc xong mỗi ngày</p>
+        <DailyBars days={daily.days} />
+      </Card>
     </div>
   );
 }
