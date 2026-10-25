@@ -18,6 +18,8 @@
 ## 2. Điều hướng
 
 - Sidebar theo thứ tự: **Brain · Today · Tasks · Planner**.
+- Mỗi mục có icon (lucide); mục đang mở có vạch màu bên trái. Chân sidebar (desktop): ngày hôm nay + số ngày còn
+  đến hạn đồ án (`THESIS_DEADLINE`) + nút theme. Mobile: thanh trên chỉ hiện icon. *(chốt 26/10/2026)*
 - **Trang chủ `/` = Brain.** Today chuyển sang `/today`. Đăng nhập xong vào `/`.
 
 ## 3. Planner (`/planner`) — tích hợp nguyên repo `trungKoiKa/planner` (cách A)
@@ -40,6 +42,8 @@ xuất/nhập JSON, hoàn tác khi xóa.
 - Font: dùng font của Brainrot (Inter + Lora) thay Fraunces/Newsreader/JetBrains Mono.
 - Chữ giao diện bên trong planner **giữ tiếng Anh**; bỏ logo "weekly." và nút "♥ Support"; trang có tiêu đề
   "Planner" như các trang khác. *(chốt 22/10/2026)*
+- Làm đẹp tại chỗ, **giữ bảng màu gốc**: nhãn/nút mono to hơn (11–12px, giãn chữ ít hơn), nút cao đều 32px,
+  ô ngày hiện số ngày to, tên dự án trước slot viết thường, emoji (📅 ⏱ ⚙ ↺ ×) đổi sang icon lucide. *(chốt 26/10/2026)*
 
 **Dữ liệu:**
 - Lưu trong `localStorage` của trình duyệt → **chỉ có trên thiết bị đó**, không đồng bộ máy ↔ điện thoại. (Trung chấp nhận khi chọn cách A.)

@@ -1,3 +1,4 @@
+import { SettingsIcon } from 'lucide-react'
 import { useEffect, useRef, useState } from 'react'
 import { format } from 'date-fns'
 import { usePlanner } from '../store/usePlanner'
@@ -65,7 +66,7 @@ export default function SettingsMenu() {
         aria-label="Settings"
         aria-expanded={open}
       >
-        ⚙
+        <SettingsIcon size={15} aria-hidden />
       </button>
       {open && (
         <div className="card popover" style={{ minWidth: 230, ...(alignLeft ? { left: 0, right: 'auto' } : null) }}>

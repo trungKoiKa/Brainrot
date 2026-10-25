@@ -1,3 +1,4 @@
+import { XIcon } from 'lucide-react'
 import { useEffect } from 'react'
 import { useUI } from '../store/useUI'
 
@@ -19,7 +20,7 @@ export default function Toast() {
           {toast.action.label}
         </button>
       )}
-      <button className="icon-btn" onClick={dismissToast} aria-label="Dismiss">×</button>
+      <button className="icon-btn" onClick={dismissToast} aria-label="Dismiss"><XIcon size={15} aria-hidden /></button>
     </div>
   )
 }

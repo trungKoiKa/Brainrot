@@ -146,8 +146,8 @@
   /* ---------- type ---------- */
   .label {
     font-family: var(--mono);
-    font-size: 11px;
-    letter-spacing: 0.12em;
+    font-size: 12px;
+    letter-spacing: 0.08em;
     text-transform: uppercase;
     color: var(--ink-faint);
   }
@@ -188,10 +188,15 @@
   /* ---------- buttons ---------- */
   .btn {
     font-family: var(--mono);
-    font-size: 11px;
-    letter-spacing: 0.12em;
+    font-size: 12px;
+    letter-spacing: 0.08em;
     text-transform: uppercase;
-    padding: 7px 12px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    min-height: 32px;
+    padding: 6px 12px;
     border-radius: 8px;
     border: 1px solid var(--line-strong);
     background: var(--control-bg);
@@ -231,8 +236,9 @@
   }
 
   .btn.small {
-    padding: 4px 8px;
-    font-size: 10px;
+    min-height: 26px;
+    padding: 3px 8px;
+    font-size: 11px;
   }
 
   .icon-btn {
@@ -242,6 +248,8 @@
     padding: 4px 6px;
     border-radius: 6px;
     line-height: 1;
+    display: inline-flex;
+    align-items: center;
     font-size: 15px;
   }
 
@@ -268,7 +276,7 @@
     padding: 16px;
     font-family: var(--mono);
     font-size: 12px;
-    letter-spacing: 0.12em;
+    letter-spacing: 0.08em;
     text-transform: uppercase;
     color: var(--ink-soft);
   }
@@ -472,8 +480,8 @@
 
   .status {
     font-family: var(--mono);
-    font-size: 10px;
-    letter-spacing: 0.12em;
+    font-size: 11px;
+    letter-spacing: 0.08em;
     text-transform: uppercase;
     color: var(--ink-faint);
   }
@@ -486,7 +494,7 @@
 
   .week-picker .range {
     font-family: var(--mono);
-    font-size: 12px;
+    font-size: 13px;
     padding: 6px 10px;
     border: 1px solid var(--line-strong);
     border-radius: 8px;
@@ -560,7 +568,7 @@
 
   .demo .chip {
     font-family: var(--mono);
-    font-size: 10px;
+    font-size: 11px;
     padding: 3px 6px;
     border-radius: 6px;
     border: 1px solid var(--line-strong);
@@ -584,10 +592,10 @@
     border: 1px solid var(--line-strong);
     background: var(--paper);
     border-radius: 8px;
-    padding: 8px 4px;
+    padding: 10px 4px 8px;
     font-family: var(--mono);
-    font-size: 11px;
-    letter-spacing: 0.1em;
+    font-size: 12px;
+    letter-spacing: 0.08em;
     text-transform: uppercase;
     color: var(--ink-soft);
     display: flex;
@@ -597,8 +605,10 @@
   }
 
   .day-cell .date {
-    font-size: 10px;
-    color: var(--ink-faint);
+    font-family: var(--serif-display);
+    font-size: 20px;
+    line-height: 1.1;
+    color: var(--ink);
     letter-spacing: 0;
   }
 
@@ -693,10 +703,7 @@
   }
 
   .slot-title .proj {
-    font-family: var(--mono);
-    font-size: 10px;
-    letter-spacing: 0.12em;
-    text-transform: uppercase;
+    font-size: 13px;
     color: var(--ink-faint);
     margin-right: 6px;
   }
@@ -715,8 +722,8 @@
 
   .missed-tag {
     font-family: var(--mono);
-    font-size: 10px;
-    letter-spacing: 0.12em;
+    font-size: 11px;
+    letter-spacing: 0.08em;
     color: var(--accent);
     font-weight: 700;
   }
@@ -793,8 +800,8 @@
 
   .assign {
     font-family: var(--mono);
-    font-size: 10px;
-    letter-spacing: 0.12em;
+    font-size: 11px;
+    letter-spacing: 0.08em;
     text-transform: uppercase;
     color: var(--accent);
     border: none;
@@ -804,8 +811,11 @@
   }
 
   .deadline-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 3px;
     font-family: var(--mono);
-    font-size: 10px;
+    font-size: 11px;
     color: var(--ink-faint);
     white-space: nowrap;
   }
@@ -835,8 +845,8 @@
 
   .day-toggle {
     font-family: var(--mono);
-    font-size: 11px;
-    letter-spacing: 0.1em;
+    font-size: 12px;
+    letter-spacing: 0.08em;
     text-transform: uppercase;
     padding: 8px 0;
     border-radius: 8px;

@@ -4,7 +4,7 @@ import { Sidebar } from "@/components/sidebar";
 export default function AppLayout({ children }: LayoutProps<"/">) {
   return (
     <div className="min-h-screen md:flex">
-      <Sidebar />
+      <Sidebar thesisDeadline={process.env.THESIS_DEADLINE} />
       <main className="flex-1 px-4 py-6 md:px-10 md:py-10">{children}</main>
     </div>
   );

@@ -1,3 +1,4 @@
+import { RotateCcwIcon } from 'lucide-react'
 import { fmtTally, weekProgress } from '../lib/progress'
 import type { Project } from '../types'
 import ProgressBar from './ProgressBar'
@@ -8,7 +9,7 @@ export default function WeekProgress({ projects, onEndWeek }: { projects: Projec
     <div className="week-progress">
       <ProgressBar tally={prog} good={prog.total > 0 && prog.done === prog.total} />
       <span className="mono muted">{fmtTally(prog)}</span>
-      <button className="btn" onClick={onEndWeek}>End week ↺</button>
+      <button className="btn" onClick={onEndWeek}>End week <RotateCcwIcon size={13} aria-hidden /></button>
     </div>
   )
 }

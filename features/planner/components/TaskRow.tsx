@@ -1,3 +1,4 @@
+import { CalendarPlusIcon, TimerIcon, XIcon } from 'lucide-react'
 import { useState, type ReactNode } from 'react'
 import { formatDeadline, isOverdue } from '../lib/deadline'
 import { isTaskDone, taskProgress } from '../lib/progress'
@@ -41,7 +42,7 @@ export default function TaskRow({ projectId, task, onOpen, onDelete, handle }: P
       </div>
       {task.deadline && (
         <span className={`deadline-tag${isOverdue(task.deadline) && !done ? ' overdue' : ''}`} title="Deadline">
-          ⏱ {formatDeadline(task.deadline)}
+          <TimerIcon size={12} aria-hidden /> {formatDeadline(task.deadline)}
         </span>
       )}
       {prog.total > 0 ? (
@@ -49,8 +50,8 @@ export default function TaskRow({ projectId, task, onOpen, onDelete, handle }: P
       ) : (
         <button className="assign" onClick={onOpen}>Assign days →</button>
       )}
-      <button className="icon-btn" onClick={onOpen} aria-label="Edit task">📅</button>
-      <button className="icon-btn" onClick={onDelete} aria-label="Delete task">×</button>
+      <button className="icon-btn" onClick={onOpen} aria-label="Edit task"><CalendarPlusIcon size={15} aria-hidden /></button>
+      <button className="icon-btn" onClick={onDelete} aria-label="Delete task"><XIcon size={15} aria-hidden /></button>
     </div>
   )
 }

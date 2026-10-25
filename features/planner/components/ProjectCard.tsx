@@ -1,3 +1,4 @@
+import { TimerIcon, XIcon } from 'lucide-react'
 import { useState, type ReactNode } from 'react'
 import { formatDeadline, isOverdue } from '../lib/deadline'
 import { projectProgress } from '../lib/progress'
@@ -55,8 +56,8 @@ export default function ProjectCard({ project, handle }: Props) {
           <ProgressBar tally={prog} />
           <span className="mono muted">{prog.done}/{prog.total}</span>
         </div>
-        <button className="icon-btn" onClick={() => setProjectDeadline(project.id)} aria-label="Project deadline" title="Project deadline">⏱</button>
-        <button className="icon-btn" onClick={remove} aria-label="Delete project">×</button>
+        <button className="icon-btn" onClick={() => setProjectDeadline(project.id)} aria-label="Project deadline" title="Project deadline"><TimerIcon size={15} aria-hidden /></button>
+        <button className="icon-btn" onClick={remove} aria-label="Delete project"><XIcon size={15} aria-hidden /></button>
       </div>
       {project.deadline && (
         <div className={`deadline-tag${isOverdue(project.deadline) ? ' overdue' : ''}`} style={{ marginTop: 4 }}>

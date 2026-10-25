@@ -1,18 +1,43 @@
 "use client";
 
+import { useSyncExternalStore } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { CalendarRangeIcon, ListChecksIcon, NetworkIcon, SunIcon, type LucideIcon } from "lucide-react";
+import { daysBetween, longDateVN, todayVN } from "@/lib/date";
 import { ThemeToggle } from "./theme-toggle";
 
 // Thứ tự v0.2: Brain là trang chủ (SPEC-v0.2 mục 2)
-const NAV = [
-  { href: "/", label: "Brain" },
-  { href: "/today", label: "Today" },
-  { href: "/tasks", label: "Tasks" },
-  { href: "/planner", label: "Planner" },
-] as const;
+const NAV: readonly { href: string; label: string; icon: LucideIcon }[] = [
+  { href: "/", label: "Brain", icon: NetworkIcon },
+  { href: "/today", label: "Today", icon: SunIcon },
+  { href: "/tasks", label: "Tasks", icon: ListChecksIcon },
+  { href: "/planner", label: "Planner", icon: CalendarRangeIcon },
+];
 
-export function Sidebar() {
+// Ngày lấy ở trình duyệt (layout có thể được prerender từ lúc build → ngày trên server sẽ cũ).
+// Server trả null → chân sidebar chỉ hiện sau khi hydrate, không lệch HTML.
+const noSubscribe = () => () => {};
+const useToday = () => useSyncExternalStore(noSubscribe, () => todayVN(), () => null);
+
+function TodayInfo({ thesisDeadline }: { thesisDeadline?: string }) {
+  const today = useToday();
+  if (!today) return null;
+  const left = thesisDeadline ? daysBetween(today, thesisDeadline) : null;
+  return (
+    <div className="space-y-0.5 px-3 text-xs text-muted-foreground">
+      <p className="font-medium text-foreground">{longDateVN()}</p>
+      {left !== null && left > 0 && (
+        <p>
+          Đồ án: còn <span className="font-medium text-primary">{left} ngày</span>
+        </p>
+      )}
+      {left === 0 && <p className="font-medium text-primary">Hôm nay nộp đồ án</p>}
+    </div>
+  );
+}
+
+export function Sidebar({ thesisDeadline }: { thesisDeadline?: string }) {
   const pathname = usePathname();
 
   return (
@@ -22,26 +47,32 @@ export function Sidebar() {
       </Link>
 
       <nav className="flex gap-1 md:flex-col">
-        {NAV.map(({ href, label }) => {
+        {NAV.map(({ href, label, icon: Icon }) => {
           const active = href === "/" ? pathname === "/" : pathname.startsWith(href);
           return (
             <Link
               key={href}
               href={href}
               aria-current={active ? "page" : undefined}
-              className={`rounded-lg px-3 py-2 text-sm transition-colors ${
+              title={label}
+              className={`relative flex items-center gap-3 rounded-lg px-3 py-2 text-sm transition-colors ${
                 active
-                  ? "bg-accent-soft font-medium text-primary"
+                  ? "bg-accent-soft font-medium text-primary md:before:absolute md:before:inset-y-1.5 md:before:-left-4 md:before:w-1 md:before:rounded-r-full md:before:bg-primary"
                   : "text-muted-foreground hover:bg-surface-muted hover:text-foreground"
               }`}
             >
-              {label}
+              <Icon aria-hidden="true" className="size-4 shrink-0" />
+              {/* Mobile: chỉ icon cho gọn thanh trên */}
+              <span className="sr-only md:not-sr-only">{label}</span>
             </Link>
           );
         })}
       </nav>
 
-      <div className="md:mt-auto">
+      <div className="md:mt-auto md:space-y-3 md:border-t md:border-line md:pt-4">
+        <div className="hidden md:block">
+          <TodayInfo thesisDeadline={thesisDeadline} />
+        </div>
         <ThemeToggle />
       </div>
     </aside>
