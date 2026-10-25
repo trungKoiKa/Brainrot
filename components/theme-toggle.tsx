@@ -27,7 +27,7 @@ export function ThemeToggle() {
       onClick={toggle}
       aria-label="Đổi giao diện sáng/tối"
       title="Đổi giao diện sáng/tối"
-      className="flex items-center gap-2 rounded-lg px-3 py-2 text-sm text-muted transition-colors hover:bg-surface-muted hover:text-foreground"
+      className="flex items-center gap-2 rounded-lg px-3 py-2 text-sm text-muted-foreground transition-colors hover:bg-surface-muted hover:text-foreground"
     >
       {/* Icon chọn bằng CSS theo data-theme → không lệch giữa server và client */}
       <svg viewBox="0 0 24 24" className="size-4 dark:hidden" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden>

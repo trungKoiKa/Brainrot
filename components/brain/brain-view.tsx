@@ -6,7 +6,7 @@ import type { GraphData } from "@/lib/graph-types";
 // three.js chỉ chạy được trên trình duyệt → không render phía server (SPEC 7.3)
 const BrainGraph = dynamic(() => import("./brain-graph"), {
   ssr: false,
-  loading: () => <p className="p-6 text-sm text-muted">Đang dựng graph…</p>,
+  loading: () => <p className="p-6 text-sm text-muted-foreground">Đang dựng graph…</p>,
 });
 
 export function BrainView({ data }: { data: GraphData }) {

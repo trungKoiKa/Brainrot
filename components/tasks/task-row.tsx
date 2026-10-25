@@ -4,8 +4,8 @@ import type { Task } from "@/lib/notion/types";
 
 const PRIORITY_CLASS: Record<string, string> = {
   Cao: "bg-danger-soft text-danger",
-  Vừa: "bg-accent-soft text-accent",
-  Thấp: "bg-surface-muted text-muted",
+  Vừa: "bg-accent-soft text-primary",
+  Thấp: "bg-surface-muted text-muted-foreground",
 };
 
 export function TaskCheckbox({ task, onComplete }: { task: Task; onComplete: (t: Task) => void }) {
@@ -17,7 +17,7 @@ export function TaskCheckbox({ task, onComplete }: { task: Task; onComplete: (t:
       disabled={done}
       onChange={() => onComplete(task)}
       aria-label={done ? `${task.title} đã xong` : `Đánh dấu xong: ${task.title}`}
-      className="mt-1 size-4 shrink-0 cursor-pointer accent-[var(--accent)] disabled:cursor-default"
+      className="mt-1 size-4 shrink-0 cursor-pointer accent-[var(--primary)] disabled:cursor-default"
     />
   );
 }
@@ -47,11 +47,11 @@ export function TaskRow({
           href={task.url}
           target="_blank"
           rel="noopener noreferrer"
-          className={`hover:text-accent ${done ? "text-muted line-through" : overdue ? "text-danger" : ""}`}
+          className={`hover:text-primary ${done ? "text-muted-foreground line-through" : overdue ? "text-danger" : ""}`}
         >
           {task.title || "(Chưa đặt tên)"}
         </a>
-        <div className="mt-1 flex flex-wrap items-center gap-2 text-xs text-muted">
+        <div className="mt-1 flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
           {task.priority && (
             <span className={`rounded-full px-2 py-0.5 font-medium ${PRIORITY_CLASS[task.priority] ?? ""}`}>
               {task.priority}
@@ -59,11 +59,11 @@ export function TaskRow({
           )}
           {showProject && task.project && <span>{task.project}</span>}
           {task.deadline && daysLeft !== null && (
-            <span className={overdue ? "font-medium text-danger" : daysLeft === 0 && !done ? "font-medium text-accent" : ""}>
+            <span className={overdue ? "font-medium text-danger" : daysLeft === 0 && !done ? "font-medium text-primary" : ""}>
               {done ? formatDay(task.deadline) : `${deadlineLabel(daysLeft)} · ${formatDay(task.deadline, true)}`}
             </span>
           )}
-          {task.status === "Đang làm" && <span className="font-medium text-accent">Đang làm</span>}
+          {task.status === "Đang làm" && <span className="font-medium text-primary">Đang làm</span>}
           {task.note && <span className="truncate">{task.note}</span>}
         </div>
       </div>
@@ -73,7 +73,7 @@ export function TaskRow({
           onClick={onEdit}
           aria-label={`Sửa: ${task.title}`}
           title="Sửa"
-          className="size-7 shrink-0 rounded-md text-muted hover:bg-surface-muted hover:text-foreground"
+          className="size-7 shrink-0 rounded-md text-muted-foreground hover:bg-surface-muted hover:text-foreground"
         >
           ✎
         </button>

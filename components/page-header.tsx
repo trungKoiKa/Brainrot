@@ -2,7 +2,7 @@ export function PageHeader({ title, subtitle }: { title: string; subtitle?: Reac
   return (
     <header className="mb-8">
       <h1 className="font-serif text-3xl font-semibold md:text-4xl">{title}</h1>
-      {subtitle && <p className="mt-2 text-muted">{subtitle}</p>}
+      {subtitle && <p className="mt-2 text-muted-foreground">{subtitle}</p>}
     </header>
   );
 }

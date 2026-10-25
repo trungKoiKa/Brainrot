@@ -12,14 +12,14 @@ export default function AppError({ error, retry }: { error: unknown; retry: () =
   return (
     <div className="mx-auto max-w-2xl pt-10">
       <Card title="Không lấy được dữ liệu">
-        <p className="text-sm text-muted">
+        <p className="text-sm text-muted-foreground">
           Web chưa kết nối được Notion và chưa có bản dữ liệu cũ để hiển thị. Có thể Notion đang lỗi, mạng chập chờn,
           hoặc token / quyền Connections của integration có vấn đề.
         </p>
         <button
           type="button"
           onClick={() => retry()}
-          className="mt-5 rounded-lg bg-accent px-4 py-2 text-sm font-medium text-surface"
+          className="mt-5 rounded-lg bg-primary px-4 py-2 text-sm font-medium text-surface"
         >
           Thử lại
         </button>
