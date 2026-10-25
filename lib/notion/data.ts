@@ -1,6 +1,15 @@
 import "server-only";
-import { dailyLogsResult, knowledgeResult, selectOptions, tasksResult, type Result } from "./queries";
-import type { DailyLog, Knowledge, Task } from "./types";
+import {
+  dailyLogsBetweenResult,
+  dailyLogsResult,
+  habitsConfigured,
+  habitsResult,
+  knowledgeResult,
+  selectOptions,
+  tasksResult,
+  type Result,
+} from "./queries";
+import type { DailyLog, Habit, Knowledge, Task } from "./types";
 
 // Lớp đọc mà trang dùng (SPEC mục 9): Notion lỗi → trả bản tốt gần nhất + cờ `stale` để hiện banner.
 // Bản tốt gần nhất giữ trong bộ nhớ tiến trình server: mất khi server khởi động lại (cold start trên Vercel).
@@ -30,6 +39,13 @@ export async function load<T>(key: string, fetch: () => Promise<Result<T>>): Pro
 export const getTasks = (): Promise<Loaded<Task[]>> => load("tasks", tasksResult);
 export const getKnowledge = (): Promise<Loaded<Knowledge[]>> => load("knowledge", knowledgeResult);
 export const getRecentDailyLogs = (): Promise<Loaded<DailyLog[]>> => load("daily", () => dailyLogsResult());
+export const getDailyLogsBetween = (start: string, end: string): Promise<Loaded<DailyLog[]>> =>
+  load(`daily:${start}:${end}`, () => dailyLogsBetweenResult(start, end));
+
+/** Chưa có NOTION_HABITS_DB (vd. Vercel chưa thêm biến) → danh sách rỗng, trang vẫn chạy và báo "chưa kết nối". */
+export const getHabits = (): Promise<Loaded<Habit[]>> =>
+  habitsConfigured() ? load("habits", habitsResult) : Promise.resolve({ data: [], stale: false });
+
 /** 90 bản ghi gần nhất cho Dashboard (SPEC-v0.3 4.4). */
 export const getDailyLogs90 = (): Promise<Loaded<DailyLog[]>> => load("daily90", () => dailyLogsResult(90));
 

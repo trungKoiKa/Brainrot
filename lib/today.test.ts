@@ -7,7 +7,7 @@ const task = (id: string, o: Partial<Task> = {}): Task => ({
   doneOn: null, createdTime: "2026-10-01T00:00:00.000Z", ...o,
 });
 const log = (date: string, tomorrowTop3: string): DailyLog => ({
-  id: "l", url: "log-url", title: "", date, done: "", dropped: "", learned: "", tomorrowTop3, exercised: false,
+  id: "l", url: "log-url", title: "", date, done: "", dropped: "", learned: "", tomorrowTop3, exercised: false, habits: [],
 });
 const today = "2026-10-22";
 const tasks = [

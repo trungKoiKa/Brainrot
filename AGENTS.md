@@ -67,6 +67,7 @@ Harness tự nói repo sở hữu quy trình riêng, nên khi lệch nhau thì q
   danh sách ở cuối mỗi bước. Không thêm framework test ở v0.1 (giữ ít dependency).
 - **Git:** Trung cho phép agent tự tạo nhánh, commit, push, mở PR và **tự merge PR** vào `main`
   sau khi bước đó build/lint sạch. Không đổi CI hay branch protection nếu Trung chưa yêu cầu.
+  **Giữ nhánh sau khi merge** (Trung yêu cầu 26/10/2026): `gh pr merge --merge`, **không** `--delete-branch`.
 - **Skill Harness** (`.agents/skills/`) chỉ chạy khi Trung gọi tên rõ ràng.
 - `docs/README.md` là file của Harness, có nhắc `ARCHITECTURE.md`, `HARNESS.md`, `crates/`…
   của repo gốc Harness. Các file đó **không tồn tại** ở đây; bỏ qua.

@@ -7,6 +7,7 @@ import { toVNDate, todayVN } from "@/lib/date";
 import type { DashInput } from "@/lib/dashboard/stats";
 import { anyStale, getDailyLogs90, getKnowledge, getTasks } from "@/lib/notion/data";
 import { getBrainGraph } from "@/lib/notion/graph";
+import { doneHabits, LEGACY_EXERCISE } from "@/lib/habits";
 import { splitLines } from "@/lib/today";
 
 // SPEC-v0.3: tổng quan việc và học tập. Chỉ đọc; Planner đọc ở trình duyệt (localStorage).
@@ -42,7 +43,7 @@ async function DashboardContent() {
     })),
     knowledge: knowledge.data.map((k) => k.learnedOn ?? toVNDate(k.createdTime)),
     logs: logs.data.flatMap((l) =>
-      l.date ? [{ date: l.date, doneCount: splitLines(l.done).length, exercised: l.exercised, dropped: l.dropped.trim() !== "" }] : [],
+      l.date ? [{ date: l.date, doneCount: splitLines(l.done).length, exercised: doneHabits(l).includes(LEGACY_EXERCISE), dropped: l.dropped.trim() !== "" }] : [],
     ),
   };
 

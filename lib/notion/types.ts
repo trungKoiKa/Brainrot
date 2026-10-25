@@ -43,4 +43,16 @@ export type DailyLog = {
   learned: string;
   tomorrowTop3: string;
   exercised: boolean;
+  /** Cột "Thói quen" (multi-select, từ v0.4): tên các thói quen đã làm trong ngày */
+  habits: string[];
+};
+
+/** Một dòng database Habits (SPEC-v0.4 mục 3.1). Tháng là ngày 1 của tháng, YYYY-MM-DD. */
+export type Habit = {
+  id: string;
+  name: string;
+  from: string;
+  /** Tháng cuối còn theo dõi; null = vẫn đang theo dõi */
+  to: string | null;
+  order: number;
 };

@@ -21,11 +21,15 @@ describe("parseIdea", () => {
 describe("parseDailyLog", () => {
   it("đọc đủ 5 trường, chuẩn hóa xuống dòng Windows, checkbox 'on'", () => {
     expect(
-      parseDailyLog(form({ done: "Viết chương 2\r\n", dropped: "", learned: "YOLO", tomorrowTop3: "a\r\nb\r\nc", exercised: "on" })),
+      parseDailyLog(form({ done: "Viết chương 2\r\n", dropped: "", learned: "YOLO", tomorrowTop3: "a\r\nb\r\nc", exerciseField: "1", exercised: "on" })),
     ).toEqual({ ok: true, data: { done: "Viết chương 2", dropped: "", learned: "YOLO", tomorrowTop3: "a\nb\nc", exercised: true } });
   });
   it("chỉ tích Tập thể dục vẫn lưu được", () => {
-    expect(parseDailyLog(form({ exercised: "on" })).ok).toBe(true);
+    expect(parseDailyLog(form({ exerciseField: "1", exercised: "on" })).ok).toBe(true);
+  });
+  it("có ô Tập thể dục nhưng bỏ tích → false; form không có ô → null (không đụng thói quen)", () => {
+    expect(parseDailyLog(form({ done: "x", exerciseField: "1" }))).toMatchObject({ ok: true, data: { exercised: false } });
+    expect(parseDailyLog(form({ done: "x" }))).toMatchObject({ ok: true, data: { exercised: null } });
   });
   it("trống hết → lỗi 'Chưa có gì để lưu'", () => {
     expect(parseDailyLog(form({ done: " ", learned: "" }))).toEqual({ ok: false, error: "Chưa có gì để lưu." });

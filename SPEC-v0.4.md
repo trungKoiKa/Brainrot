@@ -2,7 +2,8 @@
 
 > Bổ sung cho `SPEC.md`, `SPEC-v0.2.md`, `SPEC-v0.3.md`. Mục nào không nhắc ở đây thì giữ nguyên.
 >
-> **Trạng thái:** NHÁP (bản 2, 26/10/2026) — chờ Trung duyệt. Mục 10 là các câu Trung cần chốt.
+> **Trạng thái:** Trung duyệt bản 2 ngày 26/10/2026 (đồng ý cả 4 câu mục 10, dùng danh sách thói quen gợi ý).
+> Tiến độ: `docs/plans/active/v0.4.md`.
 >
 > **Nguồn ý tưởng:** template **Clarity Yearplan / Monthplan** của GON.LIFE (Google Sheets, bán có phí): 4 ảnh giới
 > thiệu, bản demo công khai "Clarity Monthplan - Demo Ver", và bản phân tích của Trung `clarity-yearplan-spec.md`
@@ -45,8 +46,9 @@ Hơn template:
 - **Daily Log** thêm cột **"Thói quen" (Multi-select)**: tên các thói quen đã làm trong ngày.
   Lý do không dùng "mỗi thói quen một cột checkbox": xóa cột là mất lịch sử, và đổi thói quen theo tháng phải sửa schema.
 - Cột "Tập thể dục" (checkbox) hiện có: tạo thói quen "Tập thể dục" trong Habits; ngày cũ đã tích checkbox được tính
-  là đã làm (đọc cả hai, ghi mới vào multi-select). Ghi nhanh Daily Log trên Today vẫn giữ ô "Tập thể dục" và ghi vào
-  cả hai cột cho tới khi bỏ hẳn checkbox (ngoài phạm vi v0.4).
+  là đã làm. Mỗi lần ghi thói quen, web ghi multi-select **và** giữ checkbox khớp theo (có/không "Tập thể dục").
+- Khi đã có database Habits, Ghi nhanh Daily Log trên Today **bỏ ô "Tập thể dục"** (thẻ "Thói quen hôm nay" lo phần
+  này) — tránh hai nơi ghi đè nhau. Chưa có `NOTION_HABITS_DB` thì Ghi nhanh giữ ô như cũ.
 - Ngày chưa có bản ghi Daily Log → tích thói quen sẽ **tạo** bản ghi ngày đó (giống Ghi nhanh v0.2).
 
 ### 3.2 Tính toán
@@ -63,8 +65,10 @@ Hơn template:
   ngày đã qua, ngày tương lai mờ; cột % mỗi thói quen (màu theo ngưỡng: ≥ 70% xanh, 40–69% vàng, < 40% đỏ — cùng
   quy ước chấm màu Dashboard); hàng cột nhỏ % mỗi ngày phía trên; thanh ngang % theo thói quen bên phải.
   Mobile: bảng cuộn ngang, cột tên thói quen dính bên trái.
-- **Quản lý thói quen** ngay trên web: thêm (Từ tháng = tháng đang xem), đổi tên, đổi thứ tự (nút lên/xuống),
-  ngừng theo dõi (điền Đến tháng).
+- **Quản lý thói quen** ngay trên web: thêm (Từ tháng = tháng đang xem), đổi thứ tự (nút lên/xuống),
+  ngừng theo dõi **từ tháng sau** (Đến tháng = tháng đang xem). **Đổi tên làm trong Notion** (sửa cả dòng Habits và
+  lựa chọn của cột "Thói quen") — Daily Log lưu theo tên, đổi tên trên web sẽ tách rời lịch sử.
+- Bảng tự cuộn tới cột hôm nay; hàng cột nhỏ phía trên: ngày 0% là vạch xám, không tô đỏ.
 - **Dashboard:** thẻ "Thói quen": % từng thói quen trong kỳ đang chọn (7/30/90) + streak dài nhất. Có bản dữ liệu mẫu.
 
 ## 4. Mục tiêu xếp tầng

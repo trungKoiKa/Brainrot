@@ -1,5 +1,5 @@
 // Tính số liệu cho Dashboard (SPEC-v0.3 mục 4). Hàm thuần: ngày là chuỗi YYYY-MM-DD theo giờ VN.
-import { addDays, daysBetween } from "@/lib/date";
+import { addDays, daysBetween, mondayOf } from "@/lib/date";
 import type { TaskStatus } from "@/lib/notion/types";
 
 export type Period = 7 | 30 | 90;
@@ -45,11 +45,7 @@ export function lastDays(end: string, n: number): string[] {
   return Array.from({ length: n }, (_, i) => addDays(end, i - n + 1));
 }
 
-/** Thứ Hai của tuần chứa `day`. */
-export function mondayOf(day: string): string {
-  const dow = new Date(`${day}T00:00:00Z`).getUTCDay();
-  return addDays(day, -((dow + 6) % 7));
-}
+export { mondayOf };
 
 /** % thay đổi so với kỳ trước; kỳ trước = 0 → null (không so được). */
 export function change(now: number, prev: number): number | null {
