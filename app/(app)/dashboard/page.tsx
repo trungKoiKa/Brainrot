@@ -6,6 +6,7 @@ import { DashboardClient } from "@/components/dashboard/dashboard-client";
 import { toVNDate, todayVN } from "@/lib/date";
 import type { DashInput } from "@/lib/dashboard/stats";
 import { anyStale, getDailyLogs90, getKnowledge, getTasks } from "@/lib/notion/data";
+import { getBrainGraph } from "@/lib/notion/graph";
 import { splitLines } from "@/lib/today";
 
 // SPEC-v0.3: tổng quan việc và học tập. Chỉ đọc; Planner đọc ở trình duyệt (localStorage).
@@ -22,7 +23,12 @@ export default function DashboardPage() {
 
 async function DashboardContent() {
   await connection(); // số liệu tính theo ngày hôm nay
-  const [tasks, knowledge, logs] = await Promise.all([getTasks(), getKnowledge(), getDailyLogs90()]);
+  const [tasks, knowledge, logs, { stale: graphStale, ...graph }] = await Promise.all([
+    getTasks(),
+    getKnowledge(),
+    getDailyLogs90(),
+    getBrainGraph(),
+  ]);
 
   const real: Omit<DashInput, "planner"> = {
     today: todayVN(),
@@ -42,8 +48,8 @@ async function DashboardContent() {
 
   return (
     <>
-      <StaleBanner show={anyStale(tasks, knowledge, logs)} />
-      <DashboardClient real={real} />
+      <StaleBanner show={graphStale || anyStale(tasks, knowledge, logs)} />
+      <DashboardClient real={real} graph={graph} />
     </>
   );
 }

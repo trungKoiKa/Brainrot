@@ -9,9 +9,10 @@ const BrainGraph = dynamic(() => import("./brain-graph"), {
   loading: () => <p className="p-6 text-sm text-muted-foreground">Đang dựng graph…</p>,
 });
 
-export function BrainView({ data }: { data: GraphData }) {
+/** `className` đặt chiều cao khung: trang Brain dùng gần cả màn hình, thẻ trên Dashboard thấp hơn. */
+export function BrainView({ data, className = "h-[72vh] min-h-96 rounded-2xl" }: { data: GraphData; className?: string }) {
   return (
-    <div className="h-[72vh] min-h-96 overflow-hidden rounded-2xl border border-line">
+    <div className={`overflow-hidden border border-line ${className}`}>
       <BrainGraph data={data} />
     </div>
   );
