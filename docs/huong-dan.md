@@ -2,6 +2,7 @@
 
 > Áp dụng từ **v0.5** (26/10/2026). Production: <https://brainrot-blue.vercel.app> (cần mật khẩu).
 > Cài đặt, biến môi trường, cột Notion: xem [`README.md`](../README.md). Lý do thiết kế: [`SPEC-v0.5.md`](../SPEC-v0.5.md).
+> Sơ đồ là ảnh PNG; nguồn mermaid để sửa nằm cạnh ảnh trong [`images/huong-dan/`](images/huong-dan/) (`*.mmd`).
 
 ## 1. Ý tưởng chính
 
@@ -18,14 +19,7 @@ theo dõi cùng những task đó.
 
 Ba sợi dây nối các phần với nhau:
 
-```mermaid
-flowchart LR
-  G[Goal<br/>vì sao] -- "relation Mục tiêu" --> T[Task<br/>làm gì]
-  T -- "cột Ngày làm" --> D[Ngày<br/>Today · chế độ Tuần]
-  H[Thói quen] -- "đạt ngưỡng %" --> G
-  T -- "tất cả task gắn đã xong" --> G
-  L[Daily Log] -. "ghi chú cuối ngày" .-> D
-```
+![Ba sợi dây: Thói quen → Goal → Task → Ngày; Daily Log ghi chú ngày](images/huong-dan/ba-soi-day.png)
 
 Hai ngày của một task — đừng nhầm:
 
@@ -34,16 +28,7 @@ Hai ngày của một task — đừng nhầm:
 
 ## 2. Nhịp dùng hằng ngày / tuần / tháng
 
-```mermaid
-flowchart TD
-  A[Có việc mới] --> B[Tasks: thêm task<br/>Dự án · Ưu tiên · Deadline · Ngày làm]
-  C[Sáng] --> D[Today: Hôm nay làm<br/>tích xong · dời việc trễ · tích thói quen]
-  E[Tối] --> F[Today · Ghi nhanh<br/>Daily Log + chọn Ngày mai làm]
-  F -->|sáng hôm sau| D
-  G[Chủ nhật] --> H[Goal · Tuần<br/>xem 7 ngày · dời việc · mục tiêu tuần · Nhìn lại]
-  I[Đầu / cuối tháng] --> J[Goal · Tháng<br/>mục tiêu tháng · thói quen · Nhìn lại]
-  K[Khi muốn xem tổng thể] --> L[Dashboard]
-```
+![Nhịp dùng: Tasks → sáng Today → tối Ghi nhanh → hôm sau; hết tuần Goal Tuần; hết tháng Goal Tháng](images/huong-dan/nhip-dung.png)
 
 ### 2.1 Có việc mới → Tasks
 
@@ -129,12 +114,7 @@ bay tới, ô tìm (phím `/`).
 
 ### 3.1 Đọc
 
-```mermaid
-flowchart LR
-  N[(Notion)] --> Q["lib/notion/queries.ts<br/>'use cache' · 5 phút · tag"]
-  Q --> P[Trang server<br/>Today · Tasks · Goal · Dashboard · Brain]
-  P --> C[Component client<br/>tích, dời, form]
-```
+![Luồng đọc: Notion → queries có cache 5 phút → trang server → component client](images/huong-dan/luong-doc.png)
 
 - Mọi lời gọi Notion nằm trong `lib/notion/` (chỉ chạy ở server). Mỗi loại dữ liệu có **cache 5 phút** và một tag
   (`tasks`, `knowledge`, `daily`, `habits`, `goals`, `reflections`).
@@ -143,21 +123,7 @@ flowchart LR
 
 ### 3.2 Ghi
 
-```mermaid
-sequenceDiagram
-  participant U as Bạn
-  participant UI as Web (trình duyệt)
-  participant SA as Server Action
-  participant N as Notion
-  U->>UI: tích / dời / lưu
-  UI->>UI: đổi giao diện ngay (lạc quan)
-  UI->>SA: gửi yêu cầu
-  SA->>SA: kiểm tra đăng nhập + dữ liệu
-  SA->>N: ghi
-  SA->>SA: xóa cache theo tag (updateTag)
-  SA-->>UI: ok → trang tải dữ liệu mới
-  Note over UI: lỗi → quay về trạng thái cũ + báo lỗi đỏ
-```
+![Luồng ghi: bạn thao tác → giao diện đổi ngay → Server Action → Notion → xóa cache → tải lại](images/huong-dan/luong-ghi.png)
 
 | Thao tác | Server Action | Ghi lên Notion |
 |---|---|---|
