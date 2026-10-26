@@ -2,9 +2,21 @@
 
 import { useEffect, useRef, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
-import { ArrowDownUpIcon, CheckIcon, Link2Icon, PencilIcon, Trash2Icon } from "lucide-react";
+import {
+  ArrowDownUpIcon,
+  CheckIcon,
+  CircleCheckIcon,
+  Link2Icon,
+  ListChecksIcon,
+  LoaderIcon,
+  PencilIcon,
+  Trash2Icon,
+  type LucideIcon,
+} from "lucide-react";
 import { createGoalAction, trashGoalAction, updateGoalAction } from "@/app/actions/goals";
 import { fieldClass, primaryButtonClass } from "@/components/form-bits";
+import { Badge } from "@/components/reui/badge";
+import { IconTile } from "@/components/reui/icon-tile";
 import { ErrorNotice } from "@/components/tasks/task-row";
 import {
   DEFAULT_THRESHOLD,
@@ -25,7 +37,7 @@ const iconButton =
   "flex size-7 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-surface-muted hover:text-foreground";
 
 /**
- * Khối mục tiêu của một kỳ (SPEC-v0.4 4.2, 4.4): bộ đếm + vòng tròn %, nhóm Ưu tiên / Thường (nhãn dọc),
+ * Khối mục tiêu của một kỳ (SPEC-v0.4 4.2, 4.4): bộ đếm + vòng tròn %, nhóm Ưu tiên / Thường (Badge),
  * thêm nhanh, sửa tên tại chỗ, tích, đổi loại, xóa (vào Trash Notion, hoàn tác trong 5 giây),
  * gắn thói quen + ngưỡng % để tự xong (SPEC-v0.4 4.3). Cập nhật lạc quan; lỗi thì trả về như trước và báo.
  * `habits`: thói quen có thể gắn (đang theo dõi trong kỳ).
@@ -102,15 +114,22 @@ export function GoalPanel({
       {error && <ErrorNotice message={error} onDismiss={() => setError(null)} />}
       <div className="flex items-center gap-5">
         <ProgressRing pct={counts.progress} empty={counts.total === 0} />
-        <dl className="grid flex-1 grid-cols-3 gap-2 text-center">
-          {[
-            ["Xong", counts.completed],
-            ["Đang làm", counts.inProgress],
-            ["Tổng", counts.total],
-          ].map(([label, value]) => (
-            <div key={label} className="rounded-lg bg-surface-muted px-2 py-2">
-              <dt className="text-xs text-muted-foreground">{label}</dt>
-              <dd className="font-serif text-lg font-semibold tabular-nums">{value}</dd>
+        <dl className="grid flex-1 grid-cols-3 gap-2">
+          {(
+            [
+              { label: "Xong", value: counts.completed, Icon: CircleCheckIcon, tone: "text-(--good)" },
+              { label: "Đang làm", value: counts.inProgress, Icon: LoaderIcon, tone: "text-primary" },
+              { label: "Tổng", value: counts.total, Icon: ListChecksIcon, tone: "text-muted-foreground" },
+            ] satisfies { label: string; value: number; Icon: LucideIcon; tone: string }[]
+          ).map(({ label, value, Icon, tone }) => (
+            <div key={label} className="flex flex-col items-center gap-1 rounded-lg bg-surface-muted px-2 py-2.5 sm:flex-row sm:gap-3 sm:px-3">
+              <IconTile variant="soft" size="sm" className={tone} aria-hidden="true">
+                <Icon />
+              </IconTile>
+              <div className="text-center sm:text-left">
+                <dt className="text-xs text-muted-foreground">{label}</dt>
+                <dd className="font-serif text-lg leading-tight font-semibold tabular-nums">{value}</dd>
+              </div>
             </div>
           ))}
         </dl>
@@ -118,16 +137,14 @@ export function GoalPanel({
 
       <div className="mt-5 space-y-3">
         {groupGoals(goals).map(({ type, goals: list }) => (
-          <section key={type} className="flex gap-3">
-            {/* Nhãn nhóm viết dọc như template, màu Brainrot */}
-            <h3
-              className={`flex w-6 shrink-0 items-center justify-center rounded-md py-2 text-xs font-medium [writing-mode:vertical-rl] rotate-180 ${
-                type === "Ưu tiên" ? "bg-danger-soft text-danger" : "bg-accent-soft text-primary"
-              }`}
-            >
-              {type}
+          <section key={type} className="flex flex-col gap-1.5">
+            <h3 className="flex items-center gap-2">
+              <Badge variant={type === "Ưu tiên" ? "destructive-light" : "primary-light"} size="sm">
+                {type}
+              </Badge>
+              <span className="text-xs text-muted-foreground tabular-nums">{list.filter((g) => g.title.trim()).length}</span>
             </h3>
-            <ul className="min-h-12 flex-1 divide-y divide-dashed divide-line">
+            <ul className="min-h-12 divide-y divide-dashed divide-line">
               {list.length === 0 && <li className="py-2 text-sm text-muted-foreground">Chưa có mục tiêu {type.toLowerCase()}.</li>}
               {list.map((g) => (
                 <GoalRow
@@ -172,16 +189,16 @@ export function GoalPanel({
 /** Lý do tự xong / tiến độ liên kết, hiện nhỏ dưới tên mục tiêu. */
 function AutoChips({ auto }: { auto: AutoInfo[] }) {
   return (
-    <span className="flex flex-wrap gap-x-3 text-xs text-muted-foreground">
+    <span className="flex flex-wrap gap-1.5">
       {auto.map((a) =>
         a.kind === "habit" ? (
-          <span key="habit" className={a.pct !== null && a.pct >= a.threshold ? "text-(--good)" : ""}>
+          <Badge key="habit" variant={a.pct !== null && a.pct >= a.threshold ? "success-light" : "outline"} size="sm">
             {a.habit} {a.pct === null ? "chưa bắt đầu" : `${a.pct}%`} / {a.threshold}%
-          </span>
+          </Badge>
         ) : (
-          <span key="tasks" className={a.done === a.total ? "text-(--good)" : ""}>
+          <Badge key="tasks" variant={a.done === a.total ? "success-light" : "outline"} size="sm">
             {a.done}/{a.total} task
-          </span>
+          </Badge>
         ),
       )}
     </span>
@@ -258,7 +275,7 @@ function GoalRow({
             className="flex min-w-0 flex-1 items-baseline gap-2 text-left text-sm"
           >
             <span className={`truncate ${isGoalDone(goal) ? "text-muted-foreground line-through" : ""}`}>{goal.title}</span>
-            {goal.autoDone && !goal.done && <span className="shrink-0 text-xs text-primary">tự xong</span>}
+            {goal.autoDone && !goal.done && <Badge variant="success-light" size="xs" className="shrink-0">tự xong</Badge>}
           </button>
         )}
         {!editing && (

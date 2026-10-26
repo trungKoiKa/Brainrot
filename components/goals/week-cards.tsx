@@ -3,6 +3,7 @@
 import { useMemo, useState } from "react";
 import { ChevronDownIcon } from "lucide-react";
 import { Empty } from "@/components/card";
+import { Badge } from "@/components/reui/badge";
 import { TaskCheckbox } from "@/components/tasks/task-row";
 import { useTaskCompletion } from "@/components/tasks/use-task-completion";
 import { formatDay } from "@/lib/date";
@@ -65,12 +66,22 @@ export function WeekCards({ weekStart, today, tasks, logs }: { weekStart: string
                 <div className="min-w-0 flex-1">
                   <div className="flex items-baseline justify-between gap-2">
                     <h3 className="font-serif text-base font-semibold">{WEEKDAY[i]}</h3>
-                    <span className="text-sm font-medium tabular-nums">{c.pct === null ? "—" : `${c.pct}%`}</span>
+                    {c.pct === null ? (
+                      <span className="text-sm text-muted-foreground">—</span>
+                    ) : (
+                      <Badge variant={c.pct >= 70 ? "success-light" : c.pct >= 40 ? "warning-light" : "destructive-light"} size="sm" className="tabular-nums">
+                        {c.pct}%
+                      </Badge>
+                    )}
                   </div>
                   <p className="text-xs text-muted-foreground">
                     {formatDay(c.date, true)}
-                    {isToday && " · hôm nay"}
                   </p>
+                  {isToday && (
+                    <Badge variant="primary-light" size="xs" className="mt-1">
+                      Hôm nay
+                    </Badge>
+                  )}
                 </div>
                 <ChevronDownIcon className={`size-4 text-muted-foreground transition-transform md:hidden ${expanded ? "rotate-180" : ""}`} />
               </button>
