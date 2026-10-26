@@ -12,6 +12,8 @@ export type TaskInput = {
   project: string | null;
   priority: Priority | null;
   deadline: string | null;
+  /** Ngày làm (SPEC-v0.5) */
+  plannedOn: string | null;
 };
 
 /** goalId: id mục tiêu gắn (null = bỏ gắn); undefined = form không có ô này. */
@@ -40,7 +42,10 @@ export function parseTaskInput(form: FormData, projects: readonly string[]): Par
   const deadline = str(form.get("deadline")) || null;
   if (deadline && !isDay(deadline)) return { ok: false, error: "Deadline không hợp lệ." };
 
-  return { ok: true, data: { title, project, priority: priority as Priority | null, deadline } };
+  const plannedOn = str(form.get("plannedOn")) || null;
+  if (plannedOn && !isDay(plannedOn)) return { ok: false, error: "Ngày làm không hợp lệ." };
+
+  return { ok: true, data: { title, project, priority: priority as Priority | null, deadline, plannedOn } };
 }
 
 /** `goalIds`: id các mục tiêu có thật — chỉ cho gắn task vào mục tiêu trong danh sách này. */

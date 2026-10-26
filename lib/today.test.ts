@@ -3,7 +3,7 @@ import type { DailyLog, Knowledge, Task } from "./notion/types";
 import { deadlineLabel, latestKnowledge, pickTopThree, splitLines, upcomingDeadlines } from "./today";
 
 const task = (id: string, o: Partial<Task> = {}): Task => ({
-  id, url: `u-${id}`, title: id, project: null, status: "Chưa làm", priority: null, deadline: null, note: "",
+  id, url: `u-${id}`, title: id, project: null, status: "Chưa làm", priority: null, deadline: null, plannedOn: null, note: "",
   doneOn: null, createdTime: "2026-10-01T00:00:00.000Z", goalIds: [], ...o,
 });
 const log = (date: string, tomorrowTop3: string): DailyLog => ({

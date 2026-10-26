@@ -14,13 +14,13 @@ describe("parseTaskInput", () => {
   it("chỉ có tên → các trường khác null", () => {
     expect(parseTaskInput(form({ title: "  Viết chương 3 \n ", project: "", priority: "", deadline: "" }), PROJECTS)).toEqual({
       ok: true,
-      data: { title: "Viết chương 3", project: null, priority: null, deadline: null },
+      data: { title: "Viết chương 3", project: null, priority: null, deadline: null, plannedOn: null },
     });
   });
   it("đủ trường hợp lệ", () => {
     expect(parseTaskInput(form({ title: "A", project: "Đồ án", priority: "Cao", deadline: "2026-11-08" }), PROJECTS)).toEqual({
       ok: true,
-      data: { title: "A", project: "Đồ án", priority: "Cao", deadline: "2026-11-08" },
+      data: { title: "A", project: "Đồ án", priority: "Cao", deadline: "2026-11-08", plannedOn: null },
     });
   });
   it("tên trống / quá dài → lỗi", () => {
@@ -32,6 +32,9 @@ describe("parseTaskInput", () => {
     expect(parseTaskInput(form({ title: "A", priority: "Gấp" }), PROJECTS).ok).toBe(false);
     expect(parseTaskInput(form({ title: "A", deadline: "2026-02-30" }), PROJECTS).ok).toBe(false);
     expect(parseTaskInput(form({ title: "A", deadline: "08/11/2026" }), PROJECTS).ok).toBe(false);
+    // Ngày làm (SPEC-v0.5)
+    expect(parseTaskInput(form({ title: "A", plannedOn: "2026-10-28" }), PROJECTS)).toMatchObject({ ok: true, data: { plannedOn: "2026-10-28" } });
+    expect(parseTaskInput(form({ title: "A", plannedOn: "2026-13-01" }), PROJECTS).ok).toBe(false);
   });
 });
 
@@ -39,7 +42,7 @@ describe("parseTaskUpdate", () => {
   it("đọc trạng thái và ghi chú nhiều dòng", () => {
     expect(parseTaskUpdate(form({ title: "A", status: "Đang làm", note: "dòng 1\r\ndòng 2" }), PROJECTS)).toEqual({
       ok: true,
-      data: { title: "A", project: null, priority: null, deadline: null, status: "Đang làm", note: "dòng 1\ndòng 2" },
+      data: { title: "A", project: null, priority: null, deadline: null, plannedOn: null, status: "Đang làm", note: "dòng 1\ndòng 2" },
     });
   });
   it("không cho đặt Xong qua form sửa", () => {

@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { addDays, daysBetween, formatDay, greetingVN, longDateVN, toVNDate, todayVN } from "./date";
+import { addDays, daysBetween, formatDay, greetingVN, longDateVN, toVNDate, todayVN, weekdayShort } from "./date";
 
 describe("ngày theo giờ Việt Nam", () => {
   it("todayVN đổi ngày đúng lúc 0 giờ VN (17:00 UTC)", () => {
@@ -31,5 +31,12 @@ describe("ngày theo giờ Việt Nam", () => {
     expect(formatDay("2026-12-06")).toBe("06/12/2026");
     expect(formatDay("2026-12-06", true)).toBe("06/12");
     expect(longDateVN(new Date("2026-10-22T01:00:00Z"))).toBe("Thứ Năm, 22/10/2026");
+  });
+});
+
+describe("weekdayShort", () => {
+  it("T2…CN", () => {
+    expect(weekdayShort("2026-10-26")).toBe("T2");
+    expect(weekdayShort("2026-11-01")).toBe("CN");
   });
 });

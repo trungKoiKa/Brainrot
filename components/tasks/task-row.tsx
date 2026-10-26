@@ -2,7 +2,7 @@ import { CircleAlertIcon, XIcon } from "lucide-react";
 import { Alert, AlertAction, AlertDescription, AlertTitle } from "@/components/reui/alert";
 import { Button } from "@/components/ui/button";
 import { deadlineLabel } from "@/lib/today";
-import { daysBetween, formatDay } from "@/lib/date";
+import { daysBetween, formatDay, weekdayShort } from "@/lib/date";
 import type { Task } from "@/lib/notion/types";
 
 const PRIORITY_CLASS: Record<string, string> = {
@@ -64,6 +64,11 @@ export function TaskRow({
           {task.deadline && daysLeft !== null && (
             <span className={overdue ? "font-medium text-danger" : daysLeft === 0 && !done ? "font-medium text-primary" : ""}>
               {done ? formatDay(task.deadline) : `${deadlineLabel(daysLeft)} · ${formatDay(task.deadline, true)}`}
+            </span>
+          )}
+          {task.plannedOn && !done && (
+            <span className={task.plannedOn < today ? "text-danger" : task.plannedOn === today ? "font-medium text-primary" : ""}>
+              Làm: {weekdayShort(task.plannedOn)} {formatDay(task.plannedOn, true)}
             </span>
           )}
           {task.status === "Đang làm" && <span className="font-medium text-primary">Đang làm</span>}

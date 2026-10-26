@@ -70,6 +70,7 @@ export async function tasksResult(): Promise<Result<Task[]>> {
         status: select(p, "Trạng thái") as TaskStatus | null,
         priority: select(p, "Ưu tiên") as Priority | null,
         deadline: date(p, "Deadline"),
+        plannedOn: date(p, "Ngày làm"),
         note: text(p, "Ghi chú"),
         doneOn: date(p, "Ngày xong"),
         createdTime: created_time,

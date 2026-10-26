@@ -40,7 +40,7 @@ function Select({
   );
 }
 
-const EMPTY_NEW = { title: "", project: "", priority: "", deadline: "" };
+const EMPTY_NEW = { title: "", project: "", priority: "", deadline: "", plannedOn: "" };
 
 /** Hàng "Thêm task" ở đầu trang Tasks (SPEC-v0.2 4.2). Controlled: lỗi thì nội dung đã gõ vẫn còn. */
 export function NewTaskForm({ projects }: { projects: string[] }) {
@@ -67,6 +67,7 @@ export function NewTaskForm({ projects }: { projects: string[] }) {
         <Select name="project" label="Dự án" value={values.project} options={projects} empty="Dự án" onChange={set("project")} />
         <Select name="priority" label="Ưu tiên" value={values.priority} options={PRIORITIES} empty="Ưu tiên" onChange={set("priority")} />
         <DeadlineField value={values.deadline} onChange={set("deadline")} triggerClass={compactField} />
+        <DeadlineField name="plannedOn" label="Ngày làm" value={values.plannedOn} onChange={set("plannedOn")} triggerClass={compactField} />
         <button type="submit" disabled={pending || !values.title.trim()} className={primaryButtonClass}>
           {pending ? "Đang thêm…" : "Thêm"}
         </button>
@@ -97,6 +98,7 @@ export function EditTaskForm({
     project: task.project ?? "",
     priority: task.priority ?? "",
     deadline: task.deadline ?? "",
+    plannedOn: task.plannedOn ?? "",
     note: task.note,
     // Form chỉ gắn 1 mục tiêu; task gắn nhiều mục tiêu (sửa trong Notion) thì giữ cái đầu
     goal: task.goalIds[0] ?? "",
@@ -132,6 +134,7 @@ export function EditTaskForm({
           <Select name="project" label="Dự án" value={values.project} options={projects} empty="Không có dự án" onChange={set("project")} />
           <Select name="priority" label="Ưu tiên" value={values.priority} options={PRIORITIES} empty="Không ưu tiên" onChange={set("priority")} />
           <DeadlineField value={values.deadline} onChange={set("deadline")} triggerClass={compactField} />
+          <DeadlineField name="plannedOn" label="Ngày làm" value={values.plannedOn} onChange={set("plannedOn")} triggerClass={compactField} />
           {goals && (
             <Select
               name="goal"

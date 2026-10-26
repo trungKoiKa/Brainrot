@@ -57,6 +57,12 @@ export function daysBetween(from: string, to: string): number {
   return Math.round((toUTC(to) - toUTC(from)) / 86_400_000);
 }
 
+/** "T2"…"T7", "CN" của ngày YYYY-MM-DD. */
+export function weekdayShort(day: string): string {
+  const dow = new Date(`${day}T00:00:00Z`).getUTCDay();
+  return dow === 0 ? "CN" : `T${dow + 1}`;
+}
+
 /** Thứ Hai của tuần chứa `day` (tuần bắt đầu Thứ Hai). */
 export function mondayOf(day: string): string {
   const dow = new Date(`${day}T00:00:00Z`).getUTCDay();
