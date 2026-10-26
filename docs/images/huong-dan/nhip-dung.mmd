@@ -1,0 +1,20 @@
+flowchart TD
+  T["<b>Tasks</b> · khi có việc mới<br/>thêm task: Dự án · Ưu tiên · Deadline · Ngày làm"]
+  S["<b>Sáng · Today</b><br/>Hôm nay làm: tích xong, dời việc trễ<br/>tích thói quen hôm nay"]
+  E["<b>Tối · Today › Ghi nhanh</b><br/>Daily Log hôm nay<br/>chọn việc cho Ngày mai làm"]
+  W["<b>Chủ nhật · Goal › Tuần</b><br/>xem 7 ngày, dời việc<br/>đặt mục tiêu tuần · Nhìn lại tuần"]
+  M["<b>Đầu / cuối tháng · Goal › Tháng</b><br/>mục tiêu tháng, thói quen<br/>Nhìn lại tháng"]
+  D["<b>Dashboard</b><br/>xem tổng thể, bất cứ lúc nào"]
+  T --> S
+  S --> E
+  E -- "sáng hôm sau" --> S
+  E -- "hết tuần" --> W
+  W -- "tuần mới" --> S
+  W -- "hết tháng" --> M
+  M -- "tháng mới" --> W
+  classDef day fill:#eef0fb,stroke:#3d5bd9,color:#1f2430
+  classDef plan fill:#f4f1ea,stroke:#a08a5c,color:#1f2430
+  classDef view fill:#eaf3de,stroke:#3b6d11,color:#1f2430
+  class T,S,E day
+  class W,M plan
+  class D view
