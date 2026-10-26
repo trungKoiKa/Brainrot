@@ -4,6 +4,8 @@ import {
   dailyLogsResult,
   goalsConfigured,
   goalsResult,
+  reflectionsConfigured,
+  reflectionsResult,
   habitsConfigured,
   habitsResult,
   knowledgeResult,
@@ -12,6 +14,7 @@ import {
   type Result,
 } from "./queries";
 import type { Goal } from "@/lib/goals";
+import type { Reflection } from "@/lib/reflections";
 import type { DailyLog, Habit, Knowledge, Task } from "./types";
 
 // Lớp đọc mà trang dùng (SPEC mục 9): Notion lỗi → trả bản tốt gần nhất + cờ `stale` để hiện banner.
@@ -52,6 +55,10 @@ export const getHabits = (): Promise<Loaded<Habit[]>> =>
 /** Chưa có NOTION_GOALS_DB → rỗng, trang Mục tiêu báo "chưa kết nối". */
 export const getGoals = (): Promise<Loaded<Goal[]>> =>
   goalsConfigured() ? load("goals", goalsResult) : Promise.resolve({ data: [], stale: false });
+
+/** Chưa có NOTION_REFLECTIONS_DB → rỗng, form Nhìn lại báo "chưa kết nối". */
+export const getReflections = (): Promise<Loaded<Reflection[]>> =>
+  reflectionsConfigured() ? load("reflections", reflectionsResult) : Promise.resolve({ data: [], stale: false });
 
 /** 90 bản ghi gần nhất cho Dashboard (SPEC-v0.3 4.4). */
 export const getDailyLogs90 = (): Promise<Loaded<DailyLog[]>> => load("daily90", () => dailyLogsResult(90));

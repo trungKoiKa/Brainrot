@@ -3,6 +3,7 @@ import { isFullPage } from "@notionhq/client";
 import { LEVEL_NOTION, type GoalType } from "@/lib/goals";
 import { LEGACY_EXERCISE, toggleHabit } from "@/lib/habits";
 import type { Level } from "@/lib/period";
+import { REFLECTION_COLUMNS, type ReflectionFields } from "@/lib/reflections";
 import { formatDay, todayVN } from "@/lib/date";
 import type { DailyLogInput } from "@/lib/quick-capture";
 import type { TaskInput, TaskUpdate } from "@/lib/task-form";
@@ -211,4 +212,47 @@ export async function updateGoal(pageId: string, patch: GoalPatch): Promise<void
 export async function trashGoal(pageId: string, trashed: boolean): Promise<void> {
   await assertInDatabase(pageId, "NOTION_GOALS_DB");
   await notion().pages.update({ page_id: pageId, in_trash: trashed });
+}
+
+// ---------- Reflections (SPEC-v0.4 mục 5) ----------
+
+/** Mỗi kỳ 1 bản ghi: đã có (Cấp + Kỳ) → cập nhật; chưa có → tạo. `title` là nhãn kỳ, vd "Tháng 10/2026". */
+export async function saveReflection(
+  level: Level,
+  start: string,
+  title: string,
+  fields: ReflectionFields,
+): Promise<"created" | "updated"> {
+  const dsId = await dataSourceId("NOTION_REFLECTIONS_DB");
+  const existing = await notion().dataSources.query({
+    data_source_id: dsId,
+    filter: {
+      and: [
+        { property: "Cấp", select: { equals: LEVEL_NOTION[level] } },
+        { property: "Kỳ", date: { equals: start } },
+      ],
+    },
+    page_size: 1,
+  });
+  const properties = Object.fromEntries(
+    (Object.keys(REFLECTION_COLUMNS) as (keyof ReflectionFields)[]).map((k) => [
+      REFLECTION_COLUMNS[k],
+      { rich_text: richText(fields[k]) },
+    ]),
+  );
+  const page = existing.results.find(isFullPage);
+  if (page) {
+    await notion().pages.update({ page_id: page.id, properties });
+    return "updated";
+  }
+  await notion().pages.create({
+    parent: { type: "data_source_id", data_source_id: dsId },
+    properties: {
+      ...properties,
+      "Kỳ nhìn lại": { title: richText(title) },
+      "Cấp": { select: { name: LEVEL_NOTION[level] } },
+      "Kỳ": { date: { start } },
+    },
+  });
+  return "created";
 }

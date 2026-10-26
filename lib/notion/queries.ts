@@ -6,8 +6,9 @@ import { checkbox, date, multiSelect, number, relation, select, text, url } from
 import type { DailyLog, Habit, Knowledge, Priority, Task, TaskStatus } from "./types";
 import { LEVEL_NOTION, type Goal, type GoalType } from "@/lib/goals";
 import type { Level } from "@/lib/period";
+import { REFLECTION_COLUMNS, type Reflection } from "@/lib/reflections";
 
-export const TAGS = { tasks: "tasks", knowledge: "knowledge", daily: "daily", habits: "habits", goals: "goals" } as const;
+export const TAGS = { tasks: "tasks", knowledge: "knowledge", daily: "daily", habits: "habits", goals: "goals", reflections: "reflections" } as const;
 
 /** Kết quả đọc Notion: hàm có cache KHÔNG ném lỗi, để lỗi không bị cache như dữ liệu. */
 export type Result<T> = { ok: true; data: T } | { ok: false; error: string };
@@ -216,6 +217,41 @@ export async function goalsResult(): Promise<Result<Goal[]>> {
             habitId: relation(p, "Thói quen")[0] ?? null,
             threshold: number(p, "Ngưỡng %"),
             taskIds: relation(p, "Tasks"),
+          },
+        ];
+      }),
+    };
+  } catch (e) {
+    cacheLife(ERROR_LIFE);
+    return { ok: false, error: errorMessage(e) };
+  }
+}
+
+/** Database Reflections có cấu hình chưa (biến NOTION_REFLECTIONS_DB, v0.4 bước 5). */
+export const reflectionsConfigured = () => Boolean(process.env.NOTION_REFLECTIONS_DB);
+
+export async function reflectionsResult(): Promise<Result<Reflection[]>> {
+  "use cache";
+  cacheTag(TAGS.reflections);
+  try {
+    const pages = await queryAll("NOTION_REFLECTIONS_DB");
+    cacheLife(FIVE_MINUTES);
+    return {
+      ok: true,
+      data: pages.flatMap(({ id, properties: p }) => {
+        const level = LEVEL_FROM_NOTION[select(p, "Cấp") ?? ""];
+        const start = date(p, "Kỳ");
+        if (!level || !start) return [];
+        return [
+          {
+            id,
+            level,
+            start,
+            wentWell: text(p, REFLECTION_COLUMNS.wentWell),
+            lesson: text(p, REFLECTION_COLUMNS.lesson),
+            grateful: text(p, REFLECTION_COLUMNS.grateful),
+            nextFocus: text(p, REFLECTION_COLUMNS.nextFocus),
+            motto: text(p, REFLECTION_COLUMNS.motto),
           },
         ];
       }),
