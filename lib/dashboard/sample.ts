@@ -3,8 +3,7 @@
 import { addDays } from "@/lib/date";
 import type { Goal } from "@/lib/goals";
 import type { Habit } from "@/lib/notion/types";
-import type { DashInput, DashLog, DashTask, PlannerSummary } from "./stats";
-import { mondayOf } from "./stats";
+import type { DashInput, DashLog, DashTask } from "./stats";
 
 const SEED = 20261206;
 const HISTORY_DAYS = 120;
@@ -17,6 +16,14 @@ const SAMPLE_GOALS: [string, Goal["type"], boolean][] = [
   ["Tập thể dục ≥ 70% số ngày", "Thường", true],
   ["Viết 4 bài nhật ký tuần", "Thường", false],
 ];
+const SAMPLE_TITLES: Record<string, string[]> = {
+  "Đồ án": ["Viết chương 3", "Sửa sơ đồ khối", "Đo dòng ESP32", "Chạy thử mô hình"],
+  "Học AI": ["Bài tập CNN", "Đọc paper YOLO", "Ôn backprop"],
+  "Thực tập": ["Báo cáo tuần", "Sửa bug dashboard"],
+  "Sản phẩm": ["Thiết kế landing"],
+  "Sức khỏe": ["Khám định kỳ"],
+  Khác: ["Việc lặt vặt"],
+};
 const SAMPLE_HABITS: [string, number][] = [
   ["Tập thể dục", 0],
   ["Đọc sách", 0.75],
@@ -60,6 +67,9 @@ export function sampleDashboard(today: string, thesisDeadline = "2026-12-06"): D
       const doneAfter = int(0, 9);
       const done = r() < 0.85 && doneAfter <= i;
       tasks.push({
+        title: "",
+        url: "",
+        plannedOn: null,
         project,
         status: done ? "Xong" : r() < 0.35 ? "Đang làm" : "Chưa làm",
         deadline: r() < 0.6 ? addDays(day, int(2, 21)) : null,
@@ -80,21 +90,14 @@ export function sampleDashboard(today: string, thesisDeadline = "2026-12-06"): D
     }
   }
 
-  const monday = mondayOf(today);
-  const planner: PlannerSummary = {
-    thisWeek: { done: 0, total: 0 },
-    history: Array.from({ length: 12 }, (_, i) => {
-      const total = int(14, 24);
-      return { weekStart: addDays(monday, (i - 12) * 7), total, done: Math.round(total * (0.45 + 0.04 * i * r() + 0.2 * r())) };
-    }),
-    projects: [
-      ["Đồ án tốt nghiệp", 12],
-      ["Học AI", 6],
-      ["Thực tập", 5],
-      ["Sức khỏe", 7],
-    ].map(([name, total]) => ({ name: name as string, total: total as number, done: int(1, total as number) })),
-  };
-  planner.thisWeek = planner.projects.reduce((s, p) => ({ done: s.done + p.done, total: s.total + p.total }), { done: 0, total: 0 });
+  // Tên + Ngày làm (SPEC-v0.5) dùng PRNG riêng → số liệu mẫu các khối có sẵn không đổi
+  const rp = rng(SEED + 2);
+  tasks.forEach((t, i) => {
+    const names = SAMPLE_TITLES[t.project ?? "Khác"] ?? SAMPLE_TITLES["Khác"];
+    t.title = `${names[i % names.length]} #${i + 1}`;
+    // ~70% việc được xếp lịch: việc xong làm đúng ngày xong, việc còn mở xếp vài ngày sau khi tạo
+    if (rp() < 0.7) t.plannedOn = t.status === "Xong" && t.doneOn ? t.doneOn : addDays(t.createdOn, Math.floor(rp() * 5));
+  });
 
   // Thói quen dùng PRNG riêng → thêm phần này không làm đổi số liệu mẫu các khối có sẵn
   const rh = rng(SEED + 1);
@@ -122,5 +125,5 @@ export function sampleDashboard(today: string, thesisDeadline = "2026-12-06"): D
     taskIds: [],
   }));
 
-  return { today, tasks, knowledge, logs, planner, thesisDeadline, habits, monthGoals };
+  return { today, tasks, knowledge, logs, thesisDeadline, habits, monthGoals };
 }

@@ -7,13 +7,14 @@ import type { LucideIcon } from "lucide-react";
 import { IconTile } from "@/components/reui/icon-tile";
 import { CheckIcon } from "lucide-react";
 import { Area, AreaChart, Bar, BarChart, CartesianGrid, Cell, Line, LineChart, XAxis, YAxis } from "recharts";
-import { Card } from "@/components/card";
+import { Card, Empty } from "@/components/card";
 import { ProgressRing } from "@/components/goals/progress-ring";
 import { Badge } from "@/components/reui/badge";
 import { ChartContainer, ChartTooltip, ChartTooltipContent, type ChartConfig } from "@/components/ui/chart";
 import { Progress } from "@/components/ui/progress";
 import { formatDay } from "@/lib/date";
-import { pctTone, type Tone } from "@/lib/dashboard/stats";
+import { pctTone, type DashTask, type Tone } from "@/lib/dashboard/stats";
+import { deadlineLabel } from "@/lib/today";
 import { goalCounts, isGoalDone, type Goal } from "@/lib/goals";
 
 // Màu lấy từ token (SPEC-v0.3 mục 7): --primary xanh, --chart-3 xanh lá, --chart-4 hổ phách, --chart-5 xám, --good "ổn"
@@ -242,31 +243,25 @@ export function DailyBars({ days }: { days: Day[] }) {
 
 // ---------- 4.5 ----------
 
-export function PlannerLanes({ lanes, more }: { lanes: { name: string; done: number; total: number; pct: number }[]; more: number }) {
+export function DueSoonList({ items, more }: { items: (DashTask & { deadline: string; daysLeft: number })[]; more: number }) {
+  if (items.length === 0) return <Empty>Không có task nào đến hạn trong 14 ngày tới.</Empty>;
   return (
-    <ul className="space-y-4">
-      {lanes.map((l) => {
-        const tone = pctTone(l.pct);
-        return (
-          <li key={l.name}>
-            <div className="flex items-center gap-2 text-sm">
-              <Dot tone={tone} />
-              <span className="min-w-0 flex-1 truncate font-medium">{l.name}</span>
-              <span className="text-muted-foreground tabular-nums">
-                {l.done}/{l.total}
-              </span>
-            </div>
-            <Progress
-              value={l.pct}
-              aria-label={`${l.name}: ${l.pct}%`}
-              className="mt-2 [&_[data-slot=progress-indicator]]:bg-(--lane) [&_[data-slot=progress-track]]:h-1.5"
-              style={{ "--lane": TONE_COLOR[tone] } as React.CSSProperties}
-            />
-            <p className="mt-1 text-right text-xs text-muted-foreground tabular-nums">{l.pct}%</p>
-          </li>
-        );
-      })}
-      {more > 0 && <li className="text-sm text-muted-foreground">+{more} dự án</li>}
+    <ul className="divide-y divide-line text-sm">
+      {items.map((t, i) => (
+        <li key={`${t.url}-${i}`} className="flex items-baseline gap-3 py-2 first:pt-0 last:pb-0">
+          {t.url ? (
+            <a href={t.url} target="_blank" rel="noopener noreferrer" className="min-w-0 flex-1 truncate hover:text-primary">
+              {t.title || "(Chưa đặt tên)"}
+            </a>
+          ) : (
+            <span className="min-w-0 flex-1 truncate">{t.title}</span>
+          )}
+          <Badge variant={t.daysLeft < 0 ? "destructive-light" : t.daysLeft <= 3 ? "warning-light" : "outline"} size="sm" className="shrink-0 tabular-nums">
+            {deadlineLabel(t.daysLeft)}
+          </Badge>
+        </li>
+      ))}
+      {more > 0 && <li className="pt-2 text-muted-foreground">+{more} task</li>}
     </ul>
   );
 }

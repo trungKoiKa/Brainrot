@@ -9,8 +9,8 @@ import {
   lastDays,
   mondayOf,
   openOn,
-  plannerKpi,
-  plannerLanes,
+  dueSoon,
+  weekKpi,
   tasksByProject,
   thesisKpi,
   weeklyRhythm,
@@ -20,10 +20,10 @@ import {
 
 const today = "2026-10-26"; // thứ Hai
 const t = (o: Partial<DashTask> = {}): DashTask => ({
-  project: null, status: "Chưa làm", deadline: null, doneOn: null, createdOn: "2026-10-01", ...o,
+  title: "", url: "", project: null, status: "Chưa làm", deadline: null, doneOn: null, plannedOn: null, createdOn: "2026-10-01", ...o,
 });
 const input = (o: Partial<DashInput> = {}): DashInput => ({
-  today, tasks: [], knowledge: [], logs: [], planner: null, thesisDeadline: "2026-12-06", habits: [], monthGoals: [], ...o,
+  today, tasks: [], knowledge: [], logs: [], thesisDeadline: "2026-12-06", habits: [], monthGoals: [], ...o,
 });
 
 describe("ngày", () => {
@@ -74,13 +74,18 @@ describe("thẻ số liệu", () => {
     expect(k.perDay).toBe(0.3);
   });
 
-  it("planner: % tuần này, so điểm % với tuần đã lưu gần nhất", () => {
-    const k = plannerKpi({
-      thisWeek: { done: 3, total: 4 },
-      history: [{ weekStart: "2026-10-19", done: 1, total: 2 }],
-      projects: [],
-    });
-    expect(k).toMatchObject({ value: 75, change: 25, tone: "good", series: [50, 75] });
+  it("tuần này: % task có Ngày làm trong tuần đã xong, so điểm với tuần trước; tuần trống → null", () => {
+    const tasks = [
+      t({ plannedOn: "2026-10-26", status: "Xong" }),
+      t({ plannedOn: "2026-11-01", status: "Xong" }),
+      t({ plannedOn: "2026-10-28" }),
+      t({ plannedOn: "2026-11-02" }), // tuần sau
+      t({ plannedOn: "2026-10-20", status: "Xong" }),
+      t({ plannedOn: "2026-10-21" }),
+    ];
+    expect(weekKpi(input({ tasks }))).toMatchObject({ value: 67, change: 17, tone: "warn", tally: { done: 2, total: 3 } });
+    expect(weekKpi(input({ tasks })).series).toHaveLength(12);
+    expect(weekKpi(input())).toMatchObject({ value: null, change: null, tally: { done: 0, total: 0 } });
   });
 
   it("đồ án: số ngày còn lại + số ngày có log", () => {
@@ -123,15 +128,16 @@ describe("biểu đồ", () => {
     expect(r.days.at(-2)).toMatchObject({ date: "2026-10-25", done: 3 });
   });
 
-  it("plannerLanes: chậm nhất lên đầu, bỏ dự án chưa có slot, gộp phần dư", () => {
-    const projects = [
-      { name: "A", done: 3, total: 4 },
-      { name: "B", done: 1, total: 4 },
-      { name: "C", done: 0, total: 0 },
-      { name: "D", done: 2, total: 4 },
+  it("dueSoon: chưa xong, Hạn ≤ 14 ngày (gồm quá hạn), gần nhất trước, gộp phần dư", () => {
+    const tasks = [
+      t({ title: "xa", deadline: "2026-11-09" }), // đúng 14 ngày
+      t({ title: "qua-han", deadline: "2026-10-24" }),
+      t({ title: "xong", deadline: "2026-10-27", status: "Xong" }),
+      t({ title: "mai", deadline: "2026-10-27" }),
+      t({ title: "qua-xa", deadline: "2026-11-11" }),
     ];
-    const { lanes, more } = plannerLanes({ thisWeek: { done: 0, total: 0 }, history: [], projects }, 2);
-    expect(lanes.map((l) => l.name)).toEqual(["B", "D"]);
+    const { items, more } = dueSoon(input({ tasks }), 14, 2);
+    expect(items.map((x) => [x.title, x.daysLeft])).toEqual([["qua-han", -2], ["mai", 1]]);
     expect(more).toBe(1);
   });
 });
@@ -169,7 +175,7 @@ describe("dữ liệu mẫu", () => {
     expect(a.tasks.some((x) => x.status !== "Xong")).toBe(true);
     expect(a.knowledge.length).toBeGreaterThan(10);
     expect(a.logs.length).toBeGreaterThan(30);
-    expect(a.planner?.projects.length).toBe(4);
+    expect(a.tasks.some((x) => x.plannedOn !== null && x.plannedOn >= mondayOf(today))).toBe(true);
     expect(a.habits).toHaveLength(5);
     expect(a.logs.some((l) => l.habits.length > 0)).toBe(true);
     expect(a.tasks.every((x) => !x.doneOn || x.doneOn <= today)).toBe(true);
