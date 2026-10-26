@@ -6,7 +6,7 @@ import { Card, Empty } from "@/components/card";
 import { GoalPanel } from "@/components/goals/goal-panel";
 import { ReflectionForm } from "@/components/goals/reflection-form";
 import { PeriodBars, type PeriodBar } from "@/components/goals/period-bars";
-import { WeekCardsClient } from "@/components/goals/week-cards-client";
+import { WeekCards } from "@/components/goals/week-cards";
 import { ProgressRing } from "@/components/goals/progress-ring";
 import { HabitMonth } from "@/components/habits/habit-month";
 import { PageHeader } from "@/components/page-header";
@@ -169,7 +169,7 @@ async function GoalsContent({ searchParams }: Pick<PageProps<"/goals">, "searchP
 
       {level === "week" && logs && weekTasks && (
         <Card title="7 ngày trong tuần">
-          <WeekCardsClient key={period.key} weekStart={period.start} today={today} tasks={weekTasks.data} logs={logs.data} />
+          <WeekCards key={period.key} weekStart={period.start} today={today} tasks={weekTasks.data} logs={logs.data} />
         </Card>
       )}
 

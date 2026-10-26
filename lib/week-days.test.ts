@@ -10,29 +10,32 @@ const log = (date: string, done: string, dropped = ""): DailyLog => ({
   id: date, url: "", title: "", date, done, dropped, learned: "", tomorrowTop3: "", exercised: false, habits: [],
 });
 
-describe("Thẻ ngày chế độ Tuần", () => {
-  it("task thuộc ngày theo Deadline hoặc Ngày xong (chỉ khi đã xong)", () => {
+describe("Thẻ ngày chế độ Tuần (SPEC-v0.5 4.3)", () => {
+  it("task thuộc ngày theo Ngày làm / Ngày xong / Hạn, không lặp, Hạn chỉ khi chưa xếp ngày khác", () => {
     const list = [
-      task("a", { deadline: "2026-10-27" }),
-      task("b", { status: "Xong", doneOn: "2026-10-27" }),
-      task("c", { status: "Đang làm", doneOn: "2026-10-27" }),
-      task("d", { deadline: "2026-10-28" }),
+      task("lam", { plannedOn: "2026-10-27" }),
+      task("xong", { status: "Xong", doneOn: "2026-10-27", plannedOn: "2026-10-25" }),
+      task("lam-va-han", { plannedOn: "2026-10-27", deadline: "2026-10-27" }),
+      task("han", { deadline: "2026-10-27" }),
+      task("han-xep-khac", { deadline: "2026-10-27", plannedOn: "2026-10-28" }),
+      task("dang-lam-ngay-xong", { status: "Đang làm", doneOn: "2026-10-27" }),
     ];
-    expect(tasksOnDay(list, "2026-10-27").map((t) => t.id)).toEqual(["a", "b"]);
+    expect(tasksOnDay(list, "2026-10-27").map((t) => [t.id, t.dueOnly])).toEqual([
+      ["lam", false], ["xong", false], ["lam-va-han", false], ["han", true],
+    ]);
   });
 
-  it("7 thẻ từ Thứ Hai, % gồm task Notion + ô Planner, ngày trống pct null", () => {
+  it("7 thẻ từ Thứ Hai, % = task xong / tổng, ngày trống pct null", () => {
     const cards = weekDayCards(
       "2026-10-26",
-      [task("a", { deadline: "2026-10-27", status: "Xong" }), task("b", { deadline: "2026-10-27" })],
+      [task("a", { plannedOn: "2026-10-27", status: "Xong", doneOn: "2026-10-27" }), task("b", { plannedOn: "2026-10-27" })],
       [log("2026-10-27", " Xong chương 3 ", "Rơi demo"), log("2026-10-28", "  ")],
-      { tue: [{ id: "s1", title: "Viết", done: true }, { id: "s2", title: "Đọc", done: false }] },
     );
     expect(cards.map((c) => c.date)).toEqual([
       "2026-10-26", "2026-10-27", "2026-10-28", "2026-10-29", "2026-10-30", "2026-10-31", "2026-11-01",
     ]);
-    expect(cards[1]).toMatchObject({ doneCount: 2, total: 4, pct: 50, log: { done: "Xong chương 3", dropped: "Rơi demo" } });
+    expect(cards[1]).toMatchObject({ doneCount: 1, total: 2, pct: 50, log: { done: "Xong chương 3", dropped: "Rơi demo" } });
     expect(cards[0].pct).toBeNull();
-    expect(cards[2].log).toBeNull(); // ghi chú chỉ có khoảng trắng
+    expect(cards[2].log).toBeNull();
   });
 });
