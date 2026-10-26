@@ -16,18 +16,15 @@ import {
   habitKpis,
   hasDoneDates,
   PERIODS,
-  plannerKpi,
-  plannerLanes,
+  dueSoon,
   tasksByProject,
   thesisKpi,
   weeklyRhythm,
   type DashInput,
   type Period,
-  type PlannerSummary,
+  weekKpi,
 } from "@/lib/dashboard/stats";
-import { projectProgress, weekProgress } from "@/features/planner/lib/progress";
-import { usePlanner } from "@/features/planner/store/usePlanner";
-import { DailyBars, HabitBars, KpiCard, MonthGoals, PlannerLanes, ProjectBars, SampleBadge, WeeklyArea } from "./dashboard-blocks";
+import { DailyBars, DueSoonList, HabitBars, KpiCard, MonthGoals, ProjectBars, SampleBadge, WeeklyArea } from "./dashboard-blocks";
 
 type Mode = "real" | "sample";
 
@@ -52,58 +49,38 @@ function store(key: string, value: string) {
   }
 }
 
-/** Dữ liệu Planner của trình duyệt này; chưa có gì → null. */
-function usePlannerSummary(): PlannerSummary | null {
-  const projects = usePlanner((s) => s.projects);
-  const archives = usePlanner((s) => s.archives);
-  return useMemo(() => {
-    if (projects.length === 0 && archives.length === 0) return null;
-    return {
-      thisWeek: weekProgress(projects),
-      history: [...archives]
-        .sort((a, b) => a.weekStart.localeCompare(b.weekStart))
-        .map((a) => ({ weekStart: a.weekStart, ...a.totals })),
-      projects: projects.map((p) => ({ name: p.title || "Untitled", ...projectProgress(p) })),
-    };
-  }, [projects, archives]);
-}
-
 const fmt = new Intl.NumberFormat("vi-VN");
 
-export function DashboardView({ real: realBase, graph }: { real: Omit<DashInput, "planner">; graph: GraphData }) {
+export function DashboardView({ real, graph }: { real: DashInput; graph: GraphData }) {
   const [mode, setMode] = useState<Mode>(() => readStored<Mode>(MODE_KEY, ["real", "sample"], "real"));
   const [period, setPeriod] = useState<Period>(() => readStored<Period>(PERIOD_KEY, PERIODS, 30));
-  const planner = usePlannerSummary();
-  const real: DashInput = { ...realBase, planner };
   const sample = useMemo(
-    () => sampleDashboard(realBase.today, realBase.thesisDeadline ?? undefined),
-    [realBase.today, realBase.thesisDeadline],
+    () => sampleDashboard(real.today, real.thesisDeadline ?? undefined),
+    [real.today, real.thesisDeadline],
   );
 
   // Khối nào thiếu nguồn thật thì dùng mẫu (SPEC-v0.3 mục 5)
   const all = mode === "sample";
   const doneSample = all || !hasDoneDates(real.tasks);
   const logsSample = all || real.logs.length === 0;
-  const plannerSample = all || real.planner === null;
   const habitsSample = all || real.habits.length === 0;
   // Mục tiêu: chế độ Thật mà chưa đặt mục tiêu tháng → báo trống + link đặt mục tiêu, không dùng mẫu
   const goalsSample = all;
   const tasksSrc = all ? sample : real;
   const doneSrc = doneSample ? sample : real;
   const logsSrc = logsSample ? sample : real;
-  const plannerSrc = (plannerSample ? sample.planner : real.planner) as PlannerSummary;
   const weeklySrc: DashInput = all ? sample : { ...real, tasks: doneSample ? sample.tasks : real.tasks };
 
   const backlog = backlogKpi(tasksSrc, period);
   const done = doneKpi(doneSrc, period);
-  const plan = plannerKpi(plannerSrc);
+  // "Tuần này" luôn là dữ liệu thật ở chế độ Thật: chưa xếp lịch thì hiện "—" (SPEC-v0.5 4.4)
+  const week = weekKpi(tasksSrc);
   const thesis = thesisKpi({ ...logsSrc, thesisDeadline: real.thesisDeadline }, period);
   const weekly = weeklyRhythm(weeklySrc);
   const daily = dailyRhythm(logsSrc, period);
   // Thói quen thật lấy cả danh sách Habits lẫn Daily Log thật; chưa kết nối Habits → mẫu
   const habitStats = habitKpis(habitsSample ? sample : real, period);
-  // Danh sách Planner: chế độ Thật mà chưa có dự án → báo trống (SPEC-v0.3 4.5), không dùng mẫu
-  const lanes = all ? plannerLanes(sample.planner as PlannerSummary) : real.planner ? plannerLanes(real.planner) : null;
+  const due = dueSoon(tasksSrc);
 
   return (
     <div className="space-y-5">
@@ -158,15 +135,15 @@ export function DashboardView({ real: realBase, graph }: { real: Omit<DashInput,
         />
         <KpiCard
           icon={CalendarDaysIcon}
-          title="Planner"
-          subtitle="Tuần này"
-          tone={plan.tone}
-          value={`${plan.value}%`}
-          series={plan.series}
-          change={plan.change}
+          title="Tuần này"
+          subtitle="Task có Ngày làm"
+          tone={week.tone}
+          value={week.value === null ? "—" : `${week.value}%`}
+          series={week.series}
+          change={week.change}
           changeUnit="điểm"
-          note={`${plan.tally.done}/${plan.tally.total} slot`}
-          sample={plannerSample}
+          note={week.tally.total === 0 ? "chưa xếp lịch việc nào" : `${week.tally.done}/${week.tally.total} task`}
+          sample={all}
         />
         <KpiCard
           icon={GraduationCapIcon}
@@ -186,7 +163,7 @@ export function DashboardView({ real: realBase, graph }: { real: Omit<DashInput,
           <p className="-mt-3 mb-4 text-sm text-muted-foreground">Việc chưa xong · bấm cột để mở Tasks</p>
           <ProjectBars rows={tasksByProject(tasksSrc.tasks)} />
         </Card>
-        {/* Cột phải: hai khối "việc cần làm" xếp chồng (SPEC-v0.4 mục 7) */}
+        {/* Cột phải: hai khối "việc cần làm" xếp chồng (SPEC-v0.4 mục 7, SPEC-v0.5 4.4) */}
         <div className="flex flex-col gap-5">
           <Card
             title="Mục tiêu tháng này"
@@ -201,18 +178,19 @@ export function DashboardView({ real: realBase, graph }: { real: Omit<DashInput,
           >
             <MonthGoals goals={goalsSample ? sample.monthGoals : real.monthGoals} />
           </Card>
-          <Card title="Dự án Planner" action={all && <SampleBadge />}>
-            <p className="-mt-3 mb-4 text-sm text-muted-foreground">Tuần này · chậm nhất ở trên</p>
-            {lanes && lanes.lanes.length > 0 ? (
-              <PlannerLanes lanes={lanes.lanes} more={lanes.more} />
-            ) : (
-              <Empty>
-                Chưa có dự án Planner tuần này.{" "}
-                <a href="/planner" className="text-primary underline underline-offset-2">
-                  Mở Planner
-                </a>
-              </Empty>
-            )}
+          <Card
+            title="Sắp đến hạn"
+            action={
+              <span className="flex items-center gap-2">
+                {all && <SampleBadge />}
+                <Link href="/tasks" className="text-sm text-muted-foreground hover:text-foreground">
+                  Mở
+                </Link>
+              </span>
+            }
+          >
+            <p className="-mt-3 mb-4 text-sm text-muted-foreground">Task chưa xong · hạn trong 14 ngày</p>
+            <DueSoonList items={due.items} more={due.more} />
           </Card>
         </div>
       </div>

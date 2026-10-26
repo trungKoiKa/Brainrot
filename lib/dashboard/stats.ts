@@ -9,10 +9,15 @@ export type Period = 7 | 30 | 90;
 export const PERIODS: Period[] = [7, 30, 90];
 
 export type DashTask = {
+  title: string;
+  /** Trang Notion (rỗng ở dữ liệu mẫu) */
+  url: string;
   project: string | null;
   status: TaskStatus | null;
   deadline: string | null;
   doneOn: string | null;
+  /** Ngày làm (SPEC-v0.5) */
+  plannedOn: string | null;
   createdOn: string;
 };
 
@@ -27,20 +32,12 @@ export type DashLog = {
 
 export type Tally = { done: number; total: number };
 
-export type PlannerSummary = {
-  thisWeek: Tally;
-  /** Các tuần đã End week, cũ → mới */
-  history: (Tally & { weekStart: string })[];
-  projects: (Tally & { name: string })[];
-};
-
 export type DashInput = {
   today: string;
   tasks: DashTask[];
   /** Ngày học của từng trang Knowledge */
   knowledge: string[];
   logs: DashLog[];
-  planner: PlannerSummary | null;
   thesisDeadline: string | null;
   /** Database Habits (SPEC-v0.4); rỗng khi chưa kết nối */
   habits: Habit[];
@@ -110,17 +107,26 @@ export function doneKpi({ today, tasks }: DashInput, period: Period) {
 
 export const pctTone = (p: number): Tone => (p >= 70 ? "good" : p >= 40 ? "warn" : "bad");
 
-export function plannerKpi(planner: PlannerSummary) {
-  const value = pct(planner.thisWeek);
-  const last = planner.history.at(-1);
-  const kpi: Kpi = {
-    value,
-    series: [...planner.history.slice(-11).map(pct), value],
-    // tuần: so điểm % (không phải % thay đổi)
-    change: last ? value - pct(last) : null,
-    tone: pctTone(value),
+/** "Tuần này" (SPEC-v0.5 4.4): % task có Ngày làm trong tuần đã xong; 12 tuần; so điểm % với tuần trước. */
+export function weekKpi({ today, tasks }: DashInput) {
+  const monday = mondayOf(today);
+  const tallyOf = (start: string): Tally => {
+    const end = addDays(start, 6);
+    const planned = tasks.filter((t) => t.plannedOn !== null && t.plannedOn >= start && t.plannedOn <= end);
+    return { done: planned.filter(isDone).length, total: planned.length };
   };
-  return { ...kpi, tally: planner.thisWeek };
+  const weeks = Array.from({ length: 12 }, (_, i) => tallyOf(addDays(monday, (i - 11) * 7)));
+  const now = weeks[11];
+  const last = weeks[10];
+  const value = now.total === 0 ? null : pct(now);
+  return {
+    value,
+    // tuần chưa xếp gì vẽ 0 cho liền nét
+    series: weeks.map(pct),
+    change: value === null || last.total === 0 ? null : value - pct(last),
+    tone: value === null ? ("warn" as Tone) : pctTone(value),
+    tally: now,
+  };
 }
 
 export function thesisKpi({ today, logs, thesisDeadline }: DashInput, period: Period) {
@@ -225,12 +231,13 @@ export function habitKpis({ today, logs, habits }: DashInput, period: Period) {
   return { rows, average };
 }
 
-// ---------- 4.5 dự án Planner tuần này ----------
+// ---------- sắp đến hạn (SPEC-v0.5 4.4, câu 10.3a) ----------
 
-export function plannerLanes(planner: PlannerSummary, max = 5) {
-  const sorted = planner.projects
-    .filter((p) => p.total > 0)
-    .map((p) => ({ ...p, pct: pct(p) }))
-    .sort((a, b) => a.pct - b.pct);
-  return { lanes: sorted.slice(0, max), more: Math.max(0, sorted.length - max) };
+/** Task chưa xong có Hạn ≤ hôm nay + `horizon` (gồm quá hạn), gần nhất trước; tối đa `max`, còn lại đếm vào `more`. */
+export function dueSoon({ today, tasks }: DashInput, horizon = 14, max = 5) {
+  const list = tasks
+    .filter((t): t is DashTask & { deadline: string } => !isDone(t) && t.deadline !== null && daysBetween(today, t.deadline) <= horizon)
+    .map((t) => ({ ...t, daysLeft: daysBetween(today, t.deadline) }))
+    .sort((a, b) => a.deadline.localeCompare(b.deadline));
+  return { items: list.slice(0, max), more: Math.max(0, list.length - max) };
 }

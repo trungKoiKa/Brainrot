@@ -13,7 +13,7 @@ import { getBrainGraph } from "@/lib/notion/graph";
 import { doneHabits, LEGACY_EXERCISE } from "@/lib/habits";
 import { splitLines } from "@/lib/today";
 
-// SPEC-v0.3: tổng quan việc và học tập. Chỉ đọc; Planner đọc ở trình duyệt (localStorage).
+// SPEC-v0.3: tổng quan việc và học tập. Chỉ đọc; v0.5 bỏ Planner, mọi việc đọc từ Notion Tasks.
 export default function DashboardPage() {
   return (
     <div className="mx-auto max-w-6xl">
@@ -42,10 +42,13 @@ async function DashboardContent() {
   const month = periodOf("month", today);
   const monthGoals = await resolveGoals(goals.data.filter((g) => g.level === "month" && g.start === month.start));
 
-  const real: Omit<DashInput, "planner"> = {
+  const real: DashInput = {
     today,
     thesisDeadline: process.env.THESIS_DEADLINE ?? null,
     tasks: tasks.data.map((t) => ({
+      title: t.title,
+      url: t.url,
+      plannedOn: t.plannedOn,
       project: t.project,
       status: t.status,
       deadline: t.deadline,
