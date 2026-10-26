@@ -2,7 +2,7 @@
 
 > Bổ sung cho `SPEC.md`, `SPEC-v0.2.md` → `SPEC-v0.4.md`. Mục nào không nhắc ở đây thì giữ nguyên.
 >
-> **Trạng thái:** nháp, chờ Trung duyệt (26/10/2026). Trung đã chốt: **bỏ Planner**, không cần chuyển dữ liệu Planner
+> **Trạng thái:** Trung duyệt 26/10/2026 theo các phương án đề xuất ở mục 10 (cột "Ngày làm", 10.2 (a), 10.3 (a), thứ tự mục 7). Trung đã chốt: **bỏ Planner**, không cần chuyển dữ liệu Planner
 > (chưa dùng thật). Tiến độ: `docs/plans/active/v0.5.md`.
 
 ## 1. Vấn đề

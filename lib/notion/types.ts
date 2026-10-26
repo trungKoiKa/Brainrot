@@ -13,6 +13,8 @@ export type Task = {
   /** YYYY-MM-DD theo giờ Việt Nam */
   deadline: string | null;
   note: string;
+  /** Cột "Ngày làm" (SPEC-v0.5): ngày định làm, khác Deadline (ngày phải xong) */
+  plannedOn: string | null;
   /** Ngày đánh dấu Xong (YYYY-MM-DD), từ v0.3; task xong trước đó để trống */
   doneOn: string | null;
   /** ISO, Notion tự đặt */

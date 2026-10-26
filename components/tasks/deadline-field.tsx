@@ -23,10 +23,15 @@ export function DeadlineField({
   value,
   onChange,
   triggerClass,
+  name = "deadline",
+  label = "Deadline",
 }: {
   value: string;
   onChange: (v: string) => void;
   triggerClass: string;
+  /** Tên input ẩn gửi kèm form; dùng lại cho "Ngày làm" (SPEC-v0.5) */
+  name?: string;
+  label?: string;
 }) {
   const [open, setOpen] = useState(false);
   const pick = (v: string) => {
@@ -36,13 +41,13 @@ export function DeadlineField({
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
-      <input type="hidden" name="deadline" value={value} />
+      <input type="hidden" name={name} value={value} />
       <PopoverTrigger
         render={
-          <button type="button" aria-label="Deadline" className={`${triggerClass} inline-flex items-center gap-2`} />
+          <button type="button" aria-label={label} className={`${triggerClass} inline-flex items-center gap-2`} />
         }
       >
-        <span className={value ? "" : "text-muted-foreground"}>{value ? formatDay(value) : "Deadline"}</span>
+        <span className={value ? "" : "text-muted-foreground"}>{value ? `${label === "Deadline" ? "" : `${label}: `}${formatDay(value)}` : label}</span>
         <CalendarIcon aria-hidden="true" className="size-4 opacity-60" />
       </PopoverTrigger>
       <PopoverContent align="start" className="w-auto p-0">
@@ -61,7 +66,7 @@ export function DeadlineField({
             onClick={() => pick("")}
             className="mx-2.5 mb-2.5 self-start text-sm text-muted-foreground transition-colors hover:text-foreground"
           >
-            Bỏ deadline
+            Bỏ {label.toLowerCase()}
           </button>
         )}
       </PopoverContent>

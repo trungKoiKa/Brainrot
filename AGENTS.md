@@ -45,7 +45,7 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
 > Phạm vi: `SPEC.md` + `SPEC-v0.2.md`; kết quả ở `docs/plans/completed/`. **v0.3 (Dashboard)**: `SPEC-v0.3.md` đã duyệt và triển khai,
 > plan `docs/plans/active/v0.3.md` chờ Trung test. **v0.4 (Mục tiêu · Thói quen · Nhìn lại)**: `SPEC-v0.4.md` đã duyệt, code xong 7 bước
 > (26/10/2026, tag `v0.4.0`), plan `docs/plans/active/v0.4.md` chờ Trung test.
-> **v0.5 (Một kho việc, bỏ Planner)**: nháp `SPEC-v0.5.md` + plan `docs/plans/active/v0.5.md`, chờ Trung duyệt.
+> **v0.5 (Một kho việc, bỏ Planner)**: `SPEC-v0.5.md` đã duyệt 26/10/2026, đang làm theo plan `docs/plans/active/v0.5.md`.
 > Yêu cầu mới → ghi vào "Follow-ups" của plan đang chạy, chốt SPEC trước khi code.
 
 ## Thứ tự ưu tiên khi hướng dẫn mâu thuẫn

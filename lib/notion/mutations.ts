@@ -45,7 +45,14 @@ const taskProperties = (input: TaskInput) => ({
   "Dự án": { select: input.project ? { name: input.project } : null },
   "Ưu tiên": { select: input.priority ? { name: input.priority } : null },
   Deadline: { date: input.deadline ? { start: input.deadline } : null },
+  "Ngày làm": { date: input.plannedOn ? { start: input.plannedOn } : null },
 });
+
+/** Đặt / bỏ Ngày làm của một task (SPEC-v0.5: "Làm hôm nay", "Dời sang…"). */
+export async function setTaskPlannedOn(pageId: string, day: string | null): Promise<void> {
+  await assertTaskPage(pageId);
+  await notion().pages.update({ page_id: pageId, properties: { "Ngày làm": { date: day ? { start: day } : null } } });
+}
 
 /** Thêm task (SPEC-v0.2 4.2): Trạng thái = Chưa làm. */
 export async function createTask(input: TaskInput): Promise<void> {

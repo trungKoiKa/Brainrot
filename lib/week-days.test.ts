@@ -3,7 +3,7 @@ import type { DailyLog, Task } from "./notion/types";
 import { tasksOnDay, weekDayCards } from "./week-days";
 
 const task = (id: string, over: Partial<Task>): Task => ({
-  id, url: "", title: id, project: null, status: "Chưa làm", priority: null, deadline: null, note: "",
+  id, url: "", title: id, project: null, status: "Chưa làm", priority: null, deadline: null, plannedOn: null, note: "",
   doneOn: null, createdTime: "", goalIds: [], ...over,
 });
 const log = (date: string, done: string, dropped = ""): DailyLog => ({
