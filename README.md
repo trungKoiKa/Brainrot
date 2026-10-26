@@ -104,4 +104,6 @@ components/       UI: dashboard/, goals/, habits/, tasks/, brain/, reui/ (ReUI),
 docs/             Quyết định kỹ thuật, plan từng phiên bản
 ```
 
+Cách dùng hằng ngày và luồng dữ liệu: [`docs/huong-dan.md`](docs/huong-dan.md).
+
 Agent (Claude Code, Codex…) đọc [`AGENTS.md`](AGENTS.md) trước khi làm việc.
