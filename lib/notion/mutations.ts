@@ -1,6 +1,8 @@
 import "server-only";
 import { isFullPage } from "@notionhq/client";
+import { LEVEL_NOTION, type GoalType } from "@/lib/goals";
 import { LEGACY_EXERCISE, toggleHabit } from "@/lib/habits";
+import type { Level } from "@/lib/period";
 import { formatDay, todayVN } from "@/lib/date";
 import type { DailyLogInput } from "@/lib/quick-capture";
 import type { TaskInput, TaskUpdate } from "@/lib/task-form";
@@ -169,4 +171,38 @@ export async function createIdea(day: string, idea: string): Promise<void> {
       "Trạng thái": { select: { name: "Mới" } },
     },
   });
+}
+
+// ---------- Goals (SPEC-v0.4 mục 4.4) ----------
+
+export async function createGoal(level: Level, start: string, title: string, type: GoalType): Promise<string> {
+  const page = await notion().pages.create({
+    parent: { type: "data_source_id", data_source_id: await dataSourceId("NOTION_GOALS_DB") },
+    properties: {
+      "Mục tiêu": { title: richText(title) },
+      "Cấp": { select: { name: LEVEL_NOTION[level] } },
+      "Kỳ": { date: { start } },
+      "Loại": { select: { name: type } },
+      Xong: { checkbox: false },
+    },
+  });
+  return page.id;
+}
+
+export async function updateGoal(pageId: string, patch: { title?: string; type?: GoalType; done?: boolean }): Promise<void> {
+  await assertInDatabase(pageId, "NOTION_GOALS_DB");
+  await notion().pages.update({
+    page_id: pageId,
+    properties: {
+      ...(patch.title !== undefined && { "Mục tiêu": { title: richText(patch.title) } }),
+      ...(patch.type !== undefined && { "Loại": { select: { name: patch.type } } }),
+      ...(patch.done !== undefined && { Xong: { checkbox: patch.done } }),
+    },
+  });
+}
+
+/** Xóa = chuyển vào Trash của Notion (khôi phục được); `trashed: false` để hoàn tác. */
+export async function trashGoal(pageId: string, trashed: boolean): Promise<void> {
+  await assertInDatabase(pageId, "NOTION_GOALS_DB");
+  await notion().pages.update({ page_id: pageId, in_trash: trashed });
 }
