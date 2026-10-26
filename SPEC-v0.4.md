@@ -83,7 +83,7 @@ Hơn template:
 | Kỳ | Date | Ngày đầu kỳ: 01/01 · 01/01, 01/04, 01/07, 01/10 · 01/MM · **thứ Hai** của tuần |
 | Loại | Select: Ưu tiên · Thường | |
 | Xong | Checkbox | Tích tay; hoặc tự xong (4.3) |
-| Mục tiêu cha | Relation (Goals → Goals) | Tùy chọn |
+| Mục tiêu cha | Relation (Goals → Goals) | Tùy chọn — thêm ở bước 4 |
 | Thói quen | Relation → Habits | Tùy chọn, kèm **Ngưỡng %** (Number) |
 | Tasks | Relation Tasks ↔ Goals | Tùy chọn; bên Tasks có cột "Mục tiêu" |
 
@@ -117,7 +117,7 @@ nhãn nhỏ cho biết lý do ("theo thói quen" / "theo task").
 
 ### 4.4 Thao tác trên web
 
-- Thêm nhanh (1 dòng + Enter, chọn Ưu tiên/Thường), **sửa tên tại chỗ**, tích/bỏ tích (gạch ngang khi xong),
+- Thêm nhanh (1 dòng + Enter, chọn Ưu tiên/Thường; trong nhóm sắp theo thời điểm tạo), **sửa tên tại chỗ**, tích/bỏ tích (gạch ngang khi xong),
   **đổi Ưu tiên ↔ Thường**, gắn thói quen + ngưỡng, **xóa** (chuyển vào Trash của Notion, có hoàn tác 5 giây).
 - Gắn task: trong form sửa task (Tasks) chọn "Mục tiêu" — chỉ mục tiêu Tháng/Tuần còn mở.
 
@@ -138,7 +138,8 @@ nhãn nhỏ cho biết lý do ("theo thói quen" / "theo task").
 ### 6.1 Điều hướng
 
 - Sidebar: Dashboard · Brain · Today · Tasks · **Mục tiêu** · Planner (icon `Target`).
-- Thanh trên: chọn **Năm / Quý / Tháng / Tuần** + ‹ › đổi kỳ + "Hôm nay". Kỳ hiện tại tự lấy theo ngày hôm nay
+- Thanh trên: chọn **Năm / Quý / Tháng / Tuần** + ‹ › đổi kỳ + "Hôm nay". Đổi cấp giữ ngữ cảnh (đang xem tháng 10 →
+  bấm Năm ra năm đó; nếu kỳ đang xem chứa hôm nay thì lấy kỳ chứa hôm nay). Kỳ hiện tại tự lấy theo ngày hôm nay
   (giờ VN), không cần ô "Current Month/Week" nhập tay như template. URL giữ kỳ đang xem:
   `/goals?level=month&period=2026-10` (`2026`, `2026-Q4`, `2026-10`, `2026-W44` theo ISO week).
 

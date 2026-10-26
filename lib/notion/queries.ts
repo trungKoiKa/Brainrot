@@ -4,8 +4,10 @@ import { collectPaginatedAPI, isFullPage, type PageObjectResponse } from "@notio
 import { notion, requireEnv } from "./client";
 import { checkbox, date, multiSelect, number, select, text, url } from "./properties";
 import type { DailyLog, Habit, Knowledge, Priority, Task, TaskStatus } from "./types";
+import { LEVEL_NOTION, type Goal, type GoalType } from "@/lib/goals";
+import type { Level } from "@/lib/period";
 
-export const TAGS = { tasks: "tasks", knowledge: "knowledge", daily: "daily", habits: "habits" } as const;
+export const TAGS = { tasks: "tasks", knowledge: "knowledge", daily: "daily", habits: "habits", goals: "goals" } as const;
 
 /** Kết quả đọc Notion: hàm có cache KHÔNG ném lỗi, để lỗi không bị cache như dữ liệu. */
 export type Result<T> = { ok: true; data: T } | { ok: false; error: string };
@@ -43,9 +45,10 @@ export async function selectOptions(envName: string, property: string): Promise<
   }
 }
 
-async function queryAll(envName: string): Promise<PageObjectResponse[]> {
+async function queryAll(envName: string, oldestFirst = false): Promise<PageObjectResponse[]> {
   const pages = await collectPaginatedAPI(notion().dataSources.query, {
     data_source_id: await dataSourceId(envName),
+    ...(oldestFirst && { sorts: [{ timestamp: "created_time" as const, direction: "ascending" as const }] }),
   });
   return pages.filter(isFullPage);
 }
@@ -176,6 +179,42 @@ export async function habitsResult(): Promise<Result<Habit[]>> {
           order: number(p, "Thứ tự") ?? 0,
         }))
         .filter((h) => h.name && h.from),
+    };
+  } catch (e) {
+    cacheLife(ERROR_LIFE);
+    return { ok: false, error: errorMessage(e) };
+  }
+}
+
+/** Database Goals có cấu hình chưa (biến NOTION_GOALS_DB, thêm ở v0.4 bước 3). */
+export const goalsConfigured = () => Boolean(process.env.NOTION_GOALS_DB);
+
+const LEVEL_FROM_NOTION = Object.fromEntries(Object.entries(LEVEL_NOTION).map(([k, v]) => [v, k])) as Record<string, Level>;
+
+/** Mọi mục tiêu (database nhỏ: vài chục dòng / tháng) — trang lọc theo cấp + kỳ. */
+export async function goalsResult(): Promise<Result<Goal[]>> {
+  "use cache";
+  cacheTag(TAGS.goals);
+  try {
+    const pages = await queryAll("NOTION_GOALS_DB", true); // giữ thứ tự tạo trong mỗi nhóm
+    cacheLife(FIVE_MINUTES);
+    return {
+      ok: true,
+      data: pages.flatMap(({ id, properties: p }) => {
+        const level = LEVEL_FROM_NOTION[select(p, "Cấp") ?? ""];
+        const start = date(p, "Kỳ");
+        if (!level || !start) return []; // dòng tạo tay thiếu Cấp/Kỳ → bỏ qua
+        return [
+          {
+            id,
+            title: text(p, "Mục tiêu"),
+            level,
+            start,
+            type: (select(p, "Loại") === "Ưu tiên" ? "Ưu tiên" : "Thường") as GoalType,
+            done: checkbox(p, "Xong"),
+          },
+        ];
+      }),
     };
   } catch (e) {
     cacheLife(ERROR_LIFE);

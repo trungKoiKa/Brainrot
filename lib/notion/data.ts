@@ -2,6 +2,8 @@ import "server-only";
 import {
   dailyLogsBetweenResult,
   dailyLogsResult,
+  goalsConfigured,
+  goalsResult,
   habitsConfigured,
   habitsResult,
   knowledgeResult,
@@ -9,6 +11,7 @@ import {
   tasksResult,
   type Result,
 } from "./queries";
+import type { Goal } from "@/lib/goals";
 import type { DailyLog, Habit, Knowledge, Task } from "./types";
 
 // Lớp đọc mà trang dùng (SPEC mục 9): Notion lỗi → trả bản tốt gần nhất + cờ `stale` để hiện banner.
@@ -45,6 +48,10 @@ export const getDailyLogsBetween = (start: string, end: string): Promise<Loaded<
 /** Chưa có NOTION_HABITS_DB (vd. Vercel chưa thêm biến) → danh sách rỗng, trang vẫn chạy và báo "chưa kết nối". */
 export const getHabits = (): Promise<Loaded<Habit[]>> =>
   habitsConfigured() ? load("habits", habitsResult) : Promise.resolve({ data: [], stale: false });
+
+/** Chưa có NOTION_GOALS_DB → rỗng, trang Mục tiêu báo "chưa kết nối". */
+export const getGoals = (): Promise<Loaded<Goal[]>> =>
+  goalsConfigured() ? load("goals", goalsResult) : Promise.resolve({ data: [], stale: false });
 
 /** 90 bản ghi gần nhất cho Dashboard (SPEC-v0.3 4.4). */
 export const getDailyLogs90 = (): Promise<Loaded<DailyLog[]>> => load("daily90", () => dailyLogsResult(90));
