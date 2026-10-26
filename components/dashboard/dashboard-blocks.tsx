@@ -3,6 +3,8 @@
 import { useSyncExternalStore } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import type { LucideIcon } from "lucide-react";
+import { IconTile } from "@/components/reui/icon-tile";
 import { CheckIcon } from "lucide-react";
 import { Area, AreaChart, Bar, BarChart, CartesianGrid, Cell, Line, LineChart, XAxis, YAxis } from "recharts";
 import { Card } from "@/components/card";
@@ -54,9 +56,11 @@ export function KpiCard({
   upIsGood = true,
   note,
   sample,
+  icon: Icon,
 }: {
   title: string;
   subtitle: string;
+  icon: LucideIcon;
   tone: Tone;
   value: string;
   series: number[];
@@ -76,7 +80,9 @@ export function KpiCard({
         </div>
         <span className="flex items-center gap-2">
           {sample && <SampleBadge />}
-          <Dot tone={tone} />
+          <IconTile variant="soft" size="sm" style={{ color: TONE_COLOR[tone] }} aria-hidden="true">
+            <Icon />
+          </IconTile>
         </span>
       </div>
       <div className="mt-4 flex items-end justify-between gap-3">

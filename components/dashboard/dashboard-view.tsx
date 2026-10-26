@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from "react";
 import Link from "next/link";
-import { Maximize2Icon } from "lucide-react";
+import { CalendarDaysIcon, CircleCheckBigIcon, GraduationCapIcon, ListTodoIcon, Maximize2Icon } from "lucide-react";
 import { BrainView } from "@/components/brain/brain-view";
 import { Card, Empty } from "@/components/card";
 import { Badge } from "@/components/reui/badge";
@@ -134,6 +134,7 @@ export function DashboardView({ real: realBase, graph }: { real: Omit<DashInput,
 
       <div className="grid gap-5 sm:grid-cols-2 xl:grid-cols-4">
         <KpiCard
+          icon={ListTodoIcon}
           title="Việc tồn"
           subtitle="Notion Tasks"
           tone={backlog.tone}
@@ -145,6 +146,7 @@ export function DashboardView({ real: realBase, graph }: { real: Omit<DashInput,
           sample={all}
         />
         <KpiCard
+          icon={CircleCheckBigIcon}
           title="Hoàn thành"
           subtitle={`Task xong · ${period} ngày`}
           tone={done.tone}
@@ -155,6 +157,7 @@ export function DashboardView({ real: realBase, graph }: { real: Omit<DashInput,
           sample={doneSample}
         />
         <KpiCard
+          icon={CalendarDaysIcon}
           title="Planner"
           subtitle="Tuần này"
           tone={plan.tone}
@@ -166,6 +169,7 @@ export function DashboardView({ real: realBase, graph }: { real: Omit<DashInput,
           sample={plannerSample}
         />
         <KpiCard
+          icon={GraduationCapIcon}
           title="Đồ án"
           subtitle={real.thesisDeadline ? `Còn đến hạn ${formatDay(real.thesisDeadline, true)}` : "Chưa đặt THESIS_DEADLINE"}
           tone={thesis.tone}

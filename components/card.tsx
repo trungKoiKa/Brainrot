@@ -1,3 +1,5 @@
+import { Frame, FramePanel, FrameTitle } from "@/components/reui/frame";
+
 export function Card({
   title,
   action,
@@ -9,16 +11,19 @@ export function Card({
   className?: string;
   children: React.ReactNode;
 }) {
+  // Khung ReUI (Frame): viền ngoài + panel lồng bên trong; `className` đặt trên Frame (col-span, h-full…)
   return (
-    <section className={`rounded-2xl border border-line bg-surface p-5 md:p-6 ${className}`}>
-      {(title || action) && (
-        <div className="mb-4 flex items-baseline justify-between gap-3">
-          {title && <h2 className="font-serif text-lg font-semibold">{title}</h2>}
-          {action}
-        </div>
-      )}
-      {children}
-    </section>
+    <Frame className={className}>
+      <FramePanel className="p-5 md:p-6">
+        {(title || action) && (
+          <div className="mb-4 flex items-baseline justify-between gap-3">
+            {title && <FrameTitle className="font-serif text-lg">{title}</FrameTitle>}
+            {action}
+          </div>
+        )}
+        {children}
+      </FramePanel>
+    </Frame>
   );
 }
 
