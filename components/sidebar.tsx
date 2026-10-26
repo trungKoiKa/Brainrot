@@ -35,7 +35,7 @@ export const NAV: readonly { href: string; label: string; icon: LucideIcon }[] =
   { href: "/", label: "Brain", icon: NetworkIcon },
   { href: "/today", label: "Today", icon: SunIcon },
   { href: "/tasks", label: "Tasks", icon: ListChecksIcon },
-  { href: "/goals", label: "Mục tiêu", icon: TargetIcon },
+  { href: "/goals", label: "Goal", icon: TargetIcon },
   { href: "/planner", label: "Planner", icon: CalendarRangeIcon },
 ];
 

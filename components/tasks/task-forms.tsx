@@ -135,7 +135,7 @@ export function EditTaskForm({
           {goals && (
             <Select
               name="goal"
-              label="Mục tiêu"
+              label="Goal"
               value={values.goal}
               options={goalOptions.map((g) => g.id)}
               labels={Object.fromEntries(goalOptions.map((g) => [g.id, g.label]))}
