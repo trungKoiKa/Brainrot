@@ -4,6 +4,7 @@ import { connection } from "next/server";
 import { ChevronLeftIcon, ChevronRightIcon } from "lucide-react";
 import { Card, Empty } from "@/components/card";
 import { GoalPanel } from "@/components/goals/goal-panel";
+import { ReflectionForm } from "@/components/goals/reflection-form";
 import { PeriodBars, type PeriodBar } from "@/components/goals/period-bars";
 import { ProgressRing } from "@/components/goals/progress-ring";
 import { HabitMonth } from "@/components/habits/habit-month";
@@ -12,9 +13,10 @@ import { StaleBanner } from "@/components/stale-banner";
 import { todayVN } from "@/lib/date";
 import { goalCounts, goalsOf, type Goal } from "@/lib/goals";
 import { doneHabits } from "@/lib/habits";
-import { anyStale, getDailyLogsBetween, getGoals, getHabits } from "@/lib/notion/data";
+import { anyStale, getDailyLogsBetween, getGoals, getHabits, getReflections } from "@/lib/notion/data";
 import { resolveGoals } from "@/lib/notion/goal-status";
-import { goalsConfigured, habitsConfigured } from "@/lib/notion/queries";
+import { goalsConfigured, habitsConfigured, reflectionsConfigured } from "@/lib/notion/queries";
+import { previousFocus, reflectionOf } from "@/lib/reflections";
 import {
   childPeriods,
   LEVEL_LABEL,
@@ -52,11 +54,15 @@ async function GoalsContent({ searchParams }: Pick<PageProps<"/goals">, "searchP
   const current = periodOf(level, today);
 
   const children = childPeriods(period);
-  const [goalsLoaded, habits, logs] = await Promise.all([
+  const [goalsLoaded, habits, reflections, logs] = await Promise.all([
     getGoals(),
     getHabits(),
+    getReflections(),
     level === "month" ? getDailyLogsBetween(period.start, period.end) : null,
   ]);
+  const reflection = reflectionOf(reflections.data, period);
+  const prevFocus = previousFocus(reflections.data, period);
+  const motto = reflectionOf(reflections.data, periodOf("year", period.start))?.motto.trim() || null;
   // Trạng thái tự xong cho mục tiêu của kỳ đang xem + các kỳ con (cột %, thẻ quý/tháng)
   const shown = [period, ...children];
   const resolved = await resolveGoals(goalsLoaded.data.filter((g) => shown.some((p) => p.level === g.level && p.start === g.start)));
@@ -76,7 +82,9 @@ async function GoalsContent({ searchParams }: Pick<PageProps<"/goals">, "searchP
 
   return (
     <div className="space-y-5">
-      <StaleBanner show={anyStale(goalsLoaded, habits, ...resolved.loaded, ...(logs ? [logs] : []))} />
+      <StaleBanner show={anyStale(goalsLoaded, habits, reflections, ...resolved.loaded, ...(logs ? [logs] : []))} />
+      {/* Châm ngôn năm (SPEC-v0.4 mục 5): hiện ở mọi chế độ của năm đó */}
+      {motto && <p className="font-serif text-lg text-muted-foreground italic">“{motto}”</p>}
 
       <div className="flex flex-wrap items-center gap-3">
         <nav aria-label="Cấp" className="flex rounded-full border border-line bg-surface p-0.5">
@@ -113,6 +121,11 @@ async function GoalsContent({ searchParams }: Pick<PageProps<"/goals">, "searchP
       {goalsConfigured() ? (
         <div className={`grid gap-5 ${children.length ? "lg:grid-cols-5" : ""}`}>
           <Card title={`Mục tiêu ${LEVEL_LABEL[level].toLowerCase()}`} className={children.length ? "lg:col-span-3" : ""}>
+            {prevFocus && (
+              <p className="mb-4 rounded-lg bg-surface-muted px-3 py-2 text-sm whitespace-pre-line">
+                <span className="font-medium">Kỳ trước bạn định tập trung:</span> {prevFocus}
+              </p>
+            )}
             {/* key theo kỳ → đổi kỳ thì danh sách nạp lại từ server */}
             <GoalPanel
               key={panelKey}
@@ -166,6 +179,15 @@ async function GoalsContent({ searchParams }: Pick<PageProps<"/goals">, "searchP
             <Empty>Chưa kết nối database Habits — thêm biến môi trường NOTION_HABITS_DB.</Empty>
           </Card>
         ))}
+
+      <Card title={`Nhìn lại ${LEVEL_LABEL[level].toLowerCase()}`}>
+        {reflectionsConfigured() ? (
+          // key theo kỳ + bản ghi → đổi kỳ / dữ liệu mới thì form nạp lại
+          <ReflectionForm key={`${period.key}|${reflection?.id ?? "new"}`} level={level} periodKey={period.key} initial={reflection} />
+        ) : (
+          <Empty>Chưa kết nối database Reflections — thêm biến môi trường NOTION_REFLECTIONS_DB.</Empty>
+        )}
+      </Card>
     </div>
   );
 }

@@ -5,9 +5,10 @@ import { StaleBanner } from "@/components/stale-banner";
 import { DashboardClient } from "@/components/dashboard/dashboard-client";
 import { toVNDate, todayVN } from "@/lib/date";
 import type { DashInput } from "@/lib/dashboard/stats";
-import { anyStale, getDailyLogs90, getGoals, getHabits, getKnowledge, getTasks } from "@/lib/notion/data";
+import { anyStale, getDailyLogs90, getGoals, getHabits, getKnowledge, getReflections, getTasks } from "@/lib/notion/data";
 import { resolveGoals } from "@/lib/notion/goal-status";
 import { periodOf } from "@/lib/period";
+import { reflectionOf } from "@/lib/reflections";
 import { getBrainGraph } from "@/lib/notion/graph";
 import { doneHabits, LEGACY_EXERCISE } from "@/lib/habits";
 import { splitLines } from "@/lib/today";
@@ -27,14 +28,17 @@ export default function DashboardPage() {
 async function DashboardContent() {
   await connection(); // số liệu tính theo ngày hôm nay
   const today = todayVN();
-  const [tasks, knowledge, logs, habits, goals, { stale: graphStale, ...graph }] = await Promise.all([
+  const [tasks, knowledge, logs, habits, goals, reflections, { stale: graphStale, ...graph }] = await Promise.all([
     getTasks(),
     getKnowledge(),
     getDailyLogs90(),
     getHabits(),
     getGoals(),
+    getReflections(),
     getBrainGraph(),
   ]);
+  // Châm ngôn năm (SPEC-v0.4 mục 5) dưới tiêu đề
+  const motto = reflectionOf(reflections.data, periodOf("year", today))?.motto.trim() || null;
   const month = periodOf("month", today);
   const monthGoals = await resolveGoals(goals.data.filter((g) => g.level === "month" && g.start === month.start));
 
@@ -68,7 +72,8 @@ async function DashboardContent() {
 
   return (
     <>
-      <StaleBanner show={graphStale || anyStale(tasks, knowledge, logs, habits, goals, ...monthGoals.loaded)} />
+      {motto && <p className="-mt-5 mb-6 font-serif text-lg text-muted-foreground italic">“{motto}”</p>}
+      <StaleBanner show={graphStale || anyStale(tasks, knowledge, logs, habits, goals, reflections, ...monthGoals.loaded)} />
       <DashboardClient real={real} graph={graph} />
     </>
   );
