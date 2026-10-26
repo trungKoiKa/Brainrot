@@ -1,6 +1,6 @@
 // Quy tắc của trang Today (SPEC 7.1). Hàm thuần, không gọi Notion → dễ kiểm tra.
 import { addDays, daysBetween } from "./date";
-import type { DailyLog, Knowledge, Priority, Task } from "./notion/types";
+import type { Knowledge, Priority, Task } from "./notion/types";
 
 const PRIORITY_RANK: Record<Priority, number> = { Cao: 0, Vừa: 1, Thấp: 2 };
 
@@ -25,16 +25,39 @@ export function splitLines(text: string): string[] {
     .filter(Boolean);
 }
 
-export type TopThree =
-  | { source: "daily"; items: string[]; logUrl: string }
-  | { source: "tasks"; items: Task[] };
+export type LateTask = Task & { plannedOn: string; lateDays: number };
+export type TodayPlan = {
+  /** Ngày làm = hôm nay */
+  planned: Task[];
+  /** Ngày làm < hôm nay, chưa xong */
+  late: LateTask[];
+  /** Hạn = hôm nay, chưa xếp làm hôm nay */
+  due: Task[];
+  /** Cả ba nhóm trống → gợi ý 3 task ưu tiên cao nhất chưa xếp lịch */
+  suggest: Task[];
+};
 
-export function pickTopThree(today: string, logs: DailyLog[], tasks: Task[]): TopThree {
-  const yesterday = addDays(today, -1);
-  const log = logs.find((l) => l.date === yesterday);
-  const items = log ? splitLines(log.tomorrowTop3) : [];
-  if (log && items.length > 0) return { source: "daily", items, logUrl: log.url };
-  return { source: "tasks", items: tasks.filter(isOpen).sort(compareTasks).slice(0, 3) };
+/** Khối "Hôm nay làm" (SPEC-v0.5 4.2). Chỉ task chưa xong; mỗi task chỉ thuộc một nhóm. */
+export function planToday(today: string, tasks: Task[]): TodayPlan {
+  const open = tasks.filter(isOpen);
+  const planned = open.filter((t) => t.plannedOn === today).sort(compareTasks);
+  const late = open
+    .filter((t): t is Task & { plannedOn: string } => t.plannedOn !== null && t.plannedOn < today)
+    .map((t) => ({ ...t, lateDays: daysBetween(t.plannedOn, today) }))
+    .sort((a, b) => a.plannedOn.localeCompare(b.plannedOn) || compareTasks(a, b));
+  const due = open.filter((t) => t.deadline === today && (t.plannedOn === null || t.plannedOn > today)).sort(compareTasks);
+  const empty = planned.length + late.length + due.length === 0;
+  const suggest = empty ? open.filter((t) => t.plannedOn === null).sort(compareTasks).slice(0, 3) : [];
+  return { planned, late, due, suggest };
+}
+
+/** "Ngày mai làm" (SPEC-v0.5 câu 10.2a): task đã xếp ngày mai + task chưa xếp lịch, ưu tiên cao trước. */
+export function tomorrowCandidates(today: string, tasks: Task[], limit = 8): Task[] {
+  const tomorrow = addDays(today, 1);
+  const open = tasks.filter(isOpen);
+  const picked = open.filter((t) => t.plannedOn === tomorrow).sort(compareTasks);
+  const rest = open.filter((t) => t.plannedOn === null).sort(compareTasks);
+  return [...picked, ...rest].slice(0, Math.max(limit, picked.length));
 }
 
 export type DeadlineItem = Task & { deadline: string; daysLeft: number };

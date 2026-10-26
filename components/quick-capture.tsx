@@ -60,18 +60,16 @@ function DailyLogForm({ todayLog, showExercise }: { todayLog: DailyLog | null; s
     done: todayLog?.done ?? "",
     dropped: todayLog?.dropped ?? "",
     learned: todayLog?.learned ?? "",
-    tomorrowTop3: todayLog?.tomorrowTop3 ?? "",
     exercised: todayLog?.exercised ?? false,
   });
   const [state, action, pending] = useActionState(saveDailyLogAction, {});
   const set = (key: keyof typeof values) => (e: React.ChangeEvent<HTMLTextAreaElement>) =>
     setValues((v) => ({ ...v, [key]: e.target.value }));
 
-  const fields: { key: "done" | "dropped" | "learned" | "tomorrowTop3"; label: string; hint?: string }[] = [
+  const fields: { key: "done" | "dropped" | "learned"; label: string; hint?: string }[] = [
     { key: "done", label: "Xong" },
     { key: "dropped", label: "Rơi / chưa xong" },
     { key: "learned", label: "Học được" },
-    { key: "tomorrowTop3", label: "Ngày mai 3 việc", hint: "Mỗi việc một dòng — sáng mai thành khối 3 việc hôm nay" },
   ];
 
   return (
@@ -80,7 +78,7 @@ function DailyLogForm({ todayLog, showExercise }: { todayLog: DailyLog | null; s
         Daily Log hôm nay{" "}
         <span className="font-normal text-muted-foreground">{todayLog ? "· đã ghi, bấm để sửa" : "· chưa ghi"}</span>
       </summary>
-      <form action={action} className="mt-3 grid gap-3 md:grid-cols-2">
+      <form action={action} className="mt-3 grid gap-3 md:grid-cols-3">
         {fields.map(({ key, label, hint }) => (
           <label key={key} className="space-y-1 text-sm">
             <span className="text-muted-foreground">{label}</span>
@@ -88,7 +86,7 @@ function DailyLogForm({ todayLog, showExercise }: { todayLog: DailyLog | null; s
             {hint && <span className="text-xs text-muted-foreground">{hint}</span>}
           </label>
         ))}
-        <div className="flex flex-wrap items-center gap-4 md:col-span-2">
+        <div className="flex flex-wrap items-center gap-4 md:col-span-3">
           {showExercise && (
             <label className="flex items-center gap-2 text-sm">
               <input type="hidden" name="exerciseField" value="1" />
@@ -110,7 +108,7 @@ function DailyLogForm({ todayLog, showExercise }: { todayLog: DailyLog | null; s
             {pending ? "Đang lưu…" : todayLog ? "Cập nhật" : "Lưu Daily Log"}
           </button>
         </div>
-        <div className="md:col-span-2">
+        <div className="md:col-span-3">
           <Status state={state} />
         </div>
       </form>

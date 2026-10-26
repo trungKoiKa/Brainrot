@@ -4,7 +4,7 @@ import { connection } from "next/server";
 import { Card, Empty } from "@/components/card";
 import { FieldBadge } from "@/components/field-badge";
 import { PageHeader } from "@/components/page-header";
-import { TopTasks } from "@/components/tasks/top-tasks";
+import { TodayPlan, TomorrowPicker } from "@/components/tasks/today-plan";
 import { QuickCapture } from "@/components/quick-capture";
 import { HabitToday } from "@/components/habits/habit-today";
 import { doneHabits, habitsForMonth } from "@/lib/habits";
@@ -21,10 +21,8 @@ import type { DailyLog, Knowledge, Task } from "@/lib/notion/types";
 import {
   deadlineLabel,
   latestKnowledge,
-  pickTopThree,
   upcomingDeadlines,
   type DeadlineItem,
-  type TopThree,
 } from "@/lib/today";
 
 export default function TodayPage() {
@@ -52,7 +50,7 @@ async function TodayContent() {
   ]);
   const [tasks, knowledge, logs] = loaded.map((l) => l.data) as [Task[], Knowledge[], DailyLog[]];
   const todayLog = logs.find((l) => l.date === today) ?? null;
-  // Mục tiêu tuần Ưu tiên dưới "3 việc hôm nay" (SPEC-v0.4 mục 7)
+  // Mục tiêu tuần Ưu tiên dưới "Hôm nay làm" (SPEC-v0.4 mục 7)
   const week = periodOf("week", today);
   const weekGoals = await resolveGoals(
     goalsLoaded.data.filter((g) => g.level === "week" && g.start === week.start && g.type === "Ưu tiên" && g.title.trim()),
@@ -64,7 +62,7 @@ async function TodayContent() {
       <StaleBanner show={anyStale(habitsLoaded, goalsLoaded, ...weekGoals.loaded, ...loaded)} />
       <div className="grid gap-5 lg:grid-cols-2">
         <ThesisCountdown today={today} />
-        <TopThreeCard top={pickTopThree(today, logs, tasks)} weekGoals={weekGoals.goals} />
+        <TodayPlanCard today={today} tasks={tasks} weekGoals={weekGoals.goals} />
         <NextUpCard calendar={calendar} now={now} today={today} />
         <DeadlinesCard items={upcomingDeadlines(today, tasks)} />
         <KnowledgeCard notes={latestKnowledge(knowledge)} />
@@ -78,7 +76,10 @@ async function TodayContent() {
           </Card>
         )}
         <Card title="Ghi nhanh" className="lg:col-span-2">
-          <QuickCapture todayLog={todayLog} showExercise={!habitsConfigured()} />
+          <div className="space-y-6">
+            <QuickCapture todayLog={todayLog} showExercise={!habitsConfigured()} />
+            <TomorrowPicker today={today} tasks={tasks} />
+          </div>
         </Card>
       </div>
     </>
@@ -113,34 +114,18 @@ function ThesisCountdown({ today }: { today: string }) {
   );
 }
 
-function TopThreeCard({ top, weekGoals }: { top: TopThree; weekGoals: Goal[] }) {
+/** "Hôm nay làm" (SPEC-v0.5 4.2) + mục tiêu tuần Ưu tiên ở cuối (SPEC-v0.4 mục 7). */
+function TodayPlanCard({ today, tasks, weekGoals }: { today: string; tasks: Task[]; weekGoals: Goal[] }) {
   return (
     <Card
-      title="3 việc hôm nay"
+      title="Hôm nay làm"
       action={
-        top.source === "daily" ? (
-          <ExternalLink href={top.logUrl} className="text-xs text-muted-foreground hover:text-primary">
-            Từ Daily Log hôm qua ↗
-          </ExternalLink>
-        ) : (
-          <span className="text-xs text-muted-foreground">Từ Tasks</span>
-        )
+        <Link href="/goals?level=week" className="text-xs text-muted-foreground hover:text-primary">
+          Cả tuần
+        </Link>
       }
     >
-      {top.items.length === 0 ? (
-        <Empty>Không còn việc nào chưa xong.</Empty>
-      ) : top.source === "daily" ? (
-        <ol className="space-y-2">
-          {top.items.map((item, i) => (
-            <li key={i} className="flex gap-3">
-              <Index n={i + 1} />
-              <span>{item}</span>
-            </li>
-          ))}
-        </ol>
-      ) : (
-        <TopTasks tasks={top.items} />
-      )}
+      <TodayPlan today={today} tasks={tasks} />
       {weekGoals.length > 0 && (
         <div className="mt-4 border-t border-line pt-3">
           <p className="mb-2 flex items-baseline justify-between text-xs text-muted-foreground">
@@ -280,14 +265,6 @@ function ExternalLink({ href, className, children }: { href: string; className?:
     <a href={href} target="_blank" rel="noopener noreferrer" className={className}>
       {children}
     </a>
-  );
-}
-
-function Index({ n }: { n: number }) {
-  return (
-    <span className="flex size-6 shrink-0 items-center justify-center rounded-full bg-accent-soft text-xs font-semibold text-primary">
-      {n}
-    </span>
   );
 }
 
