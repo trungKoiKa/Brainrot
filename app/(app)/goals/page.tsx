@@ -6,6 +6,7 @@ import { Card, Empty } from "@/components/card";
 import { GoalPanel } from "@/components/goals/goal-panel";
 import { ReflectionForm } from "@/components/goals/reflection-form";
 import { PeriodBars, type PeriodBar } from "@/components/goals/period-bars";
+import { WeekCardsClient } from "@/components/goals/week-cards-client";
 import { ProgressRing } from "@/components/goals/progress-ring";
 import { HabitMonth } from "@/components/habits/habit-month";
 import { PageHeader } from "@/components/page-header";
@@ -13,7 +14,7 @@ import { StaleBanner } from "@/components/stale-banner";
 import { todayVN } from "@/lib/date";
 import { goalCounts, goalsOf, type Goal } from "@/lib/goals";
 import { doneHabits } from "@/lib/habits";
-import { anyStale, getDailyLogsBetween, getGoals, getHabits, getReflections } from "@/lib/notion/data";
+import { anyStale, getDailyLogsBetween, getGoals, getHabits, getReflections, getTasks } from "@/lib/notion/data";
 import { resolveGoals } from "@/lib/notion/goal-status";
 import { goalsConfigured, habitsConfigured, reflectionsConfigured } from "@/lib/notion/queries";
 import { previousFocus, reflectionOf } from "@/lib/reflections";
@@ -31,7 +32,7 @@ import {
   type Period,
 } from "@/lib/period";
 
-// SPEC-v0.4 mục 6. Bước 3: 4 chế độ + mục tiêu; Nhìn lại (bước 5) và thẻ 7 ngày (bước 6) làm sau.
+// SPEC-v0.4 mục 6. Bước 3: 4 chế độ + mục tiêu; Nhìn lại ở mọi chế độ; thẻ 7 ngày ở chế độ Tuần.
 const href = (p: Period) => `/goals?level=${p.level}&period=${p.key}`;
 
 export default function GoalsPage({ searchParams }: PageProps<"/goals">) {
@@ -54,11 +55,12 @@ async function GoalsContent({ searchParams }: Pick<PageProps<"/goals">, "searchP
   const current = periodOf(level, today);
 
   const children = childPeriods(period);
-  const [goalsLoaded, habits, reflections, logs] = await Promise.all([
+  const [goalsLoaded, habits, reflections, logs, weekTasks] = await Promise.all([
     getGoals(),
     getHabits(),
     getReflections(),
-    level === "month" ? getDailyLogsBetween(period.start, period.end) : null,
+    level === "month" || level === "week" ? getDailyLogsBetween(period.start, period.end) : null,
+    level === "week" ? getTasks() : null,
   ]);
   const reflection = reflectionOf(reflections.data, period);
   const prevFocus = previousFocus(reflections.data, period);
@@ -82,7 +84,7 @@ async function GoalsContent({ searchParams }: Pick<PageProps<"/goals">, "searchP
 
   return (
     <div className="space-y-5">
-      <StaleBanner show={anyStale(goalsLoaded, habits, reflections, ...resolved.loaded, ...(logs ? [logs] : []))} />
+      <StaleBanner show={anyStale(goalsLoaded, habits, reflections, ...resolved.loaded, ...(logs ? [logs] : []), ...(weekTasks ? [weekTasks] : []))} />
       {/* Châm ngôn năm (SPEC-v0.4 mục 5): hiện ở mọi chế độ của năm đó */}
       {motto && <p className="font-serif text-lg text-muted-foreground italic">“{motto}”</p>}
 
@@ -163,6 +165,12 @@ async function GoalsContent({ searchParams }: Pick<PageProps<"/goals">, "searchP
               <ChildCard key={p.key} period={p} goals={goalsOf(goals, p)} current={p.start <= today && today <= p.end} />
             ))}
         </div>
+      )}
+
+      {level === "week" && logs && weekTasks && (
+        <Card title="7 ngày trong tuần">
+          <WeekCardsClient key={period.key} weekStart={period.start} today={today} tasks={weekTasks.data} logs={logs.data} />
+        </Card>
       )}
 
       {level === "month" &&
