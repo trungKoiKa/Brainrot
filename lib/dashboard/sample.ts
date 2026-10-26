@@ -1,6 +1,7 @@
 // Dữ liệu mẫu cho Dashboard (SPEC-v0.3 mục 5): seed cố định → cùng ngày luôn ra cùng số liệu.
 // Chỉ để xem/demo; không bao giờ ghi vào Notion.
 import { addDays } from "@/lib/date";
+import type { Goal } from "@/lib/goals";
 import type { Habit } from "@/lib/notion/types";
 import type { DashInput, DashLog, DashTask, PlannerSummary } from "./stats";
 import { mondayOf } from "./stats";
@@ -8,6 +9,14 @@ import { mondayOf } from "./stats";
 const SEED = 20261206;
 const HISTORY_DAYS = 120;
 // [tên, tỉ lệ làm mỗi ngày có log] — "Tập thể dục" đi theo cờ exercised của log mẫu
+const SAMPLE_GOALS: [string, Goal["type"], boolean][] = [
+  ["Nộp bản nháp chương 3 cho thầy", "Ưu tiên", true],
+  ["Hoàn thiện demo phần cứng ESP32", "Ưu tiên", false],
+  ["Học xong khóa Computer Vision tuần 1–4", "Ưu tiên", true],
+  ["Đọc 2 cuốn sách", "Thường", false],
+  ["Tập thể dục ≥ 70% số ngày", "Thường", true],
+  ["Viết 4 bài nhật ký tuần", "Thường", false],
+];
 const SAMPLE_HABITS: [string, number][] = [
   ["Tập thể dục", 0],
   ["Đọc sách", 0.75],
@@ -100,5 +109,18 @@ export function sampleDashboard(today: string, thesisDeadline = "2026-12-06"): D
     log.habits = SAMPLE_HABITS.filter(([name, rate]) => (name === "Tập thể dục" ? log.exercised : rh() < rate)).map(([n]) => n);
   }
 
-  return { today, tasks, knowledge, logs, planner, thesisDeadline, habits };
+  const monthStart = `${today.slice(0, 7)}-01`;
+  const monthGoals: Goal[] = SAMPLE_GOALS.map(([title, type, done], i) => ({
+    id: `sample-goal-${i}`,
+    title,
+    level: "month",
+    start: monthStart,
+    type,
+    done,
+    habitId: null,
+    threshold: null,
+    taskIds: [],
+  }));
+
+  return { today, tasks, knowledge, logs, planner, thesisDeadline, habits, monthGoals };
 }

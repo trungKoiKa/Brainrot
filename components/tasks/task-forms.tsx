@@ -16,6 +16,7 @@ function Select({
   value,
   options,
   empty,
+  labels,
   onChange,
 }: {
   name: string;
@@ -23,6 +24,8 @@ function Select({
   value: string;
   options: readonly string[];
   empty?: string;
+  /** Nhãn hiển thị khác giá trị (vd. id mục tiêu → tên) */
+  labels?: Record<string, string>;
   onChange: (v: string) => void;
 }) {
   return (
@@ -30,7 +33,7 @@ function Select({
       {empty !== undefined && <option value="">{empty}</option>}
       {options.map((o) => (
         <option key={o} value={o}>
-          {o}
+          {labels?.[o] ?? o}
         </option>
       ))}
     </select>
@@ -73,8 +76,21 @@ export function NewTaskForm({ projects }: { projects: string[] }) {
   );
 }
 
-/** Form sửa mở tại chỗ thay cho dòng task (bấm ✎). Lưu thành công → đóng. */
-export function EditTaskForm({ task, projects, onClose }: { task: Task; projects: string[]; onClose: () => void }) {
+/** Mục tiêu chọn được khi sửa task (SPEC-v0.4 4.4); `open` = mục tiêu Tháng/Tuần hiện tại chưa xong. */
+export type GoalOption = { id: string; label: string; open: boolean };
+
+/** Form sửa mở tại chỗ thay cho dòng task (bấm ✎). Lưu thành công → đóng. `goals` null = chưa kết nối Goals (ẩn ô Mục tiêu). */
+export function EditTaskForm({
+  task,
+  projects,
+  goals,
+  onClose,
+}: {
+  task: Task;
+  projects: string[];
+  goals: GoalOption[] | null;
+  onClose: () => void;
+}) {
   const [values, setValues] = useState({
     title: task.title,
     status: task.status === "Đang làm" ? "Đang làm" : "Chưa làm",
@@ -82,7 +98,11 @@ export function EditTaskForm({ task, projects, onClose }: { task: Task; projects
     priority: task.priority ?? "",
     deadline: task.deadline ?? "",
     note: task.note,
+    // Form chỉ gắn 1 mục tiêu; task gắn nhiều mục tiêu (sửa trong Notion) thì giữ cái đầu
+    goal: task.goalIds[0] ?? "",
   });
+  // Chỉ mục tiêu đang mở + mục tiêu task đang gắn (để mở form không làm mất liên kết cũ)
+  const goalOptions = goals?.filter((g) => g.open || task.goalIds.includes(g.id)) ?? [];
   const [state, action, pending] = useActionState(async (prev: TaskFormState, form: FormData) => {
     const next = await updateTaskAction(prev, form);
     if (next.ok) onClose();
@@ -112,6 +132,17 @@ export function EditTaskForm({ task, projects, onClose }: { task: Task; projects
           <Select name="project" label="Dự án" value={values.project} options={projects} empty="Không có dự án" onChange={set("project")} />
           <Select name="priority" label="Ưu tiên" value={values.priority} options={PRIORITIES} empty="Không ưu tiên" onChange={set("priority")} />
           <DeadlineField value={values.deadline} onChange={set("deadline")} triggerClass={compactField} />
+          {goals && (
+            <Select
+              name="goal"
+              label="Mục tiêu"
+              value={values.goal}
+              options={goalOptions.map((g) => g.id)}
+              labels={Object.fromEntries(goalOptions.map((g) => [g.id, g.label]))}
+              empty="Không gắn mục tiêu"
+              onChange={set("goal")}
+            />
+          )}
         </div>
         <textarea
           name="note"

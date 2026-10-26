@@ -2,7 +2,7 @@
 
 import { updateTag } from "next/cache";
 import { createTask, markTaskDone, updateTask } from "@/lib/notion/mutations";
-import { getTaskProjects } from "@/lib/notion/data";
+import { getGoals, getTaskProjects } from "@/lib/notion/data";
 import { TAGS } from "@/lib/notion/queries";
 import { SESSION_EXPIRED, isSignedIn } from "@/lib/session";
 import { parseTaskInput, parseTaskUpdate } from "@/lib/task-form";
@@ -48,7 +48,7 @@ export async function updateTaskAction(_prev: TaskFormState, form: FormData): Pr
   if (!(await isSignedIn())) return { ok: false, message: SESSION_EXPIRED };
   const id = form.get("id");
   if (typeof id !== "string" || !PAGE_ID.test(id)) return { ok: false, message: "ID task không hợp lệ." };
-  const parsed = parseTaskUpdate(form, await getTaskProjects());
+  const parsed = parseTaskUpdate(form, await getTaskProjects(), (await getGoals()).data.map((g) => g.id));
   if (!parsed.ok) return { ok: false, message: parsed.error };
 
   try {
@@ -59,5 +59,6 @@ export async function updateTaskAction(_prev: TaskFormState, form: FormData): Pr
   }
 
   updateTag(TAGS.tasks);
+  if (parsed.data.goalId !== undefined) updateTag(TAGS.goals); // relation 2 chiều → cột Tasks bên Goals cũng đổi
   return { ok: true, message: "Đã lưu.", at: Date.now() };
 }

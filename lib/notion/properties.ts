@@ -45,3 +45,9 @@ export function number(props: Props, name: string): number | null {
   const p = props[name];
   return p?.type === "number" ? p.number : null;
 }
+
+/** ID các trang liên kết của một cột relation. */
+export function relation(props: Props, name: string): string[] {
+  const p = props[name];
+  return p?.type === "relation" ? p.relation.map((r) => r.id) : [];
+}

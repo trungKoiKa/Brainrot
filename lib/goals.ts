@@ -1,4 +1,6 @@
 // Mục tiêu xếp tầng (SPEC-v0.4 mục 4). Hàm thuần.
+import { habitPeriodPct } from "./habits";
+import type { Habit } from "./notion/types";
 import type { Level, Period } from "./period";
 
 export type GoalType = "Ưu tiên" | "Thường";
@@ -14,8 +16,53 @@ export type Goal = {
   /** Cột "Kỳ": ngày đầu kỳ, YYYY-MM-DD */
   start: string;
   type: GoalType;
+  /** Cột "Xong" — tích tay */
   done: boolean;
+  /** Relation "Thói quen" + "Ngưỡng %" (SPEC-v0.4 4.3) */
+  habitId: string | null;
+  threshold: number | null;
+  /** Relation "Tasks" */
+  taskIds: string[];
+  /** Tự xong (chỉ tính trên web, không ghi ngược vào cột Xong) — server tính bằng `autoStatus` */
+  autoDone?: boolean;
+  auto?: AutoInfo[];
 };
+
+export type AutoInfo =
+  | { kind: "habit"; habit: string; pct: number | null; threshold: number }
+  | { kind: "tasks"; done: number; total: number };
+
+export const DEFAULT_THRESHOLD = 80;
+
+/** Xong = tích tay hoặc tự xong. */
+export const isGoalDone = (g: Goal) => g.done || g.autoDone === true;
+
+/**
+ * Tự xong (SPEC-v0.4 4.3): (a) % thói quen gắn trong kỳ ≥ ngưỡng, hoặc (b) mọi task gắn đã xong.
+ * `taskDone`: id task → đã xong chưa; task đã xóa khỏi Notion (không có trong map) thì bỏ qua.
+ */
+export function autoStatus(
+  goal: Goal,
+  ctx: { period: Period; today: string; habits: Habit[]; doneByDay: Record<string, string[]>; taskDone: Map<string, boolean> },
+): { autoDone: boolean; auto: AutoInfo[] } {
+  const auto: AutoInfo[] = [];
+  let autoDone = false;
+
+  const habit = goal.habitId ? ctx.habits.find((h) => h.id === goal.habitId) : undefined;
+  if (habit && goal.threshold !== null) {
+    const pct = habitPeriodPct(habit, ctx.doneByDay, ctx.period.start, ctx.period.end, ctx.today)?.pct ?? null;
+    auto.push({ kind: "habit", habit: habit.name, pct, threshold: goal.threshold });
+    if (pct !== null && pct >= goal.threshold) autoDone = true;
+  }
+
+  const known = goal.taskIds.filter((id) => ctx.taskDone.has(id));
+  if (known.length) {
+    const done = known.filter((id) => ctx.taskDone.get(id)).length;
+    auto.push({ kind: "tasks", done, total: known.length });
+    if (done === known.length) autoDone = true;
+  }
+  return { autoDone, auto };
+}
 
 export const MAX_GOAL_TITLE = 300;
 /** Template dùng 3 Ưu tiên + 7 Thường; quá 3 Ưu tiên → nhắc nhẹ, không chặn (SPEC-v0.4 4.2). */
@@ -26,7 +73,7 @@ export const goalsOf = (goals: Goal[], p: Period) => goals.filter((g) => g.level
 /** Bộ đếm SPEC-v0.4 4.2: dòng trống không tính. */
 export function goalCounts(goals: Goal[]) {
   const named = goals.filter((g) => g.title.trim());
-  const completed = named.filter((g) => g.done).length;
+  const completed = named.filter(isGoalDone).length;
   return {
     total: named.length,
     completed,

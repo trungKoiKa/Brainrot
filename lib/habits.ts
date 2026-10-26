@@ -74,3 +74,18 @@ export function toggleHabit(list: string[], name: string, on: boolean): string[]
   const rest = list.filter((n) => n !== name);
   return on ? [...rest, name] : rest;
 }
+
+/**
+ * % một thói quen trong khoảng [start, end] tính tới hôm nay (SPEC-v0.4 4.3): số ngày đã làm / số ngày đã qua mà thói
+ * quen được theo dõi. Chưa có ngày nào được theo dõi (kỳ tương lai, thói quen chưa bắt đầu) → null.
+ */
+export function habitPeriodPct(habit: Habit, doneByDay: Record<string, string[]>, start: string, end: string, today: string) {
+  let tracked = 0;
+  let count = 0;
+  for (let d = start; d <= end && d <= today; d = addDays(d, 1)) {
+    if (!isHabitActive(habit, monthOf(d))) continue;
+    tracked++;
+    if (doneByDay[d]?.includes(habit.name)) count++;
+  }
+  return tracked ? { pct: Math.round((count / tracked) * 100), count, tracked } : null;
+}

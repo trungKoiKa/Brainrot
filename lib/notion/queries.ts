@@ -2,7 +2,7 @@ import "server-only";
 import { cacheLife, cacheTag } from "next/cache";
 import { collectPaginatedAPI, isFullPage, type PageObjectResponse } from "@notionhq/client";
 import { notion, requireEnv } from "./client";
-import { checkbox, date, multiSelect, number, select, text, url } from "./properties";
+import { checkbox, date, multiSelect, number, relation, select, text, url } from "./properties";
 import type { DailyLog, Habit, Knowledge, Priority, Task, TaskStatus } from "./types";
 import { LEVEL_NOTION, type Goal, type GoalType } from "@/lib/goals";
 import type { Level } from "@/lib/period";
@@ -72,6 +72,7 @@ export async function tasksResult(): Promise<Result<Task[]>> {
         note: text(p, "Ghi chú"),
         doneOn: date(p, "Ngày xong"),
         createdTime: created_time,
+        goalIds: relation(p, "Mục tiêu"),
       })),
     };
   } catch (e) {
@@ -212,6 +213,9 @@ export async function goalsResult(): Promise<Result<Goal[]>> {
             start,
             type: (select(p, "Loại") === "Ưu tiên" ? "Ưu tiên" : "Thường") as GoalType,
             done: checkbox(p, "Xong"),
+            habitId: relation(p, "Thói quen")[0] ?? null,
+            threshold: number(p, "Ngưỡng %"),
+            taskIds: relation(p, "Tasks"),
           },
         ];
       }),

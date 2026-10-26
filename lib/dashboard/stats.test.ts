@@ -23,7 +23,7 @@ const t = (o: Partial<DashTask> = {}): DashTask => ({
   project: null, status: "Chưa làm", deadline: null, doneOn: null, createdOn: "2026-10-01", ...o,
 });
 const input = (o: Partial<DashInput> = {}): DashInput => ({
-  today, tasks: [], knowledge: [], logs: [], planner: null, thesisDeadline: "2026-12-06", habits: [], ...o,
+  today, tasks: [], knowledge: [], logs: [], planner: null, thesisDeadline: "2026-12-06", habits: [], monthGoals: [], ...o,
 });
 
 describe("ngày", () => {

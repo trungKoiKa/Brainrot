@@ -1,4 +1,5 @@
 import { Suspense } from "react";
+import Link from "next/link";
 import { connection } from "next/server";
 import { Card, Empty } from "@/components/card";
 import { FieldBadge } from "@/components/field-badge";
@@ -8,11 +9,13 @@ import { QuickCapture } from "@/components/quick-capture";
 import { HabitToday } from "@/components/habits/habit-today";
 import { doneHabits, habitsForMonth } from "@/lib/habits";
 import { habitsConfigured } from "@/lib/notion/queries";
-import { monthOf } from "@/lib/period";
+import { monthOf, periodOf } from "@/lib/period";
 import { daysBetween, formatDay, greetingVN, longDateVN, todayVN } from "@/lib/date";
 import { calendarEvents, type CalendarResult } from "@/lib/calendar/google";
 import { pickNextUp, timeRange } from "@/lib/next-up";
-import { anyStale, getHabits, getKnowledge, getRecentDailyLogs, getTasks } from "@/lib/notion/data";
+import { anyStale, getGoals, getHabits, getKnowledge, getRecentDailyLogs, getTasks } from "@/lib/notion/data";
+import { resolveGoals } from "@/lib/notion/goal-status";
+import { isGoalDone, type Goal } from "@/lib/goals";
 import { StaleBanner } from "@/components/stale-banner";
 import type { DailyLog, Knowledge, Task } from "@/lib/notion/types";
 import {
@@ -39,23 +42,29 @@ async function TodayContent() {
   await connection();
   const now = new Date();
   const today = todayVN(now);
-  const [calendar, habitsLoaded, ...loaded] = await Promise.all([
+  const [calendar, habitsLoaded, goalsLoaded, ...loaded] = await Promise.all([
     calendarEvents(today),
     getHabits(),
+    getGoals(),
     getTasks(),
     getKnowledge(),
     getRecentDailyLogs(),
   ]);
   const [tasks, knowledge, logs] = loaded.map((l) => l.data) as [Task[], Knowledge[], DailyLog[]];
   const todayLog = logs.find((l) => l.date === today) ?? null;
+  // Mục tiêu tuần Ưu tiên dưới "3 việc hôm nay" (SPEC-v0.4 mục 7)
+  const week = periodOf("week", today);
+  const weekGoals = await resolveGoals(
+    goalsLoaded.data.filter((g) => g.level === "week" && g.start === week.start && g.type === "Ưu tiên" && g.title.trim()),
+  );
 
   return (
     <>
       <PageHeader title={`${greetingVN(now)}, Trung`} subtitle={longDateVN(now)} />
-      <StaleBanner show={anyStale(habitsLoaded, ...loaded)} />
+      <StaleBanner show={anyStale(habitsLoaded, goalsLoaded, ...weekGoals.loaded, ...loaded)} />
       <div className="grid gap-5 lg:grid-cols-2">
         <ThesisCountdown today={today} />
-        <TopThreeCard top={pickTopThree(today, logs, tasks)} />
+        <TopThreeCard top={pickTopThree(today, logs, tasks)} weekGoals={weekGoals.goals} />
         <NextUpCard calendar={calendar} now={now} today={today} />
         <DeadlinesCard items={upcomingDeadlines(today, tasks)} />
         <KnowledgeCard notes={latestKnowledge(knowledge)} />
@@ -104,7 +113,7 @@ function ThesisCountdown({ today }: { today: string }) {
   );
 }
 
-function TopThreeCard({ top }: { top: TopThree }) {
+function TopThreeCard({ top, weekGoals }: { top: TopThree; weekGoals: Goal[] }) {
   return (
     <Card
       title="3 việc hôm nay"
@@ -131,6 +140,24 @@ function TopThreeCard({ top }: { top: TopThree }) {
         </ol>
       ) : (
         <TopTasks tasks={top.items} />
+      )}
+      {weekGoals.length > 0 && (
+        <div className="mt-4 border-t border-line pt-3">
+          <p className="mb-2 flex items-baseline justify-between text-xs text-muted-foreground">
+            <span className="font-medium">Mục tiêu tuần</span>
+            <Link href="/goals?level=week" className="hover:text-foreground">
+              Mở
+            </Link>
+          </p>
+          <ul className="space-y-1 text-sm">
+            {weekGoals.map((g) => (
+              <li key={g.id} className={isGoalDone(g) ? "text-muted-foreground line-through" : ""}>
+                {isGoalDone(g) ? "✓ " : "• "}
+                {g.title}
+              </li>
+            ))}
+          </ul>
+        </div>
       )}
     </Card>
   );

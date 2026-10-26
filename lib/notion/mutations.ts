@@ -64,6 +64,8 @@ export async function updateTask(pageId: string, input: TaskUpdate): Promise<voi
       "Trạng thái": { status: { name: input.status } },
       // Form sửa chỉ cho Chưa làm / Đang làm → task mở lại thì bỏ Ngày xong (SPEC-v0.3 mục 6)
       "Ngày xong": { date: null },
+      // undefined = form không có ô Mục tiêu (chưa kết nối Goals) → không đụng tới relation
+      ...(input.goalId !== undefined && { "Mục tiêu": { relation: input.goalId ? [{ id: input.goalId }] : [] } }),
       "Ghi chú": { rich_text: richText(input.note) },
     },
   });
@@ -189,7 +191,9 @@ export async function createGoal(level: Level, start: string, title: string, typ
   return page.id;
 }
 
-export async function updateGoal(pageId: string, patch: { title?: string; type?: GoalType; done?: boolean }): Promise<void> {
+export type GoalPatch = { title?: string; type?: GoalType; done?: boolean; habitId?: string | null; threshold?: number | null };
+
+export async function updateGoal(pageId: string, patch: GoalPatch): Promise<void> {
   await assertInDatabase(pageId, "NOTION_GOALS_DB");
   await notion().pages.update({
     page_id: pageId,
@@ -197,6 +201,8 @@ export async function updateGoal(pageId: string, patch: { title?: string; type?:
       ...(patch.title !== undefined && { "Mục tiêu": { title: richText(patch.title) } }),
       ...(patch.type !== undefined && { "Loại": { select: { name: patch.type } } }),
       ...(patch.done !== undefined && { Xong: { checkbox: patch.done } }),
+      ...(patch.habitId !== undefined && { "Thói quen": { relation: patch.habitId ? [{ id: patch.habitId }] : [] } }),
+      ...(patch.threshold !== undefined && { "Ngưỡng %": { number: patch.threshold } }),
     },
   });
 }

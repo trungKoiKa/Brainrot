@@ -83,7 +83,7 @@ Hơn template:
 | Kỳ | Date | Ngày đầu kỳ: 01/01 · 01/01, 01/04, 01/07, 01/10 · 01/MM · **thứ Hai** của tuần |
 | Loại | Select: Ưu tiên · Thường | |
 | Xong | Checkbox | Tích tay; hoặc tự xong (4.3) |
-| Mục tiêu cha | Relation (Goals → Goals) | Tùy chọn — thêm ở bước 4 |
+| Mục tiêu cha | Relation (Goals → Goals) | **Để sau v0.4** — biểu đồ kỳ con đã cho thấy quan hệ cha–con theo thời gian |
 | Thói quen | Relation → Habits | Tùy chọn, kèm **Ngưỡng %** (Number) |
 | Tasks | Relation Tasks ↔ Goals | Tùy chọn; bên Tasks có cột "Mục tiêu" |
 
@@ -119,7 +119,12 @@ nhãn nhỏ cho biết lý do ("theo thói quen" / "theo task").
 
 - Thêm nhanh (1 dòng + Enter, chọn Ưu tiên/Thường; trong nhóm sắp theo thời điểm tạo), **sửa tên tại chỗ**, tích/bỏ tích (gạch ngang khi xong),
   **đổi Ưu tiên ↔ Thường**, gắn thói quen + ngưỡng, **xóa** (chuyển vào Trash của Notion, có hoàn tác 5 giây).
-- Gắn task: trong form sửa task (Tasks) chọn "Mục tiêu" — chỉ mục tiêu Tháng/Tuần còn mở.
+- Gắn thói quen: nút 🔗 trên dòng mục tiêu → chọn thói quen (được theo dõi trong kỳ) + ngưỡng % (1–100, mặc định 80).
+- Gắn task: trong form sửa task (Tasks) chọn "Mục tiêu" — mục tiêu Tháng/Tuần **hiện tại** chưa tích xong, cộng mục tiêu
+  task đang gắn (để mở form không làm mất liên kết). Form gắn **1** mục tiêu; task gắn nhiều mục tiêu (sửa trong Notion)
+  thì form giữ cái đầu.
+- Mục tiêu tự xong: ô tích nhạt + chữ "tự xong", dưới tên ghi lý do ("Tập thể dục 82% / 80%", "3/3 task"); bấm ô tích vẫn
+  tích tay được.
 
 ## 5. Nhìn lại (Reflection)
 
@@ -170,9 +175,10 @@ Dùng lại `Card`, `@reui/badge`, shadcn `chart` (vòng tròn = RadialBar/Pie),
 
 ## 7. Dashboard & Today
 
-- Dashboard: thẻ **"Mục tiêu tháng này"** (vòng tròn % + mục tiêu Ưu tiên) và thẻ **"Thói quen"** (3.3); châm ngôn
-  năm dưới tiêu đề. Bố cục giữ thứ tự "số liệu → việc → học → nhịp".
-- Today: thẻ "Thói quen hôm nay"; mục tiêu tuần Ưu tiên hiện dưới "3 việc hôm nay".
+- Dashboard: thẻ **"Mục tiêu tháng này"** (vòng tròn % + mục tiêu Ưu tiên + số mục tiêu thường) ở hàng 2, cột phải xếp
+  chồng trên "Dự án Planner" (cạnh "Task theo dự án") — cùng nhóm "việc cần làm"; chế độ Thật chưa đặt mục tiêu → link
+  "Đặt mục tiêu" (không dùng mẫu). Thẻ **"Thói quen"** (3.3). Châm ngôn năm dưới tiêu đề (bước 5).
+- Today: thẻ "Thói quen hôm nay"; mục tiêu tuần Ưu tiên hiện ở cuối thẻ "3 việc hôm nay" (✓ khi xong, kể cả tự xong).
 
 ## 8. Ngoài phạm vi v0.4
 

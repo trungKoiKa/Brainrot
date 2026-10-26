@@ -4,7 +4,7 @@ import { deadlineLabel, latestKnowledge, pickTopThree, splitLines, upcomingDeadl
 
 const task = (id: string, o: Partial<Task> = {}): Task => ({
   id, url: `u-${id}`, title: id, project: null, status: "Chưa làm", priority: null, deadline: null, note: "",
-  doneOn: null, createdTime: "2026-10-01T00:00:00.000Z", ...o,
+  doneOn: null, createdTime: "2026-10-01T00:00:00.000Z", goalIds: [], ...o,
 });
 const log = (date: string, tomorrowTop3: string): DailyLog => ({
   id: "l", url: "log-url", title: "", date, done: "", dropped: "", learned: "", tomorrowTop3, exercised: false, habits: [],
