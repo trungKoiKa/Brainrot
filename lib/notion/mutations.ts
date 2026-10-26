@@ -117,7 +117,7 @@ export async function saveDailyLog(day: string, input: DailyLogInput): Promise<"
     Xong: { rich_text: richText(input.done) },
     "Rơi / chưa xong": { rich_text: richText(input.dropped) },
     "Học được": { rich_text: richText(input.learned) },
-    "Ngày mai 3 việc": { rich_text: richText(input.tomorrowTop3) },
+    // "Ngày mai 3 việc" không ghi nữa (SPEC-v0.5 10.2a: chọn task ngày mai thay cho chữ) — giữ nguyên chữ cũ
     ...(habits && habitProperties(habits)),
   };
 

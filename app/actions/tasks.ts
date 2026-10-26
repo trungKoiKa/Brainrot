@@ -1,7 +1,7 @@
 "use server";
 
 import { updateTag } from "next/cache";
-import { createTask, markTaskDone, updateTask } from "@/lib/notion/mutations";
+import { createTask, markTaskDone, setTaskPlannedOn, updateTask } from "@/lib/notion/mutations";
 import { getGoals, getTaskProjects } from "@/lib/notion/data";
 import { TAGS } from "@/lib/notion/queries";
 import { SESSION_EXPIRED, isSignedIn } from "@/lib/session";
@@ -61,4 +61,23 @@ export async function updateTaskAction(_prev: TaskFormState, form: FormData): Pr
   updateTag(TAGS.tasks);
   if (parsed.data.goalId !== undefined) updateTag(TAGS.goals); // relation 2 chiều → cột Tasks bên Goals cũng đổi
   return { ok: true, message: "Đã lưu.", at: Date.now() };
+}
+
+const DAY = /^\d{4}-\d{2}-\d{2}$/;
+
+/** Đặt / bỏ Ngày làm (SPEC-v0.5): "Làm hôm nay", "Dời sang…", chọn việc ngày mai. `day` null = bỏ lịch. */
+export async function planTaskAction(pageId: string, day: string | null): Promise<CompleteTaskResult> {
+  if (!(await isSignedIn())) return { ok: false, error: SESSION_EXPIRED };
+  if (typeof pageId !== "string" || !PAGE_ID.test(pageId)) return { ok: false, error: "ID task không hợp lệ." };
+  if (day !== null && (typeof day !== "string" || !DAY.test(day))) return { ok: false, error: "Ngày không hợp lệ." };
+
+  try {
+    await setTaskPlannedOn(pageId, day);
+  } catch (e) {
+    console.error("planTask failed:", e instanceof Error ? e.message : e);
+    return { ok: false, error: WRITE_FAILED };
+  }
+
+  updateTag(TAGS.tasks);
+  return { ok: true };
 }

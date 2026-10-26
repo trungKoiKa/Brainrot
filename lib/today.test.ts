@@ -1,13 +1,10 @@
 import { describe, expect, it } from "vitest";
-import type { DailyLog, Knowledge, Task } from "./notion/types";
-import { deadlineLabel, latestKnowledge, pickTopThree, splitLines, upcomingDeadlines } from "./today";
+import type { Knowledge, Task } from "./notion/types";
+import { deadlineLabel, latestKnowledge, planToday, splitLines, tomorrowCandidates, upcomingDeadlines } from "./today";
 
 const task = (id: string, o: Partial<Task> = {}): Task => ({
   id, url: `u-${id}`, title: id, project: null, status: "Chưa làm", priority: null, deadline: null, plannedOn: null, note: "",
   doneOn: null, createdTime: "2026-10-01T00:00:00.000Z", goalIds: [], ...o,
-});
-const log = (date: string, tomorrowTop3: string): DailyLog => ({
-  id: "l", url: "log-url", title: "", date, done: "", dropped: "", learned: "", tomorrowTop3, exercised: false, habits: [],
 });
 const today = "2026-10-22";
 const tasks = [
@@ -20,22 +17,34 @@ const tasks = [
   task("khong-uu-tien", { deadline: "2026-10-22" }),
 ];
 
-describe("3 việc hôm nay (SPEC 7.1)", () => {
-  it("không có Daily Log hôm qua → Tasks: Ưu tiên rồi deadline gần, không deadline xếp cuối, bỏ Xong", () => {
-    const top = pickTopThree(today, [], tasks);
-    expect(top.source).toBe("tasks");
-    expect(top.items.map((t) => (typeof t === "string" ? t : t.id))).toEqual(["cao-han-gan", "cao-han-xa", "cao-khong-han"]);
+describe("Hôm nay làm (SPEC-v0.5 4.2)", () => {
+  const ts = [
+    task("lam-nay-thap", { plannedOn: today, priority: "Thấp" }),
+    task("lam-nay-cao", { plannedOn: today, priority: "Cao" }),
+    task("tre-2", { plannedOn: "2026-10-20" }),
+    task("tre-1", { plannedOn: "2026-10-21", priority: "Cao" }),
+    task("han-nay", { deadline: today }),
+    task("han-nay-da-xep", { deadline: today, plannedOn: today }),
+    task("han-nay-xep-mai", { deadline: today, plannedOn: "2026-10-23" }),
+    task("xong", { plannedOn: today, status: "Xong" }),
+    task("chua-xep", { priority: "Cao" }),
+  ];
+
+  it("3 nhóm, đúng thứ tự, task xong không hiện, mỗi task một nhóm", () => {
+    const p = planToday(today, ts);
+    expect(p.planned.map((t) => t.id)).toEqual(["lam-nay-cao", "lam-nay-thap", "han-nay-da-xep"]);
+    expect(p.late.map((t) => [t.id, t.lateDays])).toEqual([["tre-2", 2], ["tre-1", 1]]);
+    expect(p.due.map((t) => t.id)).toEqual(["han-nay", "han-nay-xep-mai"]);
+    expect(p.suggest).toEqual([]);
   });
 
-  it("Daily Log hôm qua có 'Ngày mai 3 việc' → lấy từ đó, bỏ ký hiệu đầu dòng", () => {
-    expect(pickTopThree(today, [log("2026-10-21", "1. Viết chương 2\n- Đọc paper YOLO\n\n• Tập thể dục")], tasks)).toEqual({
-      source: "daily", items: ["Viết chương 2", "Đọc paper YOLO", "Tập thể dục"], logUrl: "log-url",
-    });
+  it("không có gì → gợi ý 3 task ưu tiên cao nhất chưa xếp lịch", () => {
+    expect(planToday(today, tasks.filter((t) => t.deadline !== today)).suggest.map((t) => t.id)).toEqual(["cao-han-gan", "cao-han-xa", "cao-khong-han"]);
   });
 
-  it("log hôm qua rỗng hoặc log không phải hôm qua → quay về Tasks", () => {
-    expect(pickTopThree(today, [log("2026-10-21", "  ")], tasks).source).toBe("tasks");
-    expect(pickTopThree(today, [log("2026-10-20", "a")], tasks).source).toBe("tasks");
+  it("ngày mai: đã xếp ngày mai trước, rồi task chưa xếp; bỏ task xếp ngày khác", () => {
+    const ts2 = [task("a", { plannedOn: "2026-10-23" }), task("b", { priority: "Cao" }), task("c", { plannedOn: "2026-10-25" })];
+    expect(tomorrowCandidates(today, ts2).map((t) => t.id)).toEqual(["a", "b"]);
   });
 
   it("splitLines bỏ checkbox markdown", () => {
