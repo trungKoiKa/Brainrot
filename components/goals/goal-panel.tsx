@@ -1,11 +1,22 @@
 "use client";
 
 import { useEffect, useRef, useState, useTransition } from "react";
-import { ArrowDownUpIcon, CheckIcon, PencilIcon, Trash2Icon } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { ArrowDownUpIcon, CheckIcon, Link2Icon, PencilIcon, Trash2Icon } from "lucide-react";
 import { createGoalAction, trashGoalAction, updateGoalAction } from "@/app/actions/goals";
 import { fieldClass, primaryButtonClass } from "@/components/form-bits";
 import { ErrorNotice } from "@/components/tasks/task-row";
-import { goalCounts, groupGoals, MAX_GOAL_TITLE, PRIORITY_SOFT_LIMIT, type Goal, type GoalType } from "@/lib/goals";
+import {
+  DEFAULT_THRESHOLD,
+  goalCounts,
+  groupGoals,
+  isGoalDone,
+  MAX_GOAL_TITLE,
+  PRIORITY_SOFT_LIMIT,
+  type AutoInfo,
+  type Goal,
+  type GoalType,
+} from "@/lib/goals";
 import type { Level } from "@/lib/period";
 import { ProgressRing } from "./progress-ring";
 
@@ -15,10 +26,22 @@ const iconButton =
 
 /**
  * Khối mục tiêu của một kỳ (SPEC-v0.4 4.2, 4.4): bộ đếm + vòng tròn %, nhóm Ưu tiên / Thường (nhãn dọc),
- * thêm nhanh, sửa tên tại chỗ, tích, đổi loại, xóa (vào Trash Notion, hoàn tác trong 5 giây).
- * Cập nhật lạc quan; lỗi thì trả về như trước và báo.
+ * thêm nhanh, sửa tên tại chỗ, tích, đổi loại, xóa (vào Trash Notion, hoàn tác trong 5 giây),
+ * gắn thói quen + ngưỡng % để tự xong (SPEC-v0.4 4.3). Cập nhật lạc quan; lỗi thì trả về như trước và báo.
+ * `habits`: thói quen có thể gắn (đang theo dõi trong kỳ).
  */
-export function GoalPanel({ level, periodKey, initial }: { level: Level; periodKey: string; initial: Goal[] }) {
+export function GoalPanel({
+  level,
+  periodKey,
+  initial,
+  habits,
+}: {
+  level: Level;
+  periodKey: string;
+  initial: Goal[];
+  habits: { id: string; name: string }[];
+}) {
+  const router = useRouter();
   const [goals, setGoals] = useState(initial);
   const [error, setError] = useState<string | null>(null);
   const [undo, setUndo] = useState<{ goal: Goal; index: number } | null>(null);
@@ -45,6 +68,14 @@ export function GoalPanel({ level, periodKey, initial }: { level: Level; periodK
       goals.map((g) => (g.id === id ? { ...g, ...change } : g)),
       () => updateGoalAction(id, change),
     );
+
+  /** Gắn / bỏ gắn thói quen: % thói quen do server tính → lưu xong thì tải lại dữ liệu trang. */
+  async function link(id: string, habitId: string | null, threshold: number | null) {
+    setError(null);
+    const res = await updateGoalAction(id, { habitId, threshold });
+    if (!res.ok) return setError(res.error);
+    router.refresh();
+  }
 
   function remove(goal: Goal) {
     const index = goals.findIndex((g) => g.id === goal.id);
@@ -99,7 +130,14 @@ export function GoalPanel({ level, periodKey, initial }: { level: Level; periodK
             <ul className="min-h-12 flex-1 divide-y divide-dashed divide-line">
               {list.length === 0 && <li className="py-2 text-sm text-muted-foreground">Chưa có mục tiêu {type.toLowerCase()}.</li>}
               {list.map((g) => (
-                <GoalRow key={g.id} goal={g} onPatch={(c) => patch(g.id, c)} onRemove={() => remove(g)} />
+                <GoalRow
+                  key={g.id}
+                  goal={g}
+                  habits={habits}
+                  onPatch={(c) => patch(g.id, c)}
+                  onLink={(h, t) => link(g.id, h, t)}
+                  onRemove={() => remove(g)}
+                />
               ))}
             </ul>
           </section>
@@ -131,15 +169,39 @@ export function GoalPanel({ level, periodKey, initial }: { level: Level; periodK
   );
 }
 
+/** Lý do tự xong / tiến độ liên kết, hiện nhỏ dưới tên mục tiêu. */
+function AutoChips({ auto }: { auto: AutoInfo[] }) {
+  return (
+    <span className="flex flex-wrap gap-x-3 text-xs text-muted-foreground">
+      {auto.map((a) =>
+        a.kind === "habit" ? (
+          <span key="habit" className={a.pct !== null && a.pct >= a.threshold ? "text-(--good)" : ""}>
+            {a.habit} {a.pct === null ? "chưa bắt đầu" : `${a.pct}%`} / {a.threshold}%
+          </span>
+        ) : (
+          <span key="tasks" className={a.done === a.total ? "text-(--good)" : ""}>
+            {a.done}/{a.total} task
+          </span>
+        ),
+      )}
+    </span>
+  );
+}
+
 function GoalRow({
   goal,
+  habits,
   onPatch,
+  onLink,
   onRemove,
 }: {
   goal: Goal;
+  habits: { id: string; name: string }[];
   onPatch: (change: Partial<Pick<Goal, "title" | "type" | "done">>) => void;
+  onLink: (habitId: string | null, threshold: number | null) => void;
   onRemove: () => void;
 }) {
+  const [linking, setLinking] = useState(false);
   const [editing, setEditing] = useState(false);
   const [draft, setDraft] = useState(goal.title);
   const other: GoalType = goal.type === "Ưu tiên" ? "Thường" : "Ưu tiên";
@@ -152,66 +214,160 @@ function GoalRow({
   }
 
   return (
-    <li className="group flex items-center gap-2 py-1.5">
-      <button
-        type="button"
-        role="checkbox"
-        aria-checked={goal.done}
-        aria-label={`${goal.done ? "Bỏ xong" : "Đánh dấu xong"}: ${goal.title}`}
-        onClick={() => onPatch({ done: !goal.done })}
-        className={`flex size-5 shrink-0 items-center justify-center rounded border transition-colors ${
-          goal.done ? "border-primary bg-primary text-primary-foreground" : "border-line hover:border-primary"
-        }`}
-      >
-        {goal.done && <CheckIcon aria-hidden="true" className="size-3.5" strokeWidth={3} />}
-      </button>
-      {editing ? (
-        <input
-          autoFocus
-          aria-label="Sửa mục tiêu"
-          value={draft}
-          maxLength={MAX_GOAL_TITLE}
-          onChange={(e) => setDraft(e.target.value)}
-          onBlur={save}
-          onKeyDown={(e) => {
-            if (e.key === "Enter") save();
-            if (e.key === "Escape") {
-              setDraft(goal.title);
-              setEditing(false);
-            }
-          }}
-          className={`${fieldClass} py-1`}
-        />
-      ) : (
+    <li className="py-1.5">
+      <div className="group flex items-center gap-2">
         <button
           type="button"
-          onClick={() => setEditing(true)}
-          title="Bấm để sửa"
-          className={`min-w-0 flex-1 truncate text-left text-sm ${goal.done ? "text-muted-foreground line-through" : ""}`}
+          role="checkbox"
+          aria-checked={isGoalDone(goal)}
+          aria-label={`${goal.done ? "Bỏ xong" : "Đánh dấu xong"}: ${goal.title}`}
+          title={goal.autoDone && !goal.done ? "Tự xong theo liên kết — bấm để tích tay" : undefined}
+          onClick={() => onPatch({ done: !goal.done })}
+          className={`flex size-5 shrink-0 items-center justify-center rounded border transition-colors ${
+            goal.done
+              ? "border-primary bg-primary text-primary-foreground"
+              : goal.autoDone
+                ? "border-primary bg-accent-soft text-primary"
+                : "border-line hover:border-primary"
+          }`}
         >
-          {goal.title}
+          {isGoalDone(goal) && <CheckIcon aria-hidden="true" className="size-3.5" strokeWidth={3} />}
         </button>
-      )}
-      {!editing && (
-        <span className="flex shrink-0 opacity-100 transition-opacity md:opacity-0 md:group-focus-within:opacity-100 md:group-hover:opacity-100">
-          <button type="button" className={iconButton} aria-label={`Sửa: ${goal.title}`} onClick={() => setEditing(true)}>
-            <PencilIcon aria-hidden="true" className="size-3.5" />
-          </button>
+        {editing ? (
+          <input
+            autoFocus
+            aria-label="Sửa mục tiêu"
+            value={draft}
+            maxLength={MAX_GOAL_TITLE}
+            onChange={(e) => setDraft(e.target.value)}
+            onBlur={save}
+            onKeyDown={(e) => {
+              if (e.key === "Enter") save();
+              if (e.key === "Escape") {
+                setDraft(goal.title);
+                setEditing(false);
+              }
+            }}
+            className={`${fieldClass} py-1`}
+          />
+        ) : (
           <button
             type="button"
-            className={iconButton}
-            aria-label={`Chuyển sang ${other}: ${goal.title}`}
-            title={`Chuyển sang ${other}`}
-            onClick={() => onPatch({ type: other })}
+            onClick={() => setEditing(true)}
+            title="Bấm để sửa"
+            className="flex min-w-0 flex-1 items-baseline gap-2 text-left text-sm"
           >
-            <ArrowDownUpIcon aria-hidden="true" className="size-3.5" />
+            <span className={`truncate ${isGoalDone(goal) ? "text-muted-foreground line-through" : ""}`}>{goal.title}</span>
+            {goal.autoDone && !goal.done && <span className="shrink-0 text-xs text-primary">tự xong</span>}
           </button>
-          <button type="button" className={iconButton} aria-label={`Xóa: ${goal.title}`} onClick={onRemove}>
-            <Trash2Icon aria-hidden="true" className="size-3.5" />
-          </button>
-        </span>
+        )}
+        {!editing && (
+          <span className="flex shrink-0 opacity-100 transition-opacity md:opacity-0 md:group-focus-within:opacity-100 md:group-hover:opacity-100">
+            <button type="button" className={iconButton} aria-label={`Sửa: ${goal.title}`} onClick={() => setEditing(true)}>
+              <PencilIcon aria-hidden="true" className="size-3.5" />
+            </button>
+            <button
+              type="button"
+              className={iconButton}
+              aria-label={`Gắn thói quen: ${goal.title}`}
+              title="Gắn thói quen để tự xong"
+              onClick={() => setLinking((v) => !v)}
+            >
+              <Link2Icon aria-hidden="true" className="size-3.5" />
+            </button>
+            <button
+              type="button"
+              className={iconButton}
+              aria-label={`Chuyển sang ${other}: ${goal.title}`}
+              title={`Chuyển sang ${other}`}
+              onClick={() => onPatch({ type: other })}
+            >
+              <ArrowDownUpIcon aria-hidden="true" className="size-3.5" />
+            </button>
+            <button type="button" className={iconButton} aria-label={`Xóa: ${goal.title}`} onClick={onRemove}>
+              <Trash2Icon aria-hidden="true" className="size-3.5" />
+            </button>
+          </span>
+        )}
+      </div>
+      {goal.auto && goal.auto.length > 0 && (
+        <div className="mt-0.5 pl-7">
+          <AutoChips auto={goal.auto} />
+        </div>
+      )}
+      {linking && (
+        <LinkHabit
+          goal={goal}
+          habits={habits}
+          onCancel={() => setLinking(false)}
+          onSave={(h, t) => {
+            setLinking(false);
+            onLink(h, t);
+          }}
+        />
       )}
     </li>
+  );
+}
+
+/** Gắn một thói quen + ngưỡng %: mục tiêu tự xong khi % thói quen trong kỳ ≥ ngưỡng (SPEC-v0.4 4.3). */
+function LinkHabit({
+  goal,
+  habits,
+  onSave,
+  onCancel,
+}: {
+  goal: Goal;
+  habits: { id: string; name: string }[];
+  onSave: (habitId: string | null, threshold: number | null) => void;
+  onCancel: () => void;
+}) {
+  const [habitId, setHabitId] = useState(goal.habitId ?? habits[0]?.id ?? "");
+  const [threshold, setThreshold] = useState(String(goal.threshold ?? DEFAULT_THRESHOLD));
+  const value = Number(threshold);
+  const valid = Boolean(habitId) && Number.isInteger(value) && value >= 1 && value <= 100;
+
+  if (habits.length === 0) {
+    return <p className="mt-2 pl-7 text-xs text-muted-foreground">Chưa có thói quen nào trong kỳ này để gắn.</p>;
+  }
+  return (
+    <div className="mt-2 flex flex-wrap items-center gap-2 pl-7 text-sm">
+      <span className="text-muted-foreground">Tự xong khi</span>
+      <select
+        aria-label="Thói quen"
+        value={habitId}
+        onChange={(e) => setHabitId(e.target.value)}
+        className={`${fieldClass.replace("w-full", "w-auto")} py-1`}
+      >
+        {habits.map((h) => (
+          <option key={h.id} value={h.id}>
+            {h.name}
+          </option>
+        ))}
+      </select>
+      <span className="text-muted-foreground">đạt ≥</span>
+      <input
+        aria-label="Ngưỡng %"
+        type="number"
+        min={1}
+        max={100}
+        value={threshold}
+        onChange={(e) => setThreshold(e.target.value)}
+        className={`${fieldClass} w-20 py-1`}
+      />
+      <span className="text-muted-foreground">%</span>
+      <button type="button" disabled={!valid} onClick={() => onSave(habitId, value)} className={`${primaryButtonClass} py-1`}>
+        Lưu
+      </button>
+      {goal.habitId && (
+        <button type="button" onClick={() => onSave(null, null)} className="text-muted-foreground hover:text-foreground">
+          Bỏ gắn
+        </button>
+      )}
+      <button type="button" onClick={onCancel} className="text-muted-foreground hover:text-foreground">
+        Hủy
+      </button>
+    </div>
   );
 }
 
@@ -241,7 +397,7 @@ function AddGoal({
           const res = await createGoalAction(level, periodKey, text, type);
           if (!res.ok) return onError(res.error);
           // "Kỳ" thật do server tính; ở client chỉ cần id để thao tác tiếp
-          onAdded({ id: res.id, title: text, level, start: "", type, done: false });
+          onAdded({ id: res.id, title: text, level, start: "", type, done: false, habitId: null, threshold: null, taskIds: [] });
           setTitle("");
         });
       }}

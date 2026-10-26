@@ -2,7 +2,8 @@
 
 import { updateTag } from "next/cache";
 import { GOAL_TYPES, MAX_GOAL_TITLE, type GoalType } from "@/lib/goals";
-import { createGoal, trashGoal, updateGoal } from "@/lib/notion/mutations";
+import { getHabits } from "@/lib/notion/data";
+import { createGoal, trashGoal, updateGoal, type GoalPatch } from "@/lib/notion/mutations";
 import { TAGS } from "@/lib/notion/queries";
 import { LEVELS, parsePeriod, type Level } from "@/lib/period";
 import { SESSION_EXPIRED, isSignedIn } from "@/lib/session";
@@ -47,14 +48,14 @@ export async function createGoalAction(level: Level, key: string, rawTitle: stri
   }
 }
 
-/** Sửa tên / đổi Ưu tiên ↔ Thường / tích xong. */
-export async function updateGoalAction(id: string, patch: { title?: string; type?: GoalType; done?: boolean }): Promise<GoalResult> {
+/** Sửa tên / đổi Ưu tiên ↔ Thường / tích xong / gắn thói quen + ngưỡng % (SPEC-v0.4 4.3). */
+export async function updateGoalAction(id: string, patch: GoalPatch): Promise<GoalResult> {
   const denied = await guard();
   if (denied) return denied;
   if (typeof id !== "string" || !PAGE_ID.test(id) || typeof patch !== "object" || patch === null) {
     return { ok: false, error: "Yêu cầu không hợp lệ." };
   }
-  const clean: { title?: string; type?: GoalType; done?: boolean } = {};
+  const clean: GoalPatch = {};
   if (patch.title !== undefined) {
     const title = cleanTitle(patch.title);
     if (typeof title !== "string") return { ok: false, ...title };
@@ -65,6 +66,17 @@ export async function updateGoalAction(id: string, patch: { title?: string; type
     clean.type = patch.type;
   }
   if (patch.done !== undefined) clean.done = patch.done === true;
+  if (patch.habitId !== undefined) {
+    if (patch.habitId !== null && !(await getHabits()).data.some((h) => h.id === patch.habitId)) {
+      return { ok: false, error: "Thói quen không hợp lệ." };
+    }
+    clean.habitId = patch.habitId;
+  }
+  if (patch.threshold !== undefined) {
+    const t = patch.threshold;
+    if (t !== null && (!Number.isInteger(t) || t < 1 || t > 100)) return { ok: false, error: "Ngưỡng phải từ 1 đến 100%." };
+    clean.threshold = t;
+  }
 
   try {
     await updateGoal(id, clean);

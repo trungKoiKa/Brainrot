@@ -1,14 +1,18 @@
 "use client";
 
 import { useSyncExternalStore } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { CheckIcon } from "lucide-react";
 import { Area, AreaChart, Bar, BarChart, CartesianGrid, Cell, Line, LineChart, XAxis, YAxis } from "recharts";
 import { Card } from "@/components/card";
+import { ProgressRing } from "@/components/goals/progress-ring";
 import { Badge } from "@/components/reui/badge";
 import { ChartContainer, ChartTooltip, ChartTooltipContent, type ChartConfig } from "@/components/ui/chart";
 import { Progress } from "@/components/ui/progress";
 import { formatDay } from "@/lib/date";
 import { pctTone, type Tone } from "@/lib/dashboard/stats";
+import { goalCounts, isGoalDone, type Goal } from "@/lib/goals";
 
 // Màu lấy từ token (SPEC-v0.3 mục 7): --primary xanh, --chart-3 xanh lá, --chart-4 hổ phách, --chart-5 xám, --good "ổn"
 
@@ -258,6 +262,55 @@ export function PlannerLanes({ lanes, more }: { lanes: { name: string; done: num
       })}
       {more > 0 && <li className="text-sm text-muted-foreground">+{more} dự án</li>}
     </ul>
+  );
+}
+
+// ---------- mục tiêu tháng này (SPEC-v0.4 mục 7) ----------
+
+export function MonthGoals({ goals }: { goals: Goal[] }) {
+  const c = goalCounts(goals);
+  if (c.total === 0) {
+    return (
+      <p className="text-sm text-muted-foreground">
+        Chưa đặt mục tiêu tháng này.{" "}
+        <Link href="/goals?level=month" className="text-primary underline underline-offset-2">
+          Đặt mục tiêu
+        </Link>
+      </p>
+    );
+  }
+  const priority = goals.filter((g) => g.type === "Ưu tiên" && g.title.trim());
+  const regular = goals.filter((g) => g.type === "Thường" && g.title.trim());
+  return (
+    <div>
+      <div className="flex items-center gap-4">
+        <ProgressRing pct={c.progress} size={64} />
+        <p className="text-sm text-muted-foreground">
+          <span className="font-medium text-foreground">{c.completed}</span>/{c.total} mục tiêu xong
+        </p>
+      </div>
+      <ul className="mt-4 space-y-1.5 text-sm">
+        {priority.map((g) => (
+          <li key={g.id} className="flex items-center gap-2">
+            <span
+              aria-hidden="true"
+              className={`flex size-4 shrink-0 items-center justify-center rounded border ${
+                isGoalDone(g) ? "border-primary bg-primary text-primary-foreground" : "border-line"
+              }`}
+            >
+              {isGoalDone(g) && <CheckIcon className="size-3" strokeWidth={3} />}
+            </span>
+            <span className={`truncate ${isGoalDone(g) ? "text-muted-foreground line-through" : ""}`}>{g.title}</span>
+            <span className="sr-only">{isGoalDone(g) ? "(đã xong)" : "(chưa xong)"}</span>
+          </li>
+        ))}
+        {regular.length > 0 && (
+          <li className="text-xs text-muted-foreground">
+            + {regular.length} mục tiêu thường ({regular.filter(isGoalDone).length} xong)
+          </li>
+        )}
+      </ul>
+    </div>
   );
 }
 

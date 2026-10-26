@@ -13,11 +13,13 @@ import { todayVN } from "@/lib/date";
 import { goalCounts, goalsOf, type Goal } from "@/lib/goals";
 import { doneHabits } from "@/lib/habits";
 import { anyStale, getDailyLogsBetween, getGoals, getHabits } from "@/lib/notion/data";
+import { resolveGoals } from "@/lib/notion/goal-status";
 import { goalsConfigured, habitsConfigured } from "@/lib/notion/queries";
 import {
   childPeriods,
   LEVEL_LABEL,
   LEVELS,
+  monthOf,
   parsePeriod,
   periodLabel,
   periodOf,
@@ -49,13 +51,23 @@ async function GoalsContent({ searchParams }: Pick<PageProps<"/goals">, "searchP
   const period = (typeof params.period === "string" && parsePeriod(level, params.period)) || periodOf(level, today);
   const current = periodOf(level, today);
 
+  const children = childPeriods(period);
   const [goalsLoaded, habits, logs] = await Promise.all([
     getGoals(),
-    level === "month" ? getHabits() : null,
+    getHabits(),
     level === "month" ? getDailyLogsBetween(period.start, period.end) : null,
   ]);
-  const goals = goalsLoaded.data;
-  const children = childPeriods(period);
+  // Trạng thái tự xong cho mục tiêu của kỳ đang xem + các kỳ con (cột %, thẻ quý/tháng)
+  const shown = [period, ...children];
+  const resolved = await resolveGoals(goalsLoaded.data.filter((g) => shown.some((p) => p.level === g.level && p.start === g.start)));
+  const goals = resolved.goals;
+  // Thói quen gắn được: được theo dõi ở ít nhất một tháng của kỳ
+  const linkable = habits.data.filter(
+    (h) => monthOf(h.from) <= monthOf(period.end) && (h.to === null || monthOf(h.to) >= monthOf(period.start)),
+  );
+  const panelGoals = goalsOf(goals, period);
+  // key đổi khi dữ liệu server đổi (vd. vừa gắn thói quen) → khối mục tiêu nạp lại trạng thái mới
+  const panelKey = `${href(period)}|${panelGoals.map((g) => `${g.id}:${g.done}:${g.autoDone}:${g.habitId}:${g.threshold}`).join(",")}`;
   const bars = (list: Period[]): PeriodBar[] =>
     list.map((p) => {
       const c = goalCounts(goalsOf(goals, p));
@@ -64,7 +76,7 @@ async function GoalsContent({ searchParams }: Pick<PageProps<"/goals">, "searchP
 
   return (
     <div className="space-y-5">
-      <StaleBanner show={anyStale(goalsLoaded, ...(habits && logs ? [habits, logs] : []))} />
+      <StaleBanner show={anyStale(goalsLoaded, habits, ...resolved.loaded, ...(logs ? [logs] : []))} />
 
       <div className="flex flex-wrap items-center gap-3">
         <nav aria-label="Cấp" className="flex rounded-full border border-line bg-surface p-0.5">
@@ -102,7 +114,13 @@ async function GoalsContent({ searchParams }: Pick<PageProps<"/goals">, "searchP
         <div className={`grid gap-5 ${children.length ? "lg:grid-cols-5" : ""}`}>
           <Card title={`Mục tiêu ${LEVEL_LABEL[level].toLowerCase()}`} className={children.length ? "lg:col-span-3" : ""}>
             {/* key theo kỳ → đổi kỳ thì danh sách nạp lại từ server */}
-            <GoalPanel key={href(period)} level={level} periodKey={period.key} initial={goalsOf(goals, period)} />
+            <GoalPanel
+              key={panelKey}
+              level={level}
+              periodKey={period.key}
+              initial={panelGoals}
+              habits={linkable.map((h) => ({ id: h.id, name: h.name }))}
+            />
           </Card>
           {children.length > 0 && (
             <Card title={`Tiến độ các ${level === "month" ? "tuần" : "kỳ con"}`} className="lg:col-span-2">
@@ -135,7 +153,7 @@ async function GoalsContent({ searchParams }: Pick<PageProps<"/goals">, "searchP
       )}
 
       {level === "month" &&
-        (habitsConfigured() && habits && logs ? (
+        (habitsConfigured() && logs ? (
           <HabitMonth
             key={period.key}
             month={period.key}

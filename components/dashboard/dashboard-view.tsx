@@ -27,7 +27,7 @@ import {
 } from "@/lib/dashboard/stats";
 import { projectProgress, weekProgress } from "@/features/planner/lib/progress";
 import { usePlanner } from "@/features/planner/store/usePlanner";
-import { DailyBars, HabitBars, KpiCard, PlannerLanes, ProjectBars, SampleBadge, WeeklyArea } from "./dashboard-blocks";
+import { DailyBars, HabitBars, KpiCard, MonthGoals, PlannerLanes, ProjectBars, SampleBadge, WeeklyArea } from "./dashboard-blocks";
 
 type Mode = "real" | "sample";
 
@@ -86,6 +86,8 @@ export function DashboardView({ real: realBase, graph }: { real: Omit<DashInput,
   const logsSample = all || real.logs.length === 0;
   const plannerSample = all || real.planner === null;
   const habitsSample = all || real.habits.length === 0;
+  // Mục tiêu: chế độ Thật mà chưa đặt mục tiêu tháng → báo trống + link đặt mục tiêu, không dùng mẫu
+  const goalsSample = all;
   const tasksSrc = all ? sample : real;
   const doneSrc = doneSample ? sample : real;
   const logsSrc = logsSample ? sample : real;
@@ -180,19 +182,35 @@ export function DashboardView({ real: realBase, graph }: { real: Omit<DashInput,
           <p className="-mt-3 mb-4 text-sm text-muted-foreground">Việc chưa xong · bấm cột để mở Tasks</p>
           <ProjectBars rows={tasksByProject(tasksSrc.tasks)} />
         </Card>
-        <Card title="Dự án Planner" action={all && <SampleBadge />}>
-          <p className="-mt-3 mb-4 text-sm text-muted-foreground">Tuần này · chậm nhất ở trên</p>
-          {lanes && lanes.lanes.length > 0 ? (
-            <PlannerLanes lanes={lanes.lanes} more={lanes.more} />
-          ) : (
-            <Empty>
-              Chưa có dự án Planner tuần này.{" "}
-              <a href="/planner" className="text-primary underline underline-offset-2">
-                Mở Planner
-              </a>
-            </Empty>
-          )}
-        </Card>
+        {/* Cột phải: hai khối "việc cần làm" xếp chồng (SPEC-v0.4 mục 7) */}
+        <div className="flex flex-col gap-5">
+          <Card
+            title="Mục tiêu tháng này"
+            action={
+              <span className="flex items-center gap-2">
+                {goalsSample && <SampleBadge />}
+                <Link href="/goals?level=month" className="text-sm text-muted-foreground hover:text-foreground">
+                  Mở
+                </Link>
+              </span>
+            }
+          >
+            <MonthGoals goals={goalsSample ? sample.monthGoals : real.monthGoals} />
+          </Card>
+          <Card title="Dự án Planner" action={all && <SampleBadge />}>
+            <p className="-mt-3 mb-4 text-sm text-muted-foreground">Tuần này · chậm nhất ở trên</p>
+            {lanes && lanes.lanes.length > 0 ? (
+              <PlannerLanes lanes={lanes.lanes} more={lanes.more} />
+            ) : (
+              <Empty>
+                Chưa có dự án Planner tuần này.{" "}
+                <a href="/planner" className="text-primary underline underline-offset-2">
+                  Mở Planner
+                </a>
+              </Empty>
+            )}
+          </Card>
+        </div>
       </div>
 
       <div className="grid gap-5 lg:grid-cols-2">

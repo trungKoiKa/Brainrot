@@ -17,6 +17,8 @@ export type Task = {
   doneOn: string | null;
   /** ISO, Notion tự đặt */
   createdTime: string;
+  /** Relation "Mục tiêu" (Goals, từ v0.4) */
+  goalIds: string[];
 };
 
 export type Knowledge = {

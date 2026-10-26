@@ -4,7 +4,7 @@ import { useState } from "react";
 import { compareTasks } from "@/lib/today";
 import type { Priority, Task } from "@/lib/notion/types";
 import { PRIORITIES } from "@/lib/task-form";
-import { EditTaskForm, NewTaskForm } from "./task-forms";
+import { EditTaskForm, NewTaskForm, type GoalOption } from "./task-forms";
 import { ErrorNotice, TaskRow } from "./task-row";
 import { useTaskCompletion } from "./use-task-completion";
 
@@ -23,11 +23,13 @@ export function TaskBoard({
   projects: allProjects,
   today,
   initialProject = null,
+  goals = null,
 }: {
   tasks: Task[];
   projects: string[];
   today: string;
   initialProject?: string | null;
+  goals?: GoalOption[] | null;
 }) {
   const { tasks, complete, error, dismissError } = useTaskCompletion(initial);
   const [editing, setEditing] = useState<string | null>(null);
@@ -74,7 +76,7 @@ export function TaskBoard({
               <ul className="divide-y divide-line">
                 {g.tasks.map((t) =>
                   editing === t.id ? (
-                    <EditTaskForm key={t.id} task={t} projects={allProjects} onClose={() => setEditing(null)} />
+                    <EditTaskForm key={t.id} task={t} projects={allProjects} goals={goals} onClose={() => setEditing(null)} />
                   ) : (
                     <TaskRow key={t.id} task={t} today={today} onComplete={complete} onEdit={() => setEditing(t.id)} />
                   ),

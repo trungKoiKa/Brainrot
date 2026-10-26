@@ -21,7 +21,10 @@ export function ProgressRing({ pct, size = 96, empty = false }: { pct: number; s
           />
         )}
       </svg>
-      <span className="absolute inset-0 flex items-center justify-center font-serif text-xl font-semibold tabular-nums">
+      {/* vòng nhỏ (thẻ quý/tháng, Dashboard): chữ nhỏ hơn để "100%" không tràn khỏi vòng */}
+      <span
+        className={`absolute inset-0 flex items-center justify-center font-serif font-semibold tabular-nums ${size < 80 ? "text-sm" : "text-xl"}`}
+      >
         {empty ? "—" : `${pct}%`}
       </span>
     </div>

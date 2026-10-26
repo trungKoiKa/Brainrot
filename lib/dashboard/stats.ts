@@ -1,6 +1,7 @@
 // Tính số liệu cho Dashboard (SPEC-v0.3 mục 4). Hàm thuần: ngày là chuỗi YYYY-MM-DD theo giờ VN.
 import { addDays, daysBetween, mondayOf } from "@/lib/date";
 import { isHabitActive, streaks } from "@/lib/habits";
+import type { Goal } from "@/lib/goals";
 import type { Habit, TaskStatus } from "@/lib/notion/types";
 import { monthOf } from "@/lib/period";
 
@@ -43,6 +44,8 @@ export type DashInput = {
   thesisDeadline: string | null;
   /** Database Habits (SPEC-v0.4); rỗng khi chưa kết nối */
   habits: Habit[];
+  /** Mục tiêu tháng này, đã gắn trạng thái tự xong (SPEC-v0.4 mục 7); rỗng khi chưa kết nối / chưa đặt */
+  monthGoals: Goal[];
 };
 
 export type Tone = "good" | "warn" | "bad";

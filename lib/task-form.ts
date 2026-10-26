@@ -14,7 +14,8 @@ export type TaskInput = {
   deadline: string | null;
 };
 
-export type TaskUpdate = TaskInput & { status: TaskStatus; note: string };
+/** goalId: id mục tiêu gắn (null = bỏ gắn); undefined = form không có ô này. */
+export type TaskUpdate = TaskInput & { status: TaskStatus; note: string; goalId?: string | null };
 
 const str = (v: FormDataEntryValue | null) => (typeof v === "string" ? v.replace(/\r\n/g, "\n").trim() : "");
 
@@ -42,7 +43,8 @@ export function parseTaskInput(form: FormData, projects: readonly string[]): Par
   return { ok: true, data: { title, project, priority: priority as Priority | null, deadline } };
 }
 
-export function parseTaskUpdate(form: FormData, projects: readonly string[]): Parsed<TaskUpdate> {
+/** `goalIds`: id các mục tiêu có thật — chỉ cho gắn task vào mục tiêu trong danh sách này. */
+export function parseTaskUpdate(form: FormData, projects: readonly string[], goalIds: readonly string[] = []): Parsed<TaskUpdate> {
   const base = parseTaskInput(form, projects);
   if (!base.ok) return base;
 
@@ -52,5 +54,11 @@ export function parseTaskUpdate(form: FormData, projects: readonly string[]): Pa
   const note = str(form.get("note"));
   if (note.length > MAX_TEXT) return { ok: false, error: `Ghi chú dài quá ${MAX_TEXT} ký tự.` };
 
-  return { ok: true, data: { ...base.data, status: status as TaskStatus, note } };
+  let goalId: string | null | undefined;
+  if (form.has("goal")) {
+    goalId = str(form.get("goal")) || null;
+    if (goalId && !goalIds.includes(goalId)) return { ok: false, error: "Mục tiêu không hợp lệ." };
+  }
+
+  return { ok: true, data: { ...base.data, status: status as TaskStatus, note, ...(goalId !== undefined && { goalId }) } };
 }

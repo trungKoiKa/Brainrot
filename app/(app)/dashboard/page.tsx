@@ -5,7 +5,9 @@ import { StaleBanner } from "@/components/stale-banner";
 import { DashboardClient } from "@/components/dashboard/dashboard-client";
 import { toVNDate, todayVN } from "@/lib/date";
 import type { DashInput } from "@/lib/dashboard/stats";
-import { anyStale, getDailyLogs90, getHabits, getKnowledge, getTasks } from "@/lib/notion/data";
+import { anyStale, getDailyLogs90, getGoals, getHabits, getKnowledge, getTasks } from "@/lib/notion/data";
+import { resolveGoals } from "@/lib/notion/goal-status";
+import { periodOf } from "@/lib/period";
 import { getBrainGraph } from "@/lib/notion/graph";
 import { doneHabits, LEGACY_EXERCISE } from "@/lib/habits";
 import { splitLines } from "@/lib/today";
@@ -24,16 +26,20 @@ export default function DashboardPage() {
 
 async function DashboardContent() {
   await connection(); // số liệu tính theo ngày hôm nay
-  const [tasks, knowledge, logs, habits, { stale: graphStale, ...graph }] = await Promise.all([
+  const today = todayVN();
+  const [tasks, knowledge, logs, habits, goals, { stale: graphStale, ...graph }] = await Promise.all([
     getTasks(),
     getKnowledge(),
     getDailyLogs90(),
     getHabits(),
+    getGoals(),
     getBrainGraph(),
   ]);
+  const month = periodOf("month", today);
+  const monthGoals = await resolveGoals(goals.data.filter((g) => g.level === "month" && g.start === month.start));
 
   const real: Omit<DashInput, "planner"> = {
-    today: todayVN(),
+    today,
     thesisDeadline: process.env.THESIS_DEADLINE ?? null,
     tasks: tasks.data.map((t) => ({
       project: t.project,
@@ -57,11 +63,12 @@ async function DashboardContent() {
       ];
     }),
     habits: habits.data,
+    monthGoals: monthGoals.goals,
   };
 
   return (
     <>
-      <StaleBanner show={graphStale || anyStale(tasks, knowledge, logs, habits)} />
+      <StaleBanner show={graphStale || anyStale(tasks, knowledge, logs, habits, goals, ...monthGoals.loaded)} />
       <DashboardClient real={real} graph={graph} />
     </>
   );
