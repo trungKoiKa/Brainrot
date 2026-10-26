@@ -38,7 +38,7 @@ const href = (p: Period) => `/goals?level=${p.level}&period=${p.key}`;
 export default function GoalsPage({ searchParams }: PageProps<"/goals">) {
   return (
     <div className="mx-auto max-w-6xl">
-      <PageHeader title="Mục tiêu" subtitle="Mục tiêu, thói quen và nhìn lại theo năm · quý · tháng · tuần." />
+      <PageHeader title="Goal" subtitle="Mục tiêu, thói quen và nhìn lại theo năm · quý · tháng · tuần." />
       <Suspense fallback={<div className="h-96 animate-pulse rounded-2xl border border-line bg-surface" />}>
         <GoalsContent searchParams={searchParams} />
       </Suspense>
@@ -152,7 +152,7 @@ async function GoalsContent({ searchParams }: Pick<PageProps<"/goals">, "searchP
           )}
         </div>
       ) : (
-        <Card title="Mục tiêu">
+        <Card title="Goal">
           <Empty>Chưa kết nối database Goals — thêm biến môi trường NOTION_GOALS_DB.</Empty>
         </Card>
       )}
