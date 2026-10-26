@@ -5,7 +5,6 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
   BrainIcon,
-  CalendarRangeIcon,
   LayoutDashboardIcon,
   ListChecksIcon,
   NetworkIcon,
@@ -36,7 +35,6 @@ export const NAV: readonly { href: string; label: string; icon: LucideIcon }[] =
   { href: "/today", label: "Today", icon: SunIcon },
   { href: "/tasks", label: "Tasks", icon: ListChecksIcon },
   { href: "/goals", label: "Goal", icon: TargetIcon },
-  { href: "/planner", label: "Planner", icon: CalendarRangeIcon },
 ];
 
 export const isActive = (href: string, pathname: string) => (href === "/" ? pathname === "/" : pathname.startsWith(href));
