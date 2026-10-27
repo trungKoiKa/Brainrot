@@ -47,6 +47,7 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
 > (26/10/2026, tag `v0.4.0`), plan `docs/plans/active/v0.4.md` chờ Trung test.
 > **v0.5 (Một kho việc, bỏ Planner)**: `SPEC-v0.5.md` đã duyệt, code xong 5 bước (26/10/2026,
 > tag `v0.5.0`), plan `docs/plans/active/v0.5.md` chờ Trung test. Planner đã gỡ; Notion Tasks là kho việc duy nhất.
+> **v1.0 (Nhiều người dùng, bỏ Notion)**: `SPEC-v1.0.md` đã duyệt 27/10/2026, làm trên nhánh `v1`, plan `docs/plans/active/v1.0.md`.
 > Yêu cầu mới → ghi vào "Follow-ups" của plan đang chạy, chốt SPEC trước khi code.
 
 ## Thứ tự ưu tiên khi hướng dẫn mâu thuẫn
