@@ -39,28 +39,25 @@ function safeEqual(a: string, b: string): boolean {
   return diff === 0;
 }
 
-/** Token dạng `<hạn (ms)>.<chữ ký>`. */
-export async function createSessionToken(now = Date.now()): Promise<string> {
-  const expires = String(now + SESSION_MAX_AGE * 1000);
-  return `${expires}.${await hmac(expires)}`;
+const USER_ID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
+/** Token dạng `<userId>.<hạn (ms)>.<chữ ký>`; chữ ký phủ cả userId nên không đổi sang user khác được. */
+export async function createSessionToken(userId: string, now = Date.now()): Promise<string> {
+  const payload = `${userId}.${now + SESSION_MAX_AGE * 1000}`;
+  return `${payload}.${await hmac(payload)}`;
 }
 
-export async function verifySessionToken(token: string | undefined): Promise<boolean> {
-  if (!token) return false;
-  const [expires, signature] = token.split(".");
-  if (!expires || !signature || !/^\d+$/.test(expires)) return false;
-  if (Number(expires) < Date.now()) return false;
+/** Trả userId nếu token hợp lệ và chưa hết hạn, ngược lại null. */
+export async function readSessionToken(token: string | undefined): Promise<string | null> {
+  if (!token) return null;
+  const [userId, expires, signature] = token.split(".");
+  if (!userId || !expires || !signature || !USER_ID.test(userId) || !/^\d+$/.test(expires)) return null;
+  if (Number(expires) < Date.now()) return null;
   try {
-    return safeEqual(signature, await hmac(expires));
+    return safeEqual(signature, await hmac(`${userId}.${expires}`)) ? userId : null;
   } catch {
-    return false; // thiếu AUTH_SECRET → coi như chưa đăng nhập
+    return null; // thiếu AUTH_SECRET → coi như chưa đăng nhập
   }
 }
 
-/** Băm cả hai rồi so sánh để độ dài mật khẩu không lộ qua thời gian phản hồi. */
-export async function checkPassword(input: string): Promise<boolean> {
-  const expected = process.env.APP_PASSWORD;
-  if (!expected) throw new Error("APP_PASSWORD chưa đặt");
-  const [a, b] = await Promise.all([hmac(input), hmac(expected)]);
-  return safeEqual(a, b);
-}
+export const verifySessionToken = async (token: string | undefined) => (await readSessionToken(token)) !== null;

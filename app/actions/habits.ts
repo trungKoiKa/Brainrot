@@ -1,23 +1,22 @@
 "use server";
 
-import { updateTag } from "next/cache";
 import { todayVN } from "@/lib/date";
 import { habitsForMonth, MAX_HABIT_NAME } from "@/lib/habits";
-import { getHabits } from "@/lib/notion/data";
-import { createHabit, setDayHabits, setHabitEnd, setHabitOrder } from "@/lib/notion/mutations";
-import { TAGS } from "@/lib/notion/queries";
+import { dbScope } from "@/lib/db/actions-db";
+import { getHabits } from "@/lib/db/data";
+import { createHabit, setDayHabits, setHabitEnd, setHabitOrder } from "@/lib/db/mutations";
+import { refreshData } from "@/lib/db/revalidate";
 import { isMonthKey, monthOf } from "@/lib/period";
 import { SESSION_EXPIRED, isSignedIn } from "@/lib/session";
 
 export type HabitResult = { ok: true } | { ok: false; error: string };
 
 const DAY = /^\d{4}-\d{2}-\d{2}$/;
-const PAGE_ID = /^[0-9a-f]{8}-?[0-9a-f]{4}-?[0-9a-f]{4}-?[0-9a-f]{4}-?[0-9a-f]{12}$/i;
-const WRITE_FAILED = "Không ghi được lên Notion, thử lại sau.";
+const PAGE_ID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+const WRITE_FAILED = "Không lưu được, thử lại sau.";
 
 async function guard(): Promise<HabitResult | null> {
   if (!(await isSignedIn())) return { ok: false, error: SESSION_EXPIRED };
-  if (!process.env.NOTION_HABITS_DB) return { ok: false, error: "Chưa kết nối database Habits (NOTION_HABITS_DB)." };
   return null;
 }
 
@@ -32,12 +31,13 @@ export async function setDayHabitsAction(day: string, names: string[]): Promise<
   const clean = [...new Set(names)].filter((n) => typeof n === "string" && allowed.has(n));
 
   try {
-    await setDayHabits(day, clean);
+    const { db, userId } = await dbScope();
+    await setDayHabits(db, userId, day, clean);
   } catch (e) {
     console.error("setDayHabits failed:", e instanceof Error ? e.message : e);
     return { ok: false, error: WRITE_FAILED };
   }
-  updateTag(TAGS.daily);
+  refreshData();
   return { ok: true };
 }
 
@@ -48,19 +48,19 @@ export async function addHabitAction(month: string, rawName: string): Promise<Ha
   if (!isMonthKey(month)) return { ok: false, error: "Tháng không hợp lệ." };
   if (!name) return { ok: false, error: "Nhập tên thói quen." };
   if (name.length > MAX_HABIT_NAME) return { ok: false, error: `Tên tối đa ${MAX_HABIT_NAME} ký tự.` };
-  if (name.includes(",")) return { ok: false, error: "Tên không được có dấu phẩy (Notion dùng dấu phẩy để tách lựa chọn)." };
 
   const habits = (await getHabits()).data;
   if (habitsForMonth(habits, month).some((h) => h.name.toLowerCase() === name.toLowerCase())) {
     return { ok: false, error: "Thói quen này đã có trong tháng." };
   }
   try {
-    await createHabit(name, `${month}-01`, Math.max(0, ...habits.map((h) => h.order)) + 1);
+    const { db, userId } = await dbScope();
+    await createHabit(db, userId, name, `${month}-01`, Math.max(0, ...habits.map((h) => h.order)) + 1);
   } catch (e) {
     console.error("createHabit failed:", e instanceof Error ? e.message : e);
     return { ok: false, error: WRITE_FAILED };
   }
-  updateTag(TAGS.habits);
+  refreshData();
   return { ok: true };
 }
 
@@ -80,12 +80,13 @@ export async function moveHabitAction(month: string, id: string, direction: -1 |
   const next = [...list];
   [next[i], next[j]] = [next[j], next[i]];
   try {
-    await Promise.all(next.flatMap((h, k) => (h.order === k + 1 ? [] : [setHabitOrder(h.id, k + 1)])));
+    const { db, userId } = await dbScope();
+    await Promise.all(next.flatMap((h, k) => (h.order === k + 1 ? [] : [setHabitOrder(db, userId, h.id, k + 1)])));
   } catch (e) {
     console.error("moveHabit failed:", e instanceof Error ? e.message : e);
     return { ok: false, error: WRITE_FAILED };
   }
-  updateTag(TAGS.habits);
+  refreshData();
   return { ok: true };
 }
 
@@ -102,11 +103,12 @@ export async function stopHabitAction(month: string, id: string): Promise<HabitR
   if (monthOf(habit.from) > month) return { ok: false, error: "Thói quen này chưa bắt đầu." };
 
   try {
-    await setHabitEnd(id, `${month}-01`);
+    const { db, userId } = await dbScope();
+    await setHabitEnd(db, userId, id, `${month}-01`);
   } catch (e) {
     console.error("stopHabit failed:", e instanceof Error ? e.message : e);
     return { ok: false, error: WRITE_FAILED };
   }
-  updateTag(TAGS.habits);
+  refreshData();
   return { ok: true };
 }

@@ -8,7 +8,19 @@ export function LoginForm() {
 
   return (
     <form action={action} className="flex flex-col gap-3">
-      <label htmlFor="password" className="text-sm text-muted-foreground">
+      <label htmlFor="email" className="text-sm text-muted-foreground">
+        Email
+      </label>
+      <input
+        id="email"
+        name="email"
+        type="email"
+        required
+        autoFocus
+        autoComplete="username"
+        className="rounded-lg border border-line bg-background px-3 py-2 outline-none focus:border-primary"
+      />
+      <label htmlFor="password" className="mt-1 text-sm text-muted-foreground">
         Mật khẩu
       </label>
       <input
@@ -16,7 +28,6 @@ export function LoginForm() {
         name="password"
         type="password"
         required
-        autoFocus
         autoComplete="current-password"
         className="rounded-lg border border-line bg-background px-3 py-2 outline-none focus:border-primary"
       />

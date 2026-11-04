@@ -7,7 +7,6 @@ import {
   BrainIcon,
   LayoutDashboardIcon,
   ListChecksIcon,
-  NetworkIcon,
   SunIcon,
   TargetIcon,
   type LucideIcon,
@@ -28,10 +27,9 @@ import {
 import { daysBetween, longDateVN, todayVN } from "@/lib/date";
 import { ThemeToggle } from "./theme-toggle";
 
-// Dashboard đứng đầu (Trung chốt 26/10/2026); trang chủ `/` vẫn là Brain (SPEC-v0.2 mục 2)
+// Dashboard đứng đầu (Trung chốt 26/10/2026); Brain tạm ẩn ở v1.0 (SPEC-v1.0 mục 7), `/` chuyển sang Today
 export const NAV: readonly { href: string; label: string; icon: LucideIcon }[] = [
   { href: "/dashboard", label: "Dashboard", icon: LayoutDashboardIcon },
-  { href: "/", label: "Brain", icon: NetworkIcon },
   { href: "/today", label: "Today", icon: SunIcon },
   { href: "/tasks", label: "Tasks", icon: ListChecksIcon },
   { href: "/goals", label: "Goal", icon: TargetIcon },

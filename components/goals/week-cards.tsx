@@ -1,5 +1,6 @@
 "use client";
 
+import { MaybeLink } from "@/components/tasks/maybe-link";
 import { useState } from "react";
 import { ChevronDownIcon } from "lucide-react";
 import { Empty } from "@/components/card";
@@ -79,14 +80,12 @@ export function WeekCards({ weekStart, today, tasks: initial, logs }: { weekStar
                         <li key={t.id} className="space-y-1">
                           <div className="flex gap-2">
                             <TaskCheckbox task={t} onComplete={complete} />
-                            <a
+                            <MaybeLink
                               href={t.url}
-                              target="_blank"
-                              rel="noopener noreferrer"
                               className={`min-w-0 break-words hover:text-primary ${done ? "text-muted-foreground line-through" : ""}`}
                             >
                               {t.title || "(Chưa đặt tên)"}
-                            </a>
+                            </MaybeLink>
                           </div>
                           {!done && (
                             <div className="flex flex-wrap items-center gap-1.5 pl-6">

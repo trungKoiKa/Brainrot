@@ -1,28 +1,6 @@
-import { Suspense } from "react";
-import { connection } from "next/server";
-import { BrainView } from "@/components/brain/brain-view";
-import { PageHeader } from "@/components/page-header";
-import { StaleBanner } from "@/components/stale-banner";
-import { getBrainGraph } from "@/lib/notion/graph";
+import { redirect } from "next/navigation";
 
-export default function BrainPage() {
-  return (
-    <div className="mx-auto max-w-6xl">
-      <PageHeader title="Brain" subtitle="Bản đồ kiến thức và dự án." />
-      <Suspense fallback={<div className="h-[72vh] min-h-96 animate-pulse rounded-2xl border border-line bg-surface" />}>
-        <BrainContent />
-      </Suspense>
-    </div>
-  );
-}
-
-async function BrainContent() {
-  await connection(); // không gọi Notion lúc build
-  const { stale, ...graph } = await getBrainGraph();
-  return (
-    <>
-      <StaleBanner show={stale} />
-      <BrainView data={graph} />
-    </>
-  );
+// v1.0 đợt 1: chưa có Knowledge nên Brain tạm ẩn (SPEC-v1.0 mục 7); quay lại ở v1.1. Component BrainView còn nguyên.
+export default function HomePage() {
+  redirect("/today");
 }

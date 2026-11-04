@@ -2,7 +2,7 @@ import { Suspense } from "react";
 import Link from "next/link";
 import { connection } from "next/server";
 import { ChevronLeftIcon, ChevronRightIcon } from "lucide-react";
-import { Card, Empty } from "@/components/card";
+import { Card } from "@/components/card";
 import { GoalPanel } from "@/components/goals/goal-panel";
 import { ReflectionForm } from "@/components/goals/reflection-form";
 import { PeriodBars, type PeriodBar } from "@/components/goals/period-bars";
@@ -14,9 +14,8 @@ import { StaleBanner } from "@/components/stale-banner";
 import { todayVN } from "@/lib/date";
 import { goalCounts, goalsOf, type Goal } from "@/lib/goals";
 import { doneHabits } from "@/lib/habits";
-import { anyStale, getDailyLogsBetween, getGoals, getHabits, getReflections, getTasks } from "@/lib/notion/data";
-import { resolveGoals } from "@/lib/notion/goal-status";
-import { goalsConfigured, habitsConfigured, reflectionsConfigured } from "@/lib/notion/queries";
+import { anyStale, getDailyLogsBetween, getGoals, getHabits, getReflections, getTasks } from "@/lib/db/data";
+import { resolveGoals } from "@/lib/db/goal-status";
 import { previousFocus, reflectionOf } from "@/lib/reflections";
 import {
   childPeriods,
@@ -120,7 +119,6 @@ async function GoalsContent({ searchParams }: Pick<PageProps<"/goals">, "searchP
         </nav>
       </div>
 
-      {goalsConfigured() ? (
         <div className={`grid gap-5 ${children.length ? "lg:grid-cols-5" : ""}`}>
           <Card title={`Mục tiêu ${LEVEL_LABEL[level].toLowerCase()}`} className={children.length ? "lg:col-span-3" : ""}>
             {prevFocus && (
@@ -151,13 +149,8 @@ async function GoalsContent({ searchParams }: Pick<PageProps<"/goals">, "searchP
             </Card>
           )}
         </div>
-      ) : (
-        <Card title="Goal">
-          <Empty>Chưa kết nối database Goals — thêm biến môi trường NOTION_GOALS_DB.</Empty>
-        </Card>
-      )}
 
-      {goalsConfigured() && (level === "year" || level === "quarter") && (
+      {(level === "year" || level === "quarter") && (
         <div className={`grid gap-5 sm:grid-cols-2 ${level === "year" ? "xl:grid-cols-4" : "lg:grid-cols-3"}`}>
           {children
             .filter((p) => p.level === (level === "year" ? "quarter" : "month"))
@@ -173,8 +166,7 @@ async function GoalsContent({ searchParams }: Pick<PageProps<"/goals">, "searchP
         </Card>
       )}
 
-      {level === "month" &&
-        (habitsConfigured() && logs ? (
+      {level === "month" && logs && (
           <HabitMonth
             key={period.key}
             month={period.key}
@@ -182,19 +174,11 @@ async function GoalsContent({ searchParams }: Pick<PageProps<"/goals">, "searchP
             habits={habits.data}
             doneByDay={Object.fromEntries(logs.data.flatMap((l) => (l.date ? [[l.date, doneHabits(l)]] : [])))}
           />
-        ) : (
-          <Card title="Thói quen">
-            <Empty>Chưa kết nối database Habits — thêm biến môi trường NOTION_HABITS_DB.</Empty>
-          </Card>
-        ))}
+        )}
 
       <Card title={`Nhìn lại ${LEVEL_LABEL[level].toLowerCase()}`}>
-        {reflectionsConfigured() ? (
-          // key theo kỳ + bản ghi → đổi kỳ / dữ liệu mới thì form nạp lại
-          <ReflectionForm key={`${period.key}|${reflection?.id ?? "new"}`} level={level} periodKey={period.key} initial={reflection} />
-        ) : (
-          <Empty>Chưa kết nối database Reflections — thêm biến môi trường NOTION_REFLECTIONS_DB.</Empty>
-        )}
+        {/* key theo kỳ + bản ghi → đổi kỳ / dữ liệu mới thì form nạp lại */}
+        <ReflectionForm key={`${period.key}|${reflection?.id ?? "new"}`} level={level} periodKey={period.key} initial={reflection} />
       </Card>
     </div>
   );
