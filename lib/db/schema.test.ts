@@ -13,12 +13,12 @@ beforeAll(async () => {
 afterAll(() => close());
 
 describe("migration", () => {
-  it("tạo sẵn user mặc định và dự án Chung", async () => {
+  it("tạo sẵn user mặc định và các dự án", async () => {
     const [user] = await db.select().from(users).where(eq(users.id, DEFAULT_USER_ID));
     expect(user?.name).toBe("Trung");
     expect(user?.googleSub).toBeNull();
     const rows = await db.select().from(projects).where(eq(projects.userId, DEFAULT_USER_ID));
-    expect(rows.map((p) => p.name)).toEqual(["Chung"]);
+    expect(rows.map((p) => p.name).sort()).toEqual(["Chung", "Học AI", "Sản phẩm", "Thực tập", "Đồ án"].sort());
   });
 });
 

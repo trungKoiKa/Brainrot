@@ -1,5 +1,6 @@
 "use client";
 
+import { MaybeLink } from "@/components/tasks/maybe-link";
 import { Empty } from "@/components/card";
 import { Badge } from "@/components/reui/badge";
 import { addDays, formatDay, weekdayShort } from "@/lib/date";
@@ -16,14 +17,12 @@ function Row({ task, onComplete, children }: { task: Task; onComplete: (t: Task)
     <li className="flex items-start gap-3 py-2 first:pt-0 last:pb-0">
       <TaskCheckbox task={task} onComplete={onComplete} />
       <div className="min-w-0 flex-1">
-        <a
+        <MaybeLink
           href={task.url}
-          target="_blank"
-          rel="noopener noreferrer"
           className={`break-words hover:text-primary ${done ? "text-muted-foreground line-through" : ""}`}
         >
           {task.title || "(Chưa đặt tên)"}
-        </a>
+        </MaybeLink>
         {task.project && <span className="ml-2 text-xs text-muted-foreground">{task.project}</span>}
       </div>
       {children}

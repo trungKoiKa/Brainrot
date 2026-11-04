@@ -4,17 +4,17 @@ import { connection } from "next/server";
 import { Card, Empty } from "@/components/card";
 import { FieldBadge } from "@/components/field-badge";
 import { PageHeader } from "@/components/page-header";
+import { MaybeLink } from "@/components/tasks/maybe-link";
 import { TodayPlan, TomorrowPicker } from "@/components/tasks/today-plan";
 import { QuickCapture } from "@/components/quick-capture";
 import { HabitToday } from "@/components/habits/habit-today";
 import { doneHabits, habitsForMonth } from "@/lib/habits";
-import { habitsConfigured } from "@/lib/notion/queries";
 import { monthOf, periodOf } from "@/lib/period";
 import { daysBetween, formatDay, greetingVN, longDateVN, todayVN } from "@/lib/date";
 import { calendarEvents, type CalendarResult } from "@/lib/calendar/google";
 import { pickNextUp, timeRange } from "@/lib/next-up";
-import { anyStale, getGoals, getHabits, getKnowledge, getRecentDailyLogs, getTasks } from "@/lib/notion/data";
-import { resolveGoals } from "@/lib/notion/goal-status";
+import { anyStale, getGoals, getHabits, getKnowledge, getRecentDailyLogs, getTasks } from "@/lib/db/data";
+import { resolveGoals } from "@/lib/db/goal-status";
 import { isGoalDone, type Goal } from "@/lib/goals";
 import { StaleBanner } from "@/components/stale-banner";
 import type { DailyLog, Knowledge, Task } from "@/lib/notion/types";
@@ -36,7 +36,7 @@ export default function TodayPage() {
 }
 
 async function TodayContent() {
-  // Ngày giờ thay đổi theo request → render lúc request; dữ liệu Notion vẫn lấy từ cache 5 phút
+  // Ngày giờ thay đổi theo request → render lúc request; dữ liệu đọc thẳng từ database
   await connection();
   const now = new Date();
   const today = todayVN(now);
@@ -66,18 +66,16 @@ async function TodayContent() {
         <NextUpCard calendar={calendar} now={now} today={today} />
         <DeadlinesCard items={upcomingDeadlines(today, tasks)} />
         <KnowledgeCard notes={latestKnowledge(knowledge)} />
-        {habitsConfigured() && (
-          <Card title="Thói quen hôm nay" className="lg:col-span-2">
-            <HabitToday
-              habits={habitsForMonth(habitsLoaded.data, monthOf(today)).map((h) => h.name)}
-              done={todayLog ? doneHabits(todayLog) : []}
-              today={today}
-            />
-          </Card>
-        )}
+        <Card title="Thói quen hôm nay" className="lg:col-span-2">
+          <HabitToday
+            habits={habitsForMonth(habitsLoaded.data, monthOf(today)).map((h) => h.name)}
+            done={todayLog ? doneHabits(todayLog) : []}
+            today={today}
+          />
+        </Card>
         <Card title="Ghi nhanh" className="lg:col-span-2">
           <div className="space-y-6">
-            <QuickCapture todayLog={todayLog} showExercise={!habitsConfigured()} />
+            <QuickCapture todayLog={todayLog} showExercise={false} />
             <TomorrowPicker today={today} tasks={tasks} />
           </div>
         </Card>
@@ -253,10 +251,10 @@ function KnowledgeCard({ notes }: { notes: Knowledge[] }) {
 
 function TaskLink({ task, className = "" }: { task: Task; className?: string }) {
   return (
-    <ExternalLink href={task.url} className={`hover:text-primary ${className}`}>
+    <MaybeLink href={task.url} className={`hover:text-primary ${className}`}>
       {task.title || "(Chưa đặt tên)"}
       {task.project && <span className="ml-2 text-xs text-muted-foreground">{task.project}</span>}
-    </ExternalLink>
+    </MaybeLink>
   );
 }
 
@@ -271,7 +269,7 @@ function ExternalLink({ href, className, children }: { href: string; className?:
 function TodaySkeleton() {
   return (
     <>
-      <PageHeader title="Today" subtitle="Đang tải từ Notion…" />
+      <PageHeader title="Today" subtitle="Đang tải…" />
       <div className="grid gap-5 lg:grid-cols-2">
         {[0, 1, 2, 3, 4].map((i) => (
           <div

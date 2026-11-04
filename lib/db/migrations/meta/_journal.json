@@ -15,6 +15,13 @@
       "when": 1793118881824,
       "tag": "0001_default_user",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1793834577655,
+      "tag": "0002_password_and_goal_trash",
+      "breakpoints": true
     }
   ]
 }

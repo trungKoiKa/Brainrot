@@ -23,6 +23,8 @@ export const users = pgTable("users", {
   email: text("email").unique(),
   name: text("name").notNull().default(""),
   avatarUrl: text("avatar_url"),
+  /** scrypt: `scrypt$<salt>$<hash>` (lib/password.ts). Null → chưa đặt mật khẩu, không đăng nhập được */
+  passwordHash: text("password_hash"),
   /** Thẻ đếm ngược ở Dashboard; null → ẩn thẻ */
   targetDate: date("target_date"),
   targetLabel: text("target_label").notNull().default(""),
@@ -101,6 +103,8 @@ export const goals = pgTable(
     habitId: uuid("habit_id").references(() => habits.id, { onDelete: "set null" }),
     /** "Ngưỡng %" để thói quen làm goal tự xong */
     threshold: integer("threshold"),
+    /** Xóa mềm: "Xóa" có nút Hoàn tác 5 giây (như Trash của Notion) */
+    deletedAt: timestamp("deleted_at", { withTimezone: true }),
     createdAt: createdAt(),
   },
   (t) => [index("goals_user_level_idx").on(t.userId, t.level, t.start)],
