@@ -47,7 +47,8 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
 > (26/10/2026, tag `v0.4.0`), plan `docs/plans/active/v0.4.md` chờ Trung test.
 > **v0.5 (Một kho việc, bỏ Planner)**: `SPEC-v0.5.md` đã duyệt, code xong 5 bước (26/10/2026,
 > tag `v0.5.0`), plan `docs/plans/active/v0.5.md` chờ Trung test. Planner đã gỡ; Notion Tasks là kho việc duy nhất.
-> **v1.0 (Nhiều người dùng, bỏ Notion)**: `SPEC-v1.0.md` đã duyệt 27/10/2026, làm trên nhánh `v1`, plan `docs/plans/active/v1.0.md`.
+> **v1.0 (Postgres, bỏ Notion)**: `SPEC-v1.0.md` đã duyệt 27/10/2026, **lên production 05/11/2026** (tag `v1.0.0`),
+> đăng nhập email + mật khẩu. Plan `docs/plans/active/v1.0.md`; còn bước 5 (Google, bạn bè) khi Trung mở cho người khác.
 > Yêu cầu mới → ghi vào "Follow-ups" của plan đang chạy, chốt SPEC trước khi code.
 
 ## Thứ tự ưu tiên khi hướng dẫn mâu thuẫn
@@ -63,7 +64,7 @@ Harness tự nói repo sở hữu quy trình riêng, nên khi lệch nhau thì q
 
 - **Sản phẩm:** nguồn sự thật là `SPEC.md` ở gốc repo. Không tách SPEC ra `docs/product/` ở v0.1.
 - **Quyết định thiết kế/sản phẩm** Trung đã chốt → cập nhật thẳng vào `SPEC.md` (SPEC yêu cầu vậy).
-  `docs/decisions/` chỉ dùng cho quyết định kỹ thuật lâu dài (ví dụ cách gọi Notion API), dùng template `docs/templates/decision.md`.
+  `docs/decisions/` chỉ dùng cho quyết định kỹ thuật lâu dài (ví dụ cách tổ chức database), dùng template `docs/templates/decision.md`.
 - **Plan:** v0.1, v0.2 ở `docs/plans/completed/`. Phiên bản mới → plan mới trong `docs/plans/active/`, cập nhật sau mỗi bước.
 - **Bằng chứng từ v0.2:** thêm `npm test` (vitest) và ảnh chụp thật 1440×900 ở 2 theme cho mọi thay đổi giao diện.
 - **Bằng chứng hoàn thành (proof):** `npm run build` + `npm run lint` không lỗi, và Trung test tay theo
@@ -93,13 +94,15 @@ Trung không muốn tự viết code ở dự án này: agent viết, Trung revi
 
 ## Stack
 
-Next.js (App Router) + TypeScript (strict) · Tailwind CSS · @notionhq/client · react-force-graph-3d · Vercel
+Next.js (App Router) + TypeScript (strict) · Tailwind CSS · Drizzle ORM + Neon Postgres · react-force-graph-3d · Vercel
 
 ## Quy tắc code
 
-- Mọi lời gọi Notion nằm trong `lib/notion/` (server-only). Component không gọi Notion trực tiếp.
-- Đọc ID database và secret từ biến môi trường; không hard-code.
-- Cache đọc 5 phút; sau khi ghi (tích xong) thì revalidate.
+- Mọi truy vấn database nằm trong `lib/db/` (server-only). Component không gọi database trực tiếp.
+- Mọi hàm `lib/db/` nhận `userId` (lấy từ cookie đã ký, không bao giờ từ form/URL) và lọc theo nó; sửa schema thì
+  `npm run db:generate` rồi commit migration.
+- Đọc secret (`DATABASE_URL`, `AUTH_SECRET`…) từ biến môi trường; không hard-code.
+- Không cache dữ liệu dùng chung; sau khi ghi thì `refreshData()` (`lib/db/revalidate.ts`).
 - Graph 3D: dynamic import, `ssr: false`.
 - Màu dùng CSS variables cho cả theme sáng và tối; không hard-code màu trong component.
 - Ngày giờ tính theo múi giờ Asia/Ho_Chi_Minh.
@@ -109,7 +112,7 @@ Next.js (App Router) + TypeScript (strict) · Tailwind CSS · @notionhq/client �
 
 - Không bao giờ commit `.env.local`, token, mật khẩu. Kiểm tra `.gitignore` trước mỗi commit.
 - Không in token/secret ra log hay ra màn hình.
-- Trung tự tạo Notion token và tự điền biến môi trường trên Vercel; agent chỉ hướng dẫn.
+- Trung tự điền biến môi trường trên Vercel và tự gõ mật khẩu (`npm run user:password`); agent chỉ hướng dẫn.
 
 ## Quy trình
 

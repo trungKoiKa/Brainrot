@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { doneHabits, habitsForMonth, monthStats, streaks, toggleHabit } from "./habits";
-import type { Habit } from "./notion/types";
+import type { Habit } from "./types";
 import { daysOfMonth, shiftMonth, weeksOfMonth } from "./period";
 
 const habit = (name: string, o: Partial<Habit> = {}): Habit => ({

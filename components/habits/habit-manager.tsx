@@ -7,13 +7,13 @@ import { addHabitAction, moveHabitAction, stopHabitAction, type HabitResult } fr
 import { fieldClass, primaryButtonClass } from "@/components/form-bits";
 import { ErrorNotice } from "@/components/tasks/task-row";
 import { MAX_HABIT_NAME } from "@/lib/habits";
-import type { Habit } from "@/lib/notion/types";
+import type { Habit } from "@/lib/types";
 import { monthLabel, monthOf, shiftMonth } from "@/lib/period";
 
 const iconButton =
   "flex size-7 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-surface-muted hover:text-foreground disabled:opacity-30 disabled:hover:bg-transparent";
 
-/** Thêm / sắp xếp / ngừng thói quen của tháng đang xem (SPEC-v0.4 3.3). Đổi tên làm trong Notion (xem SPEC). */
+/** Thêm / sắp xếp / ngừng thói quen của tháng đang xem (SPEC-v0.4 3.3). */
 export function HabitManager({ month, habits }: { month: string; habits: Habit[] }) {
   const router = useRouter();
   const [name, setName] = useState("");

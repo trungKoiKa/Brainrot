@@ -1,4 +1,4 @@
-// Kiểu dữ liệu đã chuẩn hóa từ Notion (schema ở mục 4 SPEC). Chỉ dùng giá trị thuần để cache được.
+// Kiểu dữ liệu dùng chung giữa lớp dữ liệu (lib/db) và giao diện. Chỉ giá trị thuần.
 
 export type TaskStatus = "Chưa làm" | "Đang làm" | "Xong";
 export type Priority = "Cao" | "Vừa" | "Thấp";
@@ -17,7 +17,7 @@ export type Task = {
   plannedOn: string | null;
   /** Ngày đánh dấu Xong (YYYY-MM-DD), từ v0.3; task xong trước đó để trống */
   doneOn: string | null;
-  /** ISO, Notion tự đặt */
+  /** ISO, lúc tạo */
   createdTime: string;
   /** Relation "Mục tiêu" (Goals, từ v0.4) */
   goalIds: string[];

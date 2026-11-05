@@ -2,7 +2,7 @@
 
 import { useOptimistic, useState, useTransition } from "react";
 import { completeTask } from "@/app/actions/tasks";
-import type { Task } from "@/lib/notion/types";
+import type { Task } from "@/lib/types";
 
 /**
  * Tích "xong": đổi UI ngay (optimistic), gọi Server Action, rồi Next tải lại dữ liệu mới.

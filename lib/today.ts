@@ -1,6 +1,6 @@
 // Quy tắc của trang Today (SPEC 7.1). Hàm thuần, không gọi Notion → dễ kiểm tra.
 import { addDays, daysBetween } from "./date";
-import type { Knowledge, Priority, Task } from "./notion/types";
+import type { Knowledge, Priority, Task } from "./types";
 
 const PRIORITY_RANK: Record<Priority, number> = { Cao: 0, Vừa: 1, Thấp: 2 };
 

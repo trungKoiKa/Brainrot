@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { compareTasks } from "@/lib/today";
-import type { Priority, Task } from "@/lib/notion/types";
+import type { Priority, Task } from "@/lib/types";
 import { PRIORITIES } from "@/lib/task-form";
 import { EditTaskForm, NewTaskForm, type GoalOption } from "./task-forms";
 import { ErrorNotice, TaskRow } from "./task-row";

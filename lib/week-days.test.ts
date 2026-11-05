@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import type { DailyLog, Task } from "./notion/types";
+import type { DailyLog, Task } from "./types";
 import { tasksOnDay, weekDayCards } from "./week-days";
 
 const task = (id: string, over: Partial<Task>): Task => ({
