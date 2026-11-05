@@ -2,7 +2,7 @@
 
 import { useOptimistic, useState, useTransition } from "react";
 import { completeTask, planTaskAction } from "@/app/actions/tasks";
-import type { Task } from "@/lib/notion/types";
+import type { Task } from "@/lib/types";
 
 type Patch = { id: string; status?: "Xong"; plannedOn?: string | null };
 

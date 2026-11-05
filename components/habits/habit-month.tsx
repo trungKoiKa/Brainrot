@@ -6,7 +6,7 @@ import { Card } from "@/components/card";
 import { ErrorNotice } from "@/components/tasks/task-row";
 import { Progress } from "@/components/ui/progress";
 import { monthStats } from "@/lib/habits";
-import type { Habit } from "@/lib/notion/types";
+import type { Habit } from "@/lib/types";
 import { HabitManager } from "./habit-manager";
 import { useHabitDays } from "./use-habit-days";
 

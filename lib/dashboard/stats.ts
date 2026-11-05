@@ -2,7 +2,7 @@
 import { addDays, daysBetween, mondayOf } from "@/lib/date";
 import { isHabitActive, streaks } from "@/lib/habits";
 import type { Goal } from "@/lib/goals";
-import type { Habit, TaskStatus } from "@/lib/notion/types";
+import type { Habit, TaskStatus } from "@/lib/types";
 import { monthOf } from "@/lib/period";
 
 export type Period = 7 | 30 | 90;

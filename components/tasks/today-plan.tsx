@@ -4,7 +4,7 @@ import { MaybeLink } from "@/components/tasks/maybe-link";
 import { Empty } from "@/components/card";
 import { Badge } from "@/components/reui/badge";
 import { addDays, formatDay, weekdayShort } from "@/lib/date";
-import type { Task } from "@/lib/notion/types";
+import type { Task } from "@/lib/types";
 import { planToday, tomorrowCandidates } from "@/lib/today";
 import { ErrorNotice, TaskCheckbox } from "./task-row";
 import { usePlanTasks } from "./use-plan-tasks";

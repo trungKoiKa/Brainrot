@@ -8,14 +8,14 @@ import { Badge } from "@/components/reui/badge";
 import { ErrorNotice, TaskCheckbox } from "@/components/tasks/task-row";
 import { usePlanTasks } from "@/components/tasks/use-plan-tasks";
 import { addDays, formatDay } from "@/lib/date";
-import type { DailyLog, Task } from "@/lib/notion/types";
+import type { DailyLog, Task } from "@/lib/types";
 import { weekDayCards } from "@/lib/week-days";
 
 const WEEKDAY = ["Thứ Hai", "Thứ Ba", "Thứ Tư", "Thứ Năm", "Thứ Sáu", "Thứ Bảy", "Chủ nhật"];
 const SHORT = ["T2", "T3", "T4", "T5", "T6", "T7", "CN"];
 
 /**
- * 7 thẻ ngày (SPEC-v0.5 4.3): task Notion theo Ngày làm / Ngày xong / Hạn + Daily Log của tuần đang xem.
+ * 7 thẻ ngày (SPEC-v0.5 4.3): task theo Ngày làm / Ngày xong / Hạn + Daily Log của tuần đang xem.
  * Tích xong và "Dời sang…" (đổi Ngày làm) ngay trên thẻ.
  */
 export function WeekCards({ weekStart, today, tasks: initial, logs }: { weekStart: string; today: string; tasks: Task[]; logs: DailyLog[] }) {

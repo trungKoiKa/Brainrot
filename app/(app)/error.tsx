@@ -3,7 +3,7 @@
 import { useEffect } from "react";
 import { Card } from "@/components/card";
 
-// Notion lỗi mà chưa có bản cũ nào để hiển thị (vd. vừa khởi động server) → trang này, sidebar vẫn còn.
+// Đọc database lỗi → trang này, sidebar vẫn còn.
 export default function AppError({ error, retry }: { error: unknown; retry: () => void }) {
   useEffect(() => {
     console.error(error);
@@ -13,8 +13,7 @@ export default function AppError({ error, retry }: { error: unknown; retry: () =
     <div className="mx-auto max-w-2xl pt-10">
       <Card title="Không lấy được dữ liệu">
         <p className="text-sm text-muted-foreground">
-          Web chưa kết nối được Notion và chưa có bản dữ liệu cũ để hiển thị. Có thể Notion đang lỗi, mạng chập chờn,
-          hoặc token / quyền Connections của integration có vấn đề.
+          Web chưa đọc được database. Có thể mạng chập chờn hoặc database đang tạm ngừng; thử lại sau vài giây.
         </p>
         <button
           type="button"

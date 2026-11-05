@@ -17,7 +17,7 @@ export function BrainView({ data, className = "h-[72vh] min-h-96 rounded-2xl" }:
       <BrainGraph data={data} />
       {empty && (
         <p className="pointer-events-none absolute inset-x-0 top-1/2 -translate-y-1/2 px-6 text-center text-sm text-muted-foreground">
-          Chưa có trang kiến thức nào. Thêm trang vào database Knowledge trong Notion, đồ thị sẽ hiện node ở đây.
+          Chưa có trang kiến thức nào. Đồ thị sẽ hiện node khi có kiến thức.
         </p>
       )}
     </div>

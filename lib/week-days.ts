@@ -1,6 +1,6 @@
 // Thẻ ngày của chế độ Tuần (SPEC-v0.5 4.3). Hàm thuần: chỉ gom dữ liệu đã có, không ghi gì.
 import { addDays } from "./date";
-import type { DailyLog, Task } from "./notion/types";
+import type { DailyLog, Task } from "./types";
 
 export type DayTask = Task & { /** chỉ có mặt vì Hạn rơi vào ngày này */ dueOnly: boolean };
 export type DayCardData = {

@@ -2,7 +2,7 @@
 
 import { useActionState, useState } from "react";
 import { createTaskAction, updateTaskAction, type TaskFormState } from "@/app/actions/tasks";
-import type { Task } from "@/lib/notion/types";
+import type { Task } from "@/lib/types";
 import { EDITABLE_STATUSES, PRIORITIES } from "@/lib/task-form";
 import { Status, fieldClass, primaryButtonClass } from "../form-bits";
 import { DeadlineField } from "./deadline-field";
@@ -100,7 +100,7 @@ export function EditTaskForm({
     deadline: task.deadline ?? "",
     plannedOn: task.plannedOn ?? "",
     note: task.note,
-    // Form chỉ gắn 1 mục tiêu; task gắn nhiều mục tiêu (sửa trong Notion) thì giữ cái đầu
+    // Form chỉ gắn 1 mục tiêu; task gắn nhiều mục tiêu thì giữ cái đầu
     goal: task.goalIds[0] ?? "",
   });
   // Chỉ mục tiêu đang mở + mục tiêu task đang gắn (để mở form không làm mất liên kết cũ)

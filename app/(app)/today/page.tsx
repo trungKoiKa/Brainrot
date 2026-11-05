@@ -17,7 +17,7 @@ import { anyStale, getGoals, getHabits, getKnowledge, getRecentDailyLogs, getTas
 import { resolveGoals } from "@/lib/db/goal-status";
 import { isGoalDone, type Goal } from "@/lib/goals";
 import { StaleBanner } from "@/components/stale-banner";
-import type { DailyLog, Knowledge, Task } from "@/lib/notion/types";
+import type { DailyLog, Knowledge, Task } from "@/lib/types";
 import {
   deadlineLabel,
   latestKnowledge,
