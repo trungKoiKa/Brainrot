@@ -97,8 +97,7 @@ export function HabitManager({ month, habits }: { month: string; habits: Habit[]
         })}
       </ul>
       <p className="mt-3 text-xs text-muted-foreground">
-        Thói quen tự sang tháng sau cho tới khi ngừng. Đổi tên: sửa trong Notion ở cả database Habits và lựa chọn của cột
-        “Thói quen” (Daily Log) để giữ lịch sử.
+        Thói quen tự sang tháng sau cho tới khi ngừng.
       </p>
     </div>
   );
