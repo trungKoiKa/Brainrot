@@ -100,6 +100,7 @@ export async function trashGoalAction(id: string, trashed: boolean): Promise<Goa
     console.error("trashGoal failed:", e instanceof Error ? e.message : e);
     return { ok: false, error: WRITE_FAILED };
   }
-  refreshData();
+  // Cố ý KHÔNG refreshData(): panel đã cập nhật lạc quan, mà tải lại trang làm đổi key của panel
+  // (goal-panel dựng lại) → mất nút Hoàn tác 5 giây. Trang khác đọc lại dữ liệu khi được mở.
   return { ok: true };
 }
