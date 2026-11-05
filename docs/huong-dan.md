@@ -148,6 +148,6 @@ database — chỉ tính lúc hiển thị.
 | Hỏi | Đáp |
 |---|---|
 | Không đặt Ngày làm thì task ở đâu? | Ở Tasks; lên Today khi Deadline là hôm nay hoặc khi được gợi ý lúc "Hôm nay làm" trống. |
-| Xóa task thế nào? | Chưa có nút xóa (v1.0); task không cần nữa thì tích Xong. |
+| Xóa task thế nào? | Ở Tasks, bấm icon thùng rác cuối dòng → **Xóa** để xác nhận. Xóa hẳn, không hoàn tác. |
 | Planner đâu rồi? | Bỏ từ v0.5; `/planner` tự chuyển sang Goal → Tuần. Xếp việc theo ngày bằng **Ngày làm**. |
 | Đổi máy / điện thoại có mất dữ liệu không? | Không — mọi dữ liệu nằm trong database (Neon), theo tài khoản. Chỉ lựa chọn giao diện (sáng/tối, Thật/Mẫu, kỳ) lưu theo trình duyệt. |

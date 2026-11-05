@@ -5,6 +5,7 @@ import {
   createHabit,
   createIdea,
   createTask,
+  deleteTask,
   markTaskDone,
   saveDailyLog,
   saveReflection,
@@ -81,6 +82,23 @@ describe("tasks", () => {
   });
 });
 
+describe("xóa task", () => {
+  it("xóa hẳn task của mình, gỡ liên kết mục tiêu, không đụng task khác", async () => {
+    await createTask(db, ME, input("Sẽ xóa"));
+    await createTask(db, ME, input("Giữ lại"));
+    const target = (await listTasks(db, ME)).find((t) => t.title === "Sẽ xóa")!;
+    const goalId = await createGoal(db, ME, "month", "2026-11-01", "Mục tiêu có task", "Thường");
+    await updateTask(db, ME, target.id, update("Sẽ xóa", { goalId }));
+
+    await deleteTask(db, ME, target.id);
+    const titles = (await listTasks(db, ME)).map((t) => t.title);
+    expect(titles).not.toContain("Sẽ xóa");
+    expect(titles).toContain("Giữ lại");
+    expect((await listGoals(db, ME)).find((g) => g.id === goalId)?.taskIds).toEqual([]);
+    await expect(deleteTask(db, ME, target.id)).rejects.toThrow();
+  });
+});
+
 describe("cách ly giữa người dùng", () => {
   it("không đọc được task / goal / thói quen / log của nhau", async () => {
     await createTask(db, other, input("Việc riêng của bạn"));
@@ -100,6 +118,7 @@ describe("cách ly giữa người dùng", () => {
     await expect(markTaskDone(db, ME, theirs.id)).rejects.toThrow();
     await expect(setTaskPlannedOn(db, ME, theirs.id, "2026-11-01")).rejects.toThrow();
     await expect(updateTask(db, ME, theirs.id, update("Chiếm đoạt"))).rejects.toThrow();
+    await expect(deleteTask(db, ME, theirs.id)).rejects.toThrow();
     expect((await listTasks(db, other))[0]).toMatchObject({ title: "Việc riêng của bạn", status: "Chưa làm", plannedOn: null });
 
     const [goal] = await listGoals(db, other);

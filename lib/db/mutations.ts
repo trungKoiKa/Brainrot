@@ -27,6 +27,12 @@ export async function markTaskDone(db: Db, userId: string, id: string): Promise<
   if (!res.length) throw new Error("Không tìm thấy task");
 }
 
+/** Xóa hẳn task (SPEC-v1.0, 05/11/2026); goal_tasks tự xóa theo (ON DELETE CASCADE). */
+export async function deleteTask(db: Db, userId: string, id: string): Promise<void> {
+  const res = await db.delete(tasks).where(ownTask(userId, id)).returning({ id: tasks.id });
+  if (!res.length) throw new Error("Không tìm thấy task");
+}
+
 /** Đặt / bỏ Ngày làm (SPEC-v0.5). */
 export async function setTaskPlannedOn(db: Db, userId: string, id: string, day: string | null): Promise<void> {
   const res = await db.update(tasks).set({ plannedOn: day }).where(ownTask(userId, id)).returning({ id: tasks.id });

@@ -10,6 +10,9 @@
 > **Cập nhật 05/11/2026 (Trung chốt):** để dùng một mình trước, đăng nhập tạm là **email + mật khẩu lưu trong database**
 > (`users.password_hash`, scrypt; đặt bằng `npm run user:password`), thay cho `APP_PASSWORD`. Đăng nhập Google,
 > `ALLOWED_EMAILS` và trang Cài đặt (bước 5) làm khi mở cho bạn bè. v1.0 lên production 05/11/2026, tag `v1.0.0`.
+>
+> **Xóa task (Trung chốt 05/11/2026):** mỗi dòng task (Tasks, cả việc chưa xong lẫn Đã xong) có icon thùng rác; bấm → hỏi
+> xác nhận ngay tại dòng → **xóa hẳn** (không hoàn tác), liên kết với mục tiêu mất theo. Trước đây xóa trong Notion.
 
 ## 1. Vấn đề
 
