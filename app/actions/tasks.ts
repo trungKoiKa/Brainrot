@@ -2,7 +2,7 @@
 
 import { getGoals, getTaskProjects } from "@/lib/db/data";
 import { dbScope } from "@/lib/db/actions-db";
-import { createTask, markTaskDone, setTaskPlannedOn, updateTask } from "@/lib/db/mutations";
+import { createTask, deleteTask, markTaskDone, setTaskPlannedOn, updateTask } from "@/lib/db/mutations";
 import { refreshData } from "@/lib/db/revalidate";
 import { SESSION_EXPIRED, isSignedIn } from "@/lib/session";
 import { parseTaskInput, parseTaskUpdate } from "@/lib/task-form";
@@ -63,6 +63,23 @@ export async function updateTaskAction(_prev: TaskFormState, form: FormData): Pr
 
   refreshData();
   return { ok: true, message: "Đã lưu.", at: Date.now() };
+}
+
+/** Xóa hẳn task (SPEC-v1.0, 05/11/2026). Giao diện đã hỏi xác nhận trước khi gọi. */
+export async function deleteTaskAction(pageId: string): Promise<CompleteTaskResult> {
+  if (!(await isSignedIn())) return { ok: false, error: SESSION_EXPIRED };
+  if (typeof pageId !== "string" || !PAGE_ID.test(pageId)) return { ok: false, error: "ID task không hợp lệ." };
+
+  try {
+    const { db, userId } = await dbScope();
+    await deleteTask(db, userId, pageId);
+  } catch (e) {
+    console.error("deleteTask failed:", e instanceof Error ? e.message : e);
+    return { ok: false, error: WRITE_FAILED };
+  }
+
+  refreshData();
+  return { ok: true };
 }
 
 const DAY = /^\d{4}-\d{2}-\d{2}$/;

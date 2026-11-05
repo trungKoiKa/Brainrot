@@ -1,5 +1,8 @@
+"use client";
+
+import { useState } from "react";
 import { MaybeLink } from "@/components/tasks/maybe-link";
-import { CircleAlertIcon, XIcon } from "lucide-react";
+import { CircleAlertIcon, Trash2Icon, XIcon } from "lucide-react";
 import { Alert, AlertAction, AlertDescription, AlertTitle } from "@/components/reui/alert";
 import { Button } from "@/components/ui/button";
 import { deadlineLabel } from "@/lib/today";
@@ -31,14 +34,18 @@ export function TaskRow({
   today,
   onComplete,
   onEdit,
+  onDelete,
   showProject = false,
 }: {
   task: Task;
   today: string;
   onComplete?: (t: Task) => void;
   onEdit?: () => void;
+  /** Có → hiện icon thùng rác; bấm hỏi xác nhận ngay tại dòng rồi mới gọi (xóa hẳn, SPEC-v1.0). */
+  onDelete?: (t: Task) => void;
   showProject?: boolean;
 }) {
+  const [confirming, setConfirming] = useState(false);
   const done = task.status === "Xong";
   const daysLeft = task.deadline ? daysBetween(today, task.deadline) : null;
   const overdue = !done && daysLeft !== null && daysLeft < 0;
@@ -85,6 +92,37 @@ export function TaskRow({
           ✎
         </button>
       )}
+      {onDelete &&
+        (confirming ? (
+          <div role="group" aria-label={`Xác nhận xóa: ${task.title}`} className="flex shrink-0 items-center gap-1 text-xs">
+            <span className="text-muted-foreground">Xóa hẳn?</span>
+            <button
+              type="button"
+              onClick={() => onDelete(task)}
+              className="rounded-md px-2 py-1 font-medium text-danger transition-colors hover:bg-danger-soft"
+            >
+              Xóa
+            </button>
+            <button
+              type="button"
+              autoFocus
+              onClick={() => setConfirming(false)}
+              className="rounded-md px-2 py-1 text-muted-foreground transition-colors hover:bg-surface-muted hover:text-foreground"
+            >
+              Hủy
+            </button>
+          </div>
+        ) : (
+          <button
+            type="button"
+            onClick={() => setConfirming(true)}
+            aria-label={`Xóa: ${task.title}`}
+            title="Xóa"
+            className="grid size-7 shrink-0 place-items-center rounded-md text-muted-foreground transition-colors hover:bg-danger-soft hover:text-danger"
+          >
+            <Trash2Icon className="size-4" aria-hidden="true" />
+          </button>
+        ))}
     </li>
   );
 }

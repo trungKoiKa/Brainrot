@@ -8,7 +8,7 @@ import { EditTaskForm, NewTaskForm, type GoalOption } from "./task-forms";
 import { ErrorNotice, TaskRow } from "./task-row";
 import { useTaskCompletion } from "./use-task-completion";
 
-// Thứ tự giống select "Dự án" trong Notion (SPEC mục 4)
+// Thứ tự nhóm dự án (SPEC mục 4)
 const PROJECT_ORDER = ["Đồ án", "Học AI", "Sản phẩm", "Sức khỏe", "Thực tập", "Khác"];
 const NO_PROJECT = "Không có dự án";
 
@@ -31,7 +31,7 @@ export function TaskBoard({
   initialProject?: string | null;
   goals?: GoalOption[] | null;
 }) {
-  const { tasks, complete, error, dismissError } = useTaskCompletion(initial);
+  const { tasks, complete, remove, error, dismissError } = useTaskCompletion(initial);
   const [editing, setEditing] = useState<string | null>(null);
   const [project, setProject] = useState<string | null>(initialProject);
   const [priority, setPriority] = useState<Priority | null>(null);
@@ -78,7 +78,14 @@ export function TaskBoard({
                   editing === t.id ? (
                     <EditTaskForm key={t.id} task={t} projects={allProjects} goals={goals} onClose={() => setEditing(null)} />
                   ) : (
-                    <TaskRow key={t.id} task={t} today={today} onComplete={complete} onEdit={() => setEditing(t.id)} />
+                    <TaskRow
+                      key={t.id}
+                      task={t}
+                      today={today}
+                      onComplete={complete}
+                      onEdit={() => setEditing(t.id)}
+                      onDelete={remove}
+                    />
                   ),
                 )}
               </ul>
@@ -94,7 +101,7 @@ export function TaskBoard({
           </summary>
           <ul className="mt-4 divide-y divide-line">
             {done.map((t) => (
-              <TaskRow key={t.id} task={t} today={today} showProject />
+              <TaskRow key={t.id} task={t} today={today} showProject onDelete={remove} />
             ))}
           </ul>
         </details>
