@@ -1,22 +1,20 @@
 "use server";
 
-import { updateTag } from "next/cache";
 import { GOAL_TYPES, MAX_GOAL_TITLE, type GoalType } from "@/lib/goals";
-import { getHabits } from "@/lib/notion/data";
-import { createGoal, trashGoal, updateGoal, type GoalPatch } from "@/lib/notion/mutations";
-import { TAGS } from "@/lib/notion/queries";
+import { dbScope } from "@/lib/db/actions-db";
+import { createGoal, trashGoal, updateGoal, type GoalPatch } from "@/lib/db/mutations";
+import { refreshData } from "@/lib/db/revalidate";
 import { LEVELS, parsePeriod, type Level } from "@/lib/period";
 import { SESSION_EXPIRED, isSignedIn } from "@/lib/session";
 
 export type GoalResult = { ok: true } | { ok: false; error: string };
 export type CreateGoalResult = { ok: true; id: string } | { ok: false; error: string };
 
-const PAGE_ID = /^[0-9a-f]{8}-?[0-9a-f]{4}-?[0-9a-f]{4}-?[0-9a-f]{4}-?[0-9a-f]{12}$/i;
-const WRITE_FAILED = "Không ghi được lên Notion, thử lại sau.";
+const PAGE_ID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+const WRITE_FAILED = "Không lưu được, thử lại sau.";
 
 async function guard(): Promise<{ ok: false; error: string } | null> {
   if (!(await isSignedIn())) return { ok: false, error: SESSION_EXPIRED };
-  if (!process.env.NOTION_GOALS_DB) return { ok: false, error: "Chưa kết nối database Goals (NOTION_GOALS_DB)." };
   return null;
 }
 
@@ -39,8 +37,9 @@ export async function createGoalAction(level: Level, key: string, rawTitle: stri
   if (typeof title !== "string") return { ok: false, ...title };
 
   try {
-    const id = await createGoal(period.level, period.start, title, type);
-    updateTag(TAGS.goals);
+    const { db, userId } = await dbScope();
+    const id = await createGoal(db, userId, period.level, period.start, title, type);
+    refreshData();
     return { ok: true, id };
   } catch (e) {
     console.error("createGoal failed:", e instanceof Error ? e.message : e);
@@ -67,10 +66,10 @@ export async function updateGoalAction(id: string, patch: GoalPatch): Promise<Go
   }
   if (patch.done !== undefined) clean.done = patch.done === true;
   if (patch.habitId !== undefined) {
-    if (patch.habitId !== null && !(await getHabits()).data.some((h) => h.id === patch.habitId)) {
+    if (patch.habitId !== null && (typeof patch.habitId !== "string" || !PAGE_ID.test(patch.habitId))) {
       return { ok: false, error: "Thói quen không hợp lệ." };
     }
-    clean.habitId = patch.habitId;
+    clean.habitId = patch.habitId; // updateGoal kiểm tra thói quen có thuộc người dùng
   }
   if (patch.threshold !== undefined) {
     const t = patch.threshold;
@@ -79,26 +78,29 @@ export async function updateGoalAction(id: string, patch: GoalPatch): Promise<Go
   }
 
   try {
-    await updateGoal(id, clean);
+    const { db, userId } = await dbScope();
+    await updateGoal(db, userId, id, clean);
   } catch (e) {
     console.error("updateGoal failed:", e instanceof Error ? e.message : e);
     return { ok: false, error: WRITE_FAILED };
   }
-  updateTag(TAGS.goals);
+  refreshData();
   return { ok: true };
 }
 
-/** Xóa (vào Trash Notion) hoặc hoàn tác xóa. */
+/** Xóa mềm hoặc hoàn tác xóa. */
 export async function trashGoalAction(id: string, trashed: boolean): Promise<GoalResult> {
   const denied = await guard();
   if (denied) return denied;
   if (typeof id !== "string" || !PAGE_ID.test(id)) return { ok: false, error: "Yêu cầu không hợp lệ." };
   try {
-    await trashGoal(id, trashed === true);
+    const { db, userId } = await dbScope();
+    await trashGoal(db, userId, id, trashed === true);
   } catch (e) {
     console.error("trashGoal failed:", e instanceof Error ? e.message : e);
     return { ok: false, error: WRITE_FAILED };
   }
-  updateTag(TAGS.goals);
+  // Cố ý KHÔNG refreshData(): panel đã cập nhật lạc quan, mà tải lại trang làm đổi key của panel
+  // (goal-panel dựng lại) → mất nút Hoàn tác 5 giây. Trang khác đọc lại dữ liệu khi được mở.
   return { ok: true };
 }

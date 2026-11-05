@@ -5,15 +5,15 @@ import { StaleBanner } from "@/components/stale-banner";
 import { DashboardClient } from "@/components/dashboard/dashboard-client";
 import { toVNDate, todayVN } from "@/lib/date";
 import type { DashInput } from "@/lib/dashboard/stats";
-import { anyStale, getDailyLogs90, getGoals, getHabits, getKnowledge, getReflections, getTasks } from "@/lib/notion/data";
-import { resolveGoals } from "@/lib/notion/goal-status";
+import { anyStale, getDailyLogs90, getGoals, getHabits, getKnowledge, getReflections, getTasks } from "@/lib/db/data";
+import { resolveGoals } from "@/lib/db/goal-status";
 import { periodOf } from "@/lib/period";
 import { reflectionOf } from "@/lib/reflections";
-import { getBrainGraph } from "@/lib/notion/graph";
+import { getBrainGraph } from "@/lib/db/graph";
 import { doneHabits, LEGACY_EXERCISE } from "@/lib/habits";
 import { splitLines } from "@/lib/today";
 
-// SPEC-v0.3: tổng quan việc và học tập. Chỉ đọc; v0.5 bỏ Planner, mọi việc đọc từ Notion Tasks.
+// SPEC-v0.3: tổng quan việc và học tập. Chỉ đọc; v0.5 bỏ Planner, mọi việc đọc từ bảng tasks.
 export default function DashboardPage() {
   return (
     <div className="mx-auto max-w-6xl">

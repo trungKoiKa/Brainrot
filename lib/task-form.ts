@@ -34,7 +34,7 @@ export function parseTaskInput(form: FormData, projects: readonly string[]): Par
   if (title.length > MAX_TEXT) return { ok: false, error: `Tên task dài quá ${MAX_TEXT} ký tự.` };
 
   const project = str(form.get("project")) || null;
-  if (project && !projects.includes(project)) return { ok: false, error: `Dự án "${project}" không có trong Notion.` };
+  if (project && !projects.includes(project)) return { ok: false, error: `Dự án "${project}" không có trong danh sách dự án.` };
 
   const priority = str(form.get("priority")) || null;
   if (priority && !PRIORITIES.includes(priority as Priority)) return { ok: false, error: "Ưu tiên không hợp lệ." };

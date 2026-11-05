@@ -1,3 +1,4 @@
+import { MaybeLink } from "@/components/tasks/maybe-link";
 import { CircleAlertIcon, XIcon } from "lucide-react";
 import { Alert, AlertAction, AlertDescription, AlertTitle } from "@/components/reui/alert";
 import { Button } from "@/components/ui/button";
@@ -46,14 +47,12 @@ export function TaskRow({
     <li className="group flex gap-3 py-2.5 first:pt-0 last:pb-0">
       {onComplete && <TaskCheckbox task={task} onComplete={onComplete} />}
       <div className="min-w-0 flex-1">
-        <a
+        <MaybeLink
           href={task.url}
-          target="_blank"
-          rel="noopener noreferrer"
           className={`hover:text-primary ${done ? "text-muted-foreground line-through" : overdue ? "text-danger" : ""}`}
         >
           {task.title || "(Chưa đặt tên)"}
-        </a>
+        </MaybeLink>
         <div className="mt-1 flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
           {task.priority && (
             <span className={`rounded-full px-2 py-0.5 font-medium ${PRIORITY_CLASS[task.priority] ?? ""}`}>

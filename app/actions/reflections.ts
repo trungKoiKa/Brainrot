@@ -1,9 +1,9 @@
 "use server";
 
-import { updateTag } from "next/cache";
-import { saveReflection } from "@/lib/notion/mutations";
-import { TAGS } from "@/lib/notion/queries";
-import { LEVELS, parsePeriod, periodLabel, type Level } from "@/lib/period";
+import { dbScope } from "@/lib/db/actions-db";
+import { saveReflection } from "@/lib/db/mutations";
+import { refreshData } from "@/lib/db/revalidate";
+import { LEVELS, parsePeriod, type Level } from "@/lib/period";
 import { parseReflection, type ReflectionFields } from "@/lib/reflections";
 import { SESSION_EXPIRED, isSignedIn } from "@/lib/session";
 
@@ -16,18 +16,18 @@ export async function saveReflectionAction(
   input: Partial<Record<keyof ReflectionFields, unknown>>,
 ): Promise<ReflectionResult> {
   if (!(await isSignedIn())) return { ok: false, error: SESSION_EXPIRED };
-  if (!process.env.NOTION_REFLECTIONS_DB) return { ok: false, error: "Chưa kết nối database Reflections (NOTION_REFLECTIONS_DB)." };
   const period = LEVELS.includes(level) ? parsePeriod(level, key) : null;
   if (!period || typeof input !== "object" || input === null) return { ok: false, error: "Yêu cầu không hợp lệ." };
   const parsed = parseReflection(input, period.level);
   if (!parsed.ok) return parsed;
 
   try {
-    const result = await saveReflection(period.level, period.start, periodLabel(period), parsed.data);
-    updateTag(TAGS.reflections);
+    const { db, userId } = await dbScope();
+    const result = await saveReflection(db, userId, period.level, period.start, parsed.data);
+    refreshData();
     return { ok: true, message: result === "created" ? "Đã lưu nhìn lại." : "Đã cập nhật nhìn lại." };
   } catch (e) {
     console.error("saveReflection failed:", e instanceof Error ? e.message : e);
-    return { ok: false, error: "Không ghi được lên Notion, thử lại sau." };
+    return { ok: false, error: "Không lưu được, thử lại sau." };
   }
 }

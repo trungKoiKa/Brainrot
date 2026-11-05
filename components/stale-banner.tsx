@@ -7,7 +7,7 @@ export function StaleBanner({ show }: { show: boolean }) {
   return (
     <Alert variant="warning" role="status" className="mb-6">
       <TriangleAlertIcon aria-hidden="true" />
-      <AlertTitle>Không lấy được dữ liệu mới từ Notion</AlertTitle>
+      <AlertTitle>Không lấy được dữ liệu mới</AlertTitle>
       <AlertDescription>Đang hiển thị bản gần nhất. Web sẽ tự thử lại sau ít giây.</AlertDescription>
     </Alert>
   );
