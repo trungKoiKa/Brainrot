@@ -1,6 +1,6 @@
 // Kiểm tra dữ liệu form thêm/sửa task (SPEC-v0.2 mục 4.2). Hàm thuần, không gọi Notion → test được.
 import { MAX_TEXT, type Parsed } from "./quick-capture";
-import type { Priority, TaskStatus } from "./notion/types";
+import type { Priority, TaskStatus } from "./types";
 
 export const PRIORITIES: Priority[] = ["Cao", "Vừa", "Thấp"];
 /** Trên web chỉ chuyển giữa hai trạng thái này; "Xong" dùng ô tích. */

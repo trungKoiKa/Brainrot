@@ -1,6 +1,6 @@
 // Thói quen (SPEC-v0.4 mục 3). Hàm thuần; tháng là "YYYY-MM", ngày là "YYYY-MM-DD" (giờ VN).
 import { addDays } from "./date";
-import type { Habit } from "./notion/types";
+import type { Habit } from "./types";
 import { daysOfMonth, monthOf } from "./period";
 
 /** Thói quen có sẵn cột checkbox riêng trong Daily Log từ v0.1 — ngày cũ chỉ tích checkbox vẫn tính là đã làm. */

@@ -113,7 +113,7 @@ export function DashboardView({ real, graph }: { real: DashInput; graph: GraphDa
         <KpiCard
           icon={ListTodoIcon}
           title="Việc tồn"
-          subtitle="Notion Tasks"
+          subtitle="Tasks"
           tone={backlog.tone}
           value={fmt.format(backlog.value)}
           series={backlog.series}

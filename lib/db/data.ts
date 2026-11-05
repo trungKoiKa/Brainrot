@@ -12,7 +12,7 @@ import {
 import { requireUserId } from "@/lib/session";
 import type { Goal } from "@/lib/goals";
 import type { Reflection } from "@/lib/reflections";
-import type { DailyLog, Habit, Knowledge, Task } from "@/lib/notion/types";
+import type { DailyLog, Habit, Knowledge, Task } from "@/lib/types";
 
 // Lớp đọc mà trang dùng — cùng tên hàm như thời Notion (lib/notion/data.ts) nhưng đọc Postgres, theo người đang đăng nhập.
 // Không còn cache dùng chung giữa người dùng (SPEC-v1.0 mục 4) và không còn `stale`: lỗi database thì ném lỗi, error.tsx hiện.

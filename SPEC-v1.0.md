@@ -6,6 +6,10 @@
 > **Trạng thái:** Trung **duyệt 27/10/2026** theo các phương án đề xuất ở mục 11. Tiến độ: `docs/plans/active/v1.0.md`. Trung đã chốt: người dùng là **Trung + nhóm ~20 bạn**,
 > **bỏ Notion**, **không chuyển dữ liệu Notion cũ**, làm **2 đợt**; trong đợt 1 làm **database + backend trước**,
 > **đăng nhập Google và phân quyền sau** (27/10/2026).
+>
+> **Cập nhật 05/11/2026 (Trung chốt):** để dùng một mình trước, đăng nhập tạm là **email + mật khẩu lưu trong database**
+> (`users.password_hash`, scrypt; đặt bằng `npm run user:password`), thay cho `APP_PASSWORD`. Đăng nhập Google,
+> `ALLOWED_EMAILS` và trang Cài đặt (bước 5) làm khi mở cho bạn bè. v1.0 lên production 05/11/2026, tag `v1.0.0`.
 
 ## 1. Vấn đề
 

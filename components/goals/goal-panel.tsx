@@ -38,7 +38,7 @@ const iconButton =
 
 /**
  * Khối mục tiêu của một kỳ (SPEC-v0.4 4.2, 4.4): bộ đếm + vòng tròn %, nhóm Ưu tiên / Thường (Badge),
- * thêm nhanh, sửa tên tại chỗ, tích, đổi loại, xóa (vào Trash Notion, hoàn tác trong 5 giây),
+ * thêm nhanh, sửa tên tại chỗ, tích, đổi loại, xóa mềm (hoàn tác trong 5 giây),
  * gắn thói quen + ngưỡng % để tự xong (SPEC-v0.4 4.3). Cập nhật lạc quan; lỗi thì trả về như trước và báo.
  * `habits`: thói quen có thể gắn (đang theo dõi trong kỳ).
  */

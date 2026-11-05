@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import type { Knowledge, Task } from "./notion/types";
+import type { Knowledge, Task } from "./types";
 import { deadlineLabel, latestKnowledge, planToday, splitLines, tomorrowCandidates, upcomingDeadlines } from "./today";
 
 const task = (id: string, o: Partial<Task> = {}): Task => ({

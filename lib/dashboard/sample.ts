@@ -2,7 +2,7 @@
 // Chỉ để xem/demo; không bao giờ ghi vào Notion.
 import { addDays } from "@/lib/date";
 import type { Goal } from "@/lib/goals";
-import type { Habit } from "@/lib/notion/types";
+import type { Habit } from "@/lib/types";
 import type { DashInput, DashLog, DashTask } from "./stats";
 
 const SEED = 20261206;

@@ -1,13 +1,10 @@
 // Mục tiêu xếp tầng (SPEC-v0.4 mục 4). Hàm thuần.
 import { habitPeriodPct } from "./habits";
-import type { Habit } from "./notion/types";
+import type { Habit } from "./types";
 import type { Level, Period } from "./period";
 
 export type GoalType = "Ưu tiên" | "Thường";
 export const GOAL_TYPES: GoalType[] = ["Ưu tiên", "Thường"];
-
-/** Tên cấp trong cột "Cấp" của Notion. */
-export const LEVEL_NOTION: Record<Level, string> = { year: "Năm", quarter: "Quý", month: "Tháng", week: "Tuần" };
 
 export type Goal = {
   id: string;

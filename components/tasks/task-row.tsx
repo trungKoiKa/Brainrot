@@ -4,7 +4,7 @@ import { Alert, AlertAction, AlertDescription, AlertTitle } from "@/components/r
 import { Button } from "@/components/ui/button";
 import { deadlineLabel } from "@/lib/today";
 import { daysBetween, formatDay, weekdayShort } from "@/lib/date";
-import type { Task } from "@/lib/notion/types";
+import type { Task } from "@/lib/types";
 
 const PRIORITY_CLASS: Record<string, string> = {
   Cao: "bg-danger-soft text-danger",
@@ -93,7 +93,7 @@ export function ErrorNotice({ message, onDismiss }: { message: string; onDismiss
   return (
     <Alert variant="destructive" className="mb-4">
       <CircleAlertIcon aria-hidden="true" />
-      <AlertTitle>Lỗi khi lưu lên Notion</AlertTitle>
+      <AlertTitle>Lỗi khi lưu</AlertTitle>
       <AlertDescription>{message}</AlertDescription>
       <AlertAction>
         <Button variant="ghost" size="icon-xs" onClick={onDismiss} aria-label="Đóng thông báo">

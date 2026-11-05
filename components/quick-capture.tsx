@@ -2,7 +2,7 @@
 
 import { useActionState, useState } from "react";
 import { addIdeaAction, saveDailyLogAction, type CaptureState } from "@/app/actions/capture";
-import type { DailyLog } from "@/lib/notion/types";
+import type { DailyLog } from "@/lib/types";
 import { Status, fieldClass, primaryButtonClass } from "./form-bits";
 
 /**

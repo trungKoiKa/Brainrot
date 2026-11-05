@@ -5,7 +5,7 @@ import { and, asc, desc, eq, gte, isNull, lte, inArray } from "drizzle-orm";
 import type { Db } from "./client";
 import { dailyLogs, goals, goalTasks, habitDays, habits, projects, reflections, tasks } from "./schema";
 import type { Goal } from "@/lib/goals";
-import type { DailyLog, Habit, Task } from "@/lib/notion/types";
+import type { DailyLog, Habit, Task } from "@/lib/types";
 import type { Reflection } from "@/lib/reflections";
 
 export async function listProjectNames(db: Db, userId: string): Promise<string[]> {

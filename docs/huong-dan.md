@@ -1,21 +1,20 @@
 # Hướng dẫn sử dụng Brainrot
 
-> Áp dụng từ **v0.5** (26/10/2026). Production: <https://brainrot-blue.vercel.app> (cần mật khẩu).
-> Cài đặt, biến môi trường, cột Notion: xem [`README.md`](../README.md). Lý do thiết kế: [`SPEC-v0.5.md`](../SPEC-v0.5.md).
+> Áp dụng từ **v1.0** (05/11/2026). Production: <https://brainrot-blue.vercel.app> (đăng nhập email + mật khẩu).
+> Cài đặt, biến môi trường, database: xem [`README.md`](../README.md). Lý do thiết kế: [`SPEC-v0.5.md`](../SPEC-v0.5.md), [`SPEC-v1.0.md`](../SPEC-v1.0.md).
 > Sơ đồ là ảnh PNG; nguồn mermaid để sửa nằm cạnh ảnh trong [`images/huong-dan/`](images/huong-dan/) (`*.mmd`).
 
 ## 1. Ý tưởng chính
 
-**Mọi việc chỉ nằm ở một chỗ: database Tasks trong Notion.** Các trang khác không tạo việc riêng, chỉ xếp lịch và
+**Mọi việc chỉ nằm ở một chỗ: bảng Tasks.** Các trang khác không tạo việc riêng, chỉ xếp lịch và
 theo dõi cùng những task đó.
 
-| Trang | Câu hỏi nó trả lời | Ghi gì lên Notion |
+| Trang | Câu hỏi nó trả lời | Ghi gì vào database |
 |---|---|---|
 | **Tasks** | Tôi có những việc gì? | Tạo / sửa task (nơi **duy nhất** tạo việc) |
 | **Today** | Hôm nay làm gì? | Tích xong, đặt Ngày làm, tích thói quen, Daily Log, ý tưởng |
 | **Goal** | Tôi đang hướng tới điều gì? | Mục tiêu, Nhìn lại, châm ngôn, thói quen, dời Ngày làm |
 | **Dashboard** | Tôi đang làm tốt không? | Không ghi gì (chỉ đọc) |
-| **Brain** | Tôi biết những gì? | Không ghi gì (đọc Knowledge) |
 
 Ba sợi dây nối các phần với nhau:
 
@@ -35,7 +34,7 @@ Hai ngày của một task — đừng nhầm:
 1. Gõ tên việc ở ô "Thêm task mới…".
 2. Chọn **Dự án** và **Ưu tiên** (Cao / Vừa / Thấp).
 3. Chọn **Deadline** nếu có hạn thật; chọn **Ngày làm** nếu đã biết sẽ làm hôm nào (không chắc thì để trống).
-4. Bấm **Thêm** → task tạo trong Notion với Trạng thái "Chưa làm".
+4. Bấm **Thêm** → task được tạo với Trạng thái "Chưa làm".
 5. Muốn gắn vào mục tiêu: bấm **✎** trên dòng task → chọn **Goal** → Lưu. Chỉ hiện mục tiêu Tháng/Tuần hiện tại chưa xong.
 
 Dòng task hiện "Làm: T4 28/10" — **đỏ** khi Ngày làm đã qua mà chưa xong, **xanh** khi là hôm nay.
@@ -51,7 +50,7 @@ Khối **"Hôm nay làm"** tự gom, theo thứ tự:
 
 Thao tác:
 
-- Tích ô vuông → Notion: Trạng thái = **Xong**, Ngày xong = hôm nay. Task gạch ngang tới lần tải lại.
+- Tích ô vuông → Trạng thái = **Xong**, Ngày xong = hôm nay. Task gạch ngang tới lần tải lại.
 - Cuối khối là **mục tiêu tuần Ưu tiên** (✓ khi xong, kể cả tự xong) — nhắc mình tuần này đang hướng tới gì.
 - Thẻ **Thói quen hôm nay**: bấm từng thói quen đã làm → ghi vào Daily Log của hôm nay (tự tạo nếu chưa có).
 
@@ -61,7 +60,7 @@ Các thẻ khác chỉ để xem: đếm ngược đồ án, **Next up** (Google
 
 1. **Ý tưởng**: gõ một dòng → Lưu → database Ideas.
 2. **Daily Log hôm nay**: ghi Xong / Rơi – chưa xong / Học được → Lưu (đã có thì Cập nhật, mỗi ngày một bản ghi).
-3. **Ngày mai làm**: tích những task định làm ngày mai → Notion đặt Ngày làm = ngày mai. Bỏ tích = bỏ lịch.
+3. **Ngày mai làm**: tích những task định làm ngày mai → đặt Ngày làm = ngày mai. Bỏ tích = bỏ lịch.
    Danh sách gồm task đã xếp ngày mai + task chưa xếp lịch (ưu tiên cao trước).
 4. Sáng hôm sau các task đó tự lên "Hôm nay làm"; việc nào không làm kịp sẽ thành **trễ lịch**.
 
@@ -101,39 +100,35 @@ Trên điện thoại 7 thẻ thành danh sách dọc, ngày hôm nay mở sẵn
 - Hàng KPI: **Việc tồn** (quá hạn → đỏ), **Hoàn thành**, **Tuần này** (% task có Ngày làm trong tuần đã xong;
   "—" nếu chưa xếp lịch việc nào), **Đồ án** (còn bao nhiêu ngày).
 - **Task theo dự án** (bấm cột → Tasks lọc dự án đó), **Mục tiêu tháng này**, **Sắp đến hạn** (14 ngày),
-  **Nhịp làm & học** (12 tuần), **Brain** thu nhỏ, **Nhịp hằng ngày**, **Thói quen**.
+  **Nhịp làm & học** (12 tuần), **Nhịp hằng ngày**, **Thói quen**.
 - Khối nào thiếu nguồn thật thì tự dùng mẫu và có nhãn **"Mẫu"**.
 
 ### 2.8 Kiến thức → Brain
 
-Thêm trang vào database **Knowledge** trong Notion (cần **Chủ đề** và **Lĩnh vực**; nên có Ngày học, Tóm tắt, Nguồn).
-Trang Brain (`/`) và khối Brain trên Dashboard tự hiện node trong ≤ 5 phút. Kéo để xoay, cuộn để zoom, bấm cụm để
-bay tới, ô tìm (phím `/`).
+Tạm ẩn từ v1.0 (chưa có bảng Kiến thức); quay lại ở v1.1. `/brain` chuyển về Today.
 
 ## 3. Luồng dữ liệu bên trong
 
 ### 3.1 Đọc
 
-![Luồng đọc: Notion → queries có cache 5 phút → trang server → component client](images/huong-dan/luong-doc.png)
-
-- Mọi lời gọi Notion nằm trong `lib/notion/` (chỉ chạy ở server). Mỗi loại dữ liệu có **cache 5 phút** và một tag
-  (`tasks`, `knowledge`, `daily`, `habits`, `goals`, `reflections`).
-- Notion lỗi → web hiện **bản gần nhất** kèm banner vàng và thử lại sau ~30 giây.
-- Sửa trực tiếp trong Notion → web thấy sau tối đa **5 phút**.
+- Mọi truy vấn nằm trong `lib/db/` (chỉ chạy ở server) và luôn lọc theo người đang đăng nhập (`userId` lấy từ cookie
+  đã ký, không bao giờ từ form hay URL).
+- Không có cache dữ liệu: mỗi lần mở trang đọc thẳng Postgres, nên luôn thấy bản mới nhất.
 
 ### 3.2 Ghi
 
-![Luồng ghi: bạn thao tác → giao diện đổi ngay → Server Action → Notion → xóa cache → tải lại](images/huong-dan/luong-ghi.png)
+Bạn thao tác → giao diện đổi ngay (lạc quan) → Server Action ghi vào Postgres → tải lại trang. Lỗi thì giao diện trả
+về như cũ và báo lỗi.
 
-| Thao tác | Server Action | Ghi lên Notion |
+| Thao tác | Server Action | Ghi vào bảng |
 |---|---|---|
 | Tích task xong | `completeTask` | Tasks: Trạng thái = Xong, Ngày xong = hôm nay |
 | Thêm / sửa task | `createTaskAction` / `updateTaskAction` | Tasks: các cột trong form (sửa → mở lại thì bỏ Ngày xong) |
 | Làm hôm nay · Dời sang… · Ngày mai làm | `planTaskAction` | Tasks: Ngày làm (hoặc xóa) |
-| Tích thói quen | `setDayHabitsAction` | Daily Log của ngày đó: Thói quen (+ ô Tập thể dục cũ) |
+| Tích thói quen | `setDayHabitsAction` | habit_days: các thói quen đã làm trong ngày |
 | Daily Log | `saveDailyLogAction` | Daily Log hôm nay: Xong · Rơi · Học được |
-| Ý tưởng | `addIdeaAction` | Ideas: trang mới |
-| Mục tiêu | `createGoalAction` / `updateGoalAction` / `trashGoalAction` | Goals (xóa = chuyển vào Trash, hoàn tác trong 5 giây) |
+| Ý tưởng | `addIdeaAction` | Ideas: dòng mới |
+| Mục tiêu | `createGoalAction` / `updateGoalAction` / `trashGoalAction` | Goals (xóa mềm, hoàn tác trong 5 giây) |
 | Nhìn lại / châm ngôn | `saveReflectionAction` | Reflections: 1 bản ghi / kỳ (có thì cập nhật) |
 | Thêm / ngừng / đổi thứ tự thói quen | `addHabitAction` / `stopHabitAction` / `moveHabitAction` | Habits |
 
@@ -143,19 +138,16 @@ Một mục tiêu được tính là xong khi **một trong ba**:
 
 1. Bạn **tích tay**;
 2. Có gắn thói quen và **% ngày làm thói quen trong kỳ ≥ ngưỡng** (tính trên số ngày đã qua của kỳ);
-3. Có task gắn (relation "Mục tiêu" ở Tasks) và **tất cả task đó đã Xong**.
+3. Có task gắn (ô Goal khi sửa task) và **tất cả task đó đã Xong**.
 
-Trường hợp 2–3 hiện chip xanh "tự xong" và chip tiến độ (vd. "Tập thể dục 72% / 80%", "2/3 task"); không ghi gì lên
-Notion — chỉ tính lúc hiển thị.
+Trường hợp 2–3 hiện chip xanh "tự xong" và chip tiến độ (vd. "Tập thể dục 72% / 80%", "2/3 task"); không ghi gì vào
+database — chỉ tính lúc hiển thị.
 
 ## 4. Câu hỏi thường gặp
 
 | Hỏi | Đáp |
 |---|---|
-| Việc tạo trong Notion có hiện trên web không? | Có, sau tối đa 5 phút. Nên tạo trên web để thấy ngay. |
 | Không đặt Ngày làm thì task ở đâu? | Ở Tasks; lên Today khi Deadline là hôm nay hoặc khi được gợi ý lúc "Hôm nay làm" trống. |
-| Xóa task thế nào? | Xóa trong Notion (web không xóa task). |
+| Xóa task thế nào? | Chưa có nút xóa (v1.0); task không cần nữa thì tích Xong. |
 | Planner đâu rồi? | Bỏ từ v0.5; `/planner` tự chuyển sang Goal → Tuần. Xếp việc theo ngày bằng **Ngày làm**. |
-| Ô "Ngày mai 3 việc" cũ đâu? | Thay bằng **Ngày mai làm** (chọn task). Chữ cũ vẫn còn trong cột Notion. |
-| Một khối báo "Chưa kết nối database …" | Thiếu biến môi trường `NOTION_*_DB` tương ứng trên Vercel → thêm rồi Redeploy. |
-| Đổi máy / điện thoại có mất dữ liệu không? | Không — mọi dữ liệu nằm trong Notion. Chỉ lựa chọn giao diện (sáng/tối, Thật/Mẫu, kỳ) lưu theo trình duyệt. |
+| Đổi máy / điện thoại có mất dữ liệu không? | Không — mọi dữ liệu nằm trong database (Neon), theo tài khoản. Chỉ lựa chọn giao diện (sáng/tối, Thật/Mẫu, kỳ) lưu theo trình duyệt. |

@@ -1,7 +1,7 @@
 import { TriangleAlertIcon } from "lucide-react";
 import { Alert, AlertDescription, AlertTitle } from "@/components/reui/alert";
 
-/** SPEC mục 9: Notion lỗi nhưng còn bản cũ → hiển thị bản cũ kèm banner này. */
+/** SPEC mục 9: đọc dữ liệu lỗi nhưng còn bản cũ → hiển thị bản cũ kèm banner này. */
 export function StaleBanner({ show }: { show: boolean }) {
   if (!show) return null;
   return (
