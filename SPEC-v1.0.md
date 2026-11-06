@@ -11,6 +11,11 @@
 > (`users.password_hash`, scrypt; đặt bằng `npm run user:password`), thay cho `APP_PASSWORD`. Đăng nhập Google,
 > `ALLOWED_EMAILS` và trang Cài đặt (bước 5) làm khi mở cho bạn bè. v1.0 lên production 05/11/2026, tag `v1.0.0`.
 >
+> **Bố cục Today (Trung chốt 06/11/2026, sau critique Impeccable):** "Hôm nay làm" đứng đầu, rộng hết hàng; đếm ngược đồ
+> án chuyển thành dòng phụ dưới lời chào (chưa đặt hạn thì không hiện); hàng 2 là Deadline 14 ngày tới + Thói quen hôm nay;
+> rồi "Ghi nhanh" (ý tưởng) và "Cuối ngày" (Daily Log + Ngày mai làm). Cụm Cuối ngày thu gọn, **từ 18:00** mới mở sẵn
+> (Daily Log chỉ mở khi chưa ghi). Next up và Kiến thức mới gỡ khỏi Today đúng mục 3.
+>
 > **Xóa task (Trung chốt 05/11/2026):** mỗi dòng task (Tasks, cả việc chưa xong lẫn Đã xong) có icon thùng rác; bấm → hỏi
 > xác nhận ngay tại dòng → **xóa hẳn** (không hoàn tác), liên kết với mục tiêu mất theo. Trước đây xóa trong Notion.
 

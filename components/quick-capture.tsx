@@ -6,19 +6,24 @@ import type { DailyLog } from "@/lib/types";
 import { Status, fieldClass, primaryButtonClass } from "./form-bits";
 
 /**
- * Khối "Ghi nhanh" trên Today (SPEC-v0.2 4.1): ý tưởng → Ideas, Daily Log hôm nay → Daily Log.
- * `showExercise` false khi đã có thẻ Thói quen (SPEC-v0.4): bỏ ô "Tập thể dục" để hai nơi không ghi đè nhau.
+ * Ghi nhanh trên Today (SPEC-v0.2 4.1): ý tưởng → Ideas, Daily Log hôm nay → Daily Log.
+ * Hai form tách ra để Today đặt ý tưởng riêng, Daily Log vào cụm "Cuối ngày" (SPEC-v1.0, Trung chốt 06/11/2026).
  */
-export function QuickCapture({ todayLog, showExercise = true }: { todayLog: DailyLog | null; showExercise?: boolean }) {
-  return (
-    <div className="space-y-6">
-      <IdeaForm />
-      <DailyLogForm key={todayLog?.id ?? "new"} todayLog={todayLog} showExercise={showExercise} />
-    </div>
-  );
+export function DailyLogCapture({
+  todayLog,
+  open,
+  showExercise = true,
+}: {
+  todayLog: DailyLog | null;
+  /** Mở sẵn hay không; Today chỉ mở sau 18:00 khi chưa ghi. */
+  open: boolean;
+  /** false khi đã có thẻ Thói quen (SPEC-v0.4): bỏ ô "Tập thể dục" để hai nơi không ghi đè nhau. */
+  showExercise?: boolean;
+}) {
+  return <DailyLogForm key={todayLog?.id ?? "new"} todayLog={todayLog} open={open} showExercise={showExercise} />;
 }
 
-function IdeaForm() {
+export function IdeaForm() {
   const [idea, setIdea] = useState("");
   const [state, action, pending] = useActionState(async (prev: CaptureState, form: FormData) => {
     const next = await addIdeaAction(prev, form);
@@ -54,7 +59,7 @@ function IdeaForm() {
   );
 }
 
-function DailyLogForm({ todayLog, showExercise }: { todayLog: DailyLog | null; showExercise: boolean }) {
+function DailyLogForm({ todayLog, open, showExercise }: { todayLog: DailyLog | null; open: boolean; showExercise: boolean }) {
   // Controlled: lỗi khi lưu thì nội dung đã gõ vẫn còn
   const [values, setValues] = useState({
     done: todayLog?.done ?? "",
@@ -73,7 +78,7 @@ function DailyLogForm({ todayLog, showExercise }: { todayLog: DailyLog | null; s
   ];
 
   return (
-    <details className="group" open={!todayLog}>
+    <details className="group" open={open}>
       <summary className="cursor-pointer text-sm font-medium">
         Daily Log hôm nay{" "}
         <span className="font-normal text-muted-foreground">{todayLog ? "· đã ghi, bấm để sửa" : "· chưa ghi"}</span>

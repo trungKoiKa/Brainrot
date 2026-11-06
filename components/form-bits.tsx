@@ -1,5 +1,5 @@
 export const fieldClass =
-  "w-full rounded-lg border border-line bg-background px-3 py-2 text-sm outline-none focus:border-primary";
+  "w-full rounded-lg border border-line bg-background px-3 py-2 text-sm outline-none placeholder:text-muted-foreground focus:border-primary";
 
 export const primaryButtonClass =
   "shrink-0 rounded-lg bg-primary px-4 py-2 text-sm font-medium text-surface disabled:opacity-50";

@@ -28,5 +28,5 @@ export function Card({
 }
 
 export function Empty({ children }: { children: React.ReactNode }) {
-  return <p className="text-sm text-muted-foreground">{children}</p>;
+  return <p className="text-sm text-pretty text-muted-foreground">{children}</p>;
 }

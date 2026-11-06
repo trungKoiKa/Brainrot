@@ -109,14 +109,23 @@ export function TodayPlan({ today, tasks: initial }: { today: string; tasks: Tas
 }
 
 /** "Ngày mai làm" trong Ghi nhanh (SPEC-v0.5 câu 10.2a): tích task → Ngày làm = ngày mai, bỏ tích → bỏ lịch. */
-export function TomorrowPicker({ today, tasks: initial }: { today: string; tasks: Task[] }) {
+export function TomorrowPicker({
+  today,
+  tasks: initial,
+  open = false,
+}: {
+  today: string;
+  tasks: Task[];
+  /** Mở sẵn (Today: sau 18:00). */
+  open?: boolean;
+}) {
   const { tasks, plan, error, dismissError } = usePlanTasks(initial);
   const tomorrow = addDays(today, 1);
   // Danh sách cố định theo dữ liệu server; trạng thái tích lấy từ bản optimistic
   const list = tomorrowCandidates(today, initial).map((t) => tasks.find((x) => x.id === t.id) ?? t);
 
   return (
-    <details className="group">
+    <details className="group" open={open}>
       <summary className="cursor-pointer text-sm font-medium">
         Ngày mai làm{" "}
         <span className="font-normal text-muted-foreground">
