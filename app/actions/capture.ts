@@ -1,6 +1,6 @@
 "use server";
 
-import { todayVN } from "@/lib/date";
+import { workdayVN } from "@/lib/date";
 import { dbScope } from "@/lib/db/actions-db";
 import { createIdea, saveDailyLog } from "@/lib/db/mutations";
 import { refreshData } from "@/lib/db/revalidate";
@@ -16,7 +16,7 @@ export async function saveDailyLogAction(_prev: CaptureState, form: FormData): P
 
   try {
     const { db, userId } = await dbScope();
-    const result = await saveDailyLog(db, userId, todayVN(), parsed.data);
+    const result = await saveDailyLog(db, userId, workdayVN(), parsed.data);
     refreshData(); // Today đọc lại Daily Log mới ngay
     return { ok: true, message: result === "created" ? "Đã tạo Daily Log hôm nay." : "Đã cập nhật Daily Log hôm nay.", at: Date.now() };
   } catch (e) {

@@ -1,6 +1,15 @@
 import { describe, expect, it } from "vitest";
 import type { Knowledge, Task } from "./types";
-import { deadlineLabel, latestKnowledge, planToday, splitLines, tomorrowCandidates, upcomingDeadlines } from "./today";
+import {
+  deadlineLabel,
+  latestKnowledge,
+  planToday,
+  splitLines,
+  todayEmptyKind,
+  todayProgress,
+  tomorrowCandidates,
+  upcomingDeadlines,
+} from "./today";
 
 const task = (id: string, o: Partial<Task> = {}): Task => ({
   id, url: `u-${id}`, title: id, project: null, status: "Chưa làm", priority: null, deadline: null, plannedOn: null, note: "",
@@ -75,5 +84,24 @@ describe("kiến thức mới", () => {
   it("theo Ngày học, thiếu thì dùng created_time; tối đa 5", () => {
     expect(latestKnowledge([k("a", "2026-10-01", "2026-10-21T00:00:00Z"), k("b", null, "2026-10-15T00:00:00Z"), k("c", "2026-10-20", "2026-10-01T00:00:00Z")]).map((x) => x.id)).toEqual(["c", "b", "a"]);
     expect(latestKnowledge(Array.from({ length: 8 }, (_, i) => k(`n${i}`, null, `2026-10-0${i + 1}T00:00:00Z`)))).toHaveLength(5);
+  });
+});
+
+describe("Hôm nay làm trống và tiến độ (critique 06/11/2026)", () => {
+  it("phân biệt kho trống, xong hết, còn việc đã xếp ngày khác", () => {
+    expect(todayEmptyKind([])).toBe("no-tasks");
+    expect(todayEmptyKind([task("a", { status: "Xong" })])).toBe("all-done");
+    expect(todayEmptyKind([task("a", { status: "Xong" }), task("b", { plannedOn: "2026-10-30" })])).toBe("scheduled-later");
+  });
+
+  it("x/y xong chỉ đếm việc có Ngày làm hôm nay", () => {
+    expect(todayProgress(today, [task("a", { plannedOn: "2026-10-23" })])).toBeNull();
+    expect(
+      todayProgress(today, [
+        task("a", { plannedOn: today, status: "Xong" }),
+        task("b", { plannedOn: today }),
+        task("c", { plannedOn: "2026-10-21" }),
+      ]),
+    ).toEqual({ done: 1, total: 2 });
   });
 });

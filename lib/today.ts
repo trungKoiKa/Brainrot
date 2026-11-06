@@ -51,6 +51,26 @@ export function planToday(today: string, tasks: Task[]): TodayPlan {
   return { planned, late, due, suggest };
 }
 
+/**
+ * Vì sao "Hôm nay làm" trống (khi không có cả gợi ý), để nói đúng câu (SPEC-v1.0, critique 06/11/2026):
+ * - `no-tasks`: kho việc trống → hướng dẫn tạo việc đầu tiên ở Tasks
+ * - `all-done`: mọi việc đã xong
+ * - `scheduled-later`: còn việc nhưng đều đã xếp ngày khác
+ */
+export type TodayEmptyKind = "no-tasks" | "all-done" | "scheduled-later";
+
+export function todayEmptyKind(tasks: Task[]): TodayEmptyKind {
+  if (tasks.length === 0) return "no-tasks";
+  return tasks.some(isOpen) ? "scheduled-later" : "all-done";
+}
+
+/** "x/y xong" của việc có Ngày làm = hôm nay; null khi hôm nay chưa xếp việc nào. */
+export function todayProgress(today: string, tasks: Task[]): { done: number; total: number } | null {
+  const planned = tasks.filter((t) => t.plannedOn === today);
+  if (planned.length === 0) return null;
+  return { done: planned.filter((t) => !isOpen(t)).length, total: planned.length };
+}
+
 /** "Ngày mai làm" (SPEC-v0.5 câu 10.2a): task đã xếp ngày mai + task chưa xếp lịch, ưu tiên cao trước. */
 export function tomorrowCandidates(today: string, tasks: Task[], limit = 8): Task[] {
   const tomorrow = addDays(today, 1);

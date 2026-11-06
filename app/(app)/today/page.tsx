@@ -10,13 +10,13 @@ import { DailyLogCapture, IdeaForm } from "@/components/quick-capture";
 import { HabitToday } from "@/components/habits/habit-today";
 import { doneHabits, habitsForMonth } from "@/lib/habits";
 import { monthOf, periodOf } from "@/lib/period";
-import { daysBetween, formatDay, greetingVN, isEveningVN, longDateVN, todayVN } from "@/lib/date";
+import { daysBetween, formatDay, greetingVN, isEveningVN, longDateVN, workdayClock, workdayVN } from "@/lib/date";
 import { anyStale, getGoals, getHabits, getRecentDailyLogs, getTasks } from "@/lib/db/data";
 import { resolveGoals } from "@/lib/db/goal-status";
 import { isGoalDone, type Goal } from "@/lib/goals";
 import { StaleBanner } from "@/components/stale-banner";
 import type { DailyLog, Task } from "@/lib/types";
-import { deadlineLabel, upcomingDeadlines, type DeadlineItem } from "@/lib/today";
+import { deadlineLabel, todayProgress, upcomingDeadlines, type DeadlineItem } from "@/lib/today";
 
 export default function TodayPage() {
   return (
@@ -32,7 +32,8 @@ async function TodayContent() {
   // Ngày giờ thay đổi theo request → render lúc request; dữ liệu đọc thẳng từ database
   await connection();
   const now = new Date();
-  const today = todayVN(now);
+  // Today đổi ngày lúc 4:00 (Trung chốt 06/11/2026): 0:00–3:59 vẫn là tối hôm trước
+  const today = workdayVN(now);
   // Next up (Calendar) và Kiến thức mới ẩn ở v1.0 (SPEC-v1.0 mục 3), về lại ở v1.1
   const [habitsLoaded, goalsLoaded, ...loaded] = await Promise.all([
     getHabits(),
@@ -42,12 +43,21 @@ async function TodayContent() {
   ]);
   const [tasks, logs] = loaded.map((l) => l.data) as [Task[], DailyLog[]];
   const todayLog = logs.find((l) => l.date === today) ?? null;
-  // Từ 18:00: mở sẵn cụm "Cuối ngày" (Daily Log chưa ghi + chọn việc ngày mai)
+  // 18:00–3:59: cụm "Cuối ngày" lên ngay dưới "Hôm nay làm" và mở sẵn (Daily Log chưa ghi + chọn việc ngày mai)
   const evening = isEveningVN(now);
   // Mục tiêu tuần Ưu tiên dưới "Hôm nay làm" (SPEC-v0.4 mục 7)
   const week = periodOf("week", today);
   const weekGoals = await resolveGoals(
     goalsLoaded.data.filter((g) => g.level === "week" && g.start === week.start && g.type === "Ưu tiên" && g.title.trim()),
+  );
+
+  const endOfDay = (
+    <Card title="Cuối ngày" className="lg:col-span-2">
+      <div className="space-y-6">
+        <DailyLogCapture todayLog={todayLog} open={evening && !todayLog} showExercise={false} />
+        <TomorrowPicker today={today} tasks={tasks} open={evening} />
+      </div>
+    </Card>
   );
 
   return (
@@ -56,15 +66,16 @@ async function TodayContent() {
         title={`${greetingVN(now)}, Trung`}
         subtitle={
           <>
-            {longDateVN(now)}
+            {longDateVN(workdayClock(now))}
             <ThesisCountdown today={today} />
           </>
         }
       />
       <StaleBanner show={anyStale(habitsLoaded, goalsLoaded, ...weekGoals.loaded, ...loaded)} />
-      {/* "Hôm nay làm" là tiêu điểm: rộng hết hàng, đứng đầu (critique 06/11/2026, Trung chốt) */}
+      {/* "Hôm nay làm" là tiêu điểm: rộng hết hàng, đứng đầu; buổi tối "Cuối ngày" lên ngay sau (critique 06/11/2026) */}
       <div className="grid gap-5 lg:grid-cols-2">
         <TodayPlanCard today={today} tasks={tasks} weekGoals={weekGoals.goals} />
+        {evening && endOfDay}
         <DeadlinesCard items={upcomingDeadlines(today, tasks)} />
         <Card title="Thói quen hôm nay">
           <HabitToday
@@ -73,15 +84,10 @@ async function TodayContent() {
             today={today}
           />
         </Card>
-        <Card title="Ghi nhanh" className="lg:col-span-2">
+        <Card title="Ghi nhanh ý tưởng" className="lg:col-span-2">
           <IdeaForm />
         </Card>
-        <Card title="Cuối ngày" className="lg:col-span-2">
-          <div className="space-y-6">
-            <DailyLogCapture todayLog={todayLog} open={evening && !todayLog} showExercise={false} />
-            <TomorrowPicker today={today} tasks={tasks} open={evening} />
-          </div>
-        </Card>
+        {!evening && endOfDay}
       </div>
     </>
   );
@@ -113,14 +119,22 @@ function ThesisCountdown({ today }: { today: string }) {
 
 /** "Hôm nay làm" (SPEC-v0.5 4.2) + mục tiêu tuần Ưu tiên ở cuối (SPEC-v0.4 mục 7). */
 function TodayPlanCard({ today, tasks, weekGoals }: { today: string; tasks: Task[]; weekGoals: Goal[] }) {
+  // "x/y xong" thay link "Cả tuần" (trùng link "Mở" của Mục tiêu tuần); số cập nhật sau mỗi lần tích (Server Action làm mới trang)
+  const progress = todayProgress(today, tasks);
   return (
     <Card
       title="Hôm nay làm"
+      focal
       className="lg:col-span-2"
       action={
-        <Link href="/goals?level=week" className="text-xs text-muted-foreground hover:text-primary">
-          Cả tuần
-        </Link>
+        progress && (
+          <span className="text-sm text-muted-foreground tabular-nums">
+            <span className={progress.done === progress.total ? "font-medium text-success" : "font-medium text-foreground"}>
+              {progress.done}/{progress.total}
+            </span>{" "}
+            việc xong
+          </span>
+        )
       }
     >
       <TodayPlan today={today} tasks={tasks} />

@@ -1,8 +1,8 @@
 export const fieldClass =
-  "w-full rounded-lg border border-line bg-background px-3 py-2 text-sm outline-none placeholder:text-muted-foreground focus:border-primary";
+  "w-full rounded-lg border border-line bg-background px-3 py-2 text-sm outline-none placeholder:text-muted-foreground focus:border-primary focus-visible:ring-3 focus-visible:ring-ring/50";
 
 export const primaryButtonClass =
-  "shrink-0 rounded-lg bg-primary px-4 py-2 text-sm font-medium text-surface disabled:opacity-50";
+  "shrink-0 rounded-lg bg-primary px-4 py-2 text-sm font-medium text-surface outline-none focus-visible:ring-3 focus-visible:ring-ring/50 disabled:opacity-50";
 
 export type FormStatus = { ok?: boolean; message?: string };
 

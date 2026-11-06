@@ -237,7 +237,8 @@ Góc bo mềm, nhất quán: khung ngoài 12px, panel bên trong bo đồng tâm
 - **Corner Style:** Frame ReUI bo 12px, panel bên trong bo đồng tâm.
 - **Background:** viền ngoài `surface-muted` 50% + viền 1px `line`; panel `surface`.
 - **Shadow Strategy:** phẳng (xem Paper-Stack Rule).
-- **Internal Padding:** 20px, 24px từ md. Tiêu đề khung (Lora 18px) cách nội dung 16px, nút hành động căn phải cùng hàng.
+- **Internal Padding:** 20px, 24px từ md. Tiêu đề khung (Lora 18px, heading cấp 2) cách nội dung 16px, nút hành động căn phải cùng hàng.
+- **Thẻ tiêu điểm** (`focal`, mỗi trang tối đa một, ví dụ "Hôm nay làm"): tiêu đề Lora 24px (Headline), rộng hết hàng, đứng đầu.
 - **Trạng thái trống:** một dòng chữ 14px mực nhạt, không hình minh hoạ.
 
 ### Inputs / Fields
