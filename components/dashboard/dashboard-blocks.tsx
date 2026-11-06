@@ -15,20 +15,22 @@ import { pctTone, type DashTask, type Tone } from "@/lib/dashboard/stats";
 import { deadlineLabel } from "@/lib/today";
 import { goalCounts, isGoalDone, type Goal } from "@/lib/goals";
 
-// Màu lấy từ token (SPEC-v0.3 mục 7): --primary xanh, --chart-3 xanh lá, --chart-4 hổ phách, --chart-5 xám, --good "ổn"
+// Màu (SPEC-v0.3 mục 7, critique lần 3): trạng thái dùng token ngữ nghĩa --good / --warning / --danger;
+// màu Lĩnh vực (--chart-1..5) chỉ để phân loại; sparkline màu trung tính.
 
-// Trục Y chừa 15% phía trên để đỉnh đường cong không bị cắt
-const Y_DOMAIN: [number, (max: number) => number] = [0, (max) => Math.max(4, Math.ceil(max * 1.15))];
-const TONE_COLOR: Record<Tone, string> = { good: "var(--good)", warn: "var(--chart-4)", bad: "var(--danger)" };
-const TONE_LABEL: Record<Tone, string> = { good: "Ổn", warn: "Cần để ý", bad: "Cần xử lý" };
-
-export function SampleBadge() {
-  return (
-    <Badge variant="warning-light" radius="full" title="Dữ liệu mẫu, không phải số thật">
-      Mẫu
-    </Badge>
-  );
+/** Mốc trục Y "tròn" (bước 1/2/5/10/20…), chừa ~15% phía trên để đỉnh không bị cắt. */
+export function niceMax(max: number): number {
+  const target = Math.max(4, max * 1.15);
+  const raw = target / 4;
+  const pow = 10 ** Math.floor(Math.log10(raw));
+  const step = [1, 2, 5, 10].map((m) => m * pow).find((s) => s >= raw) ?? 10 * pow;
+  return Math.ceil(target / step) * step;
 }
+const Y_DOMAIN: [number, (max: number) => number] = [0, niceMax];
+const TONE_COLOR: Record<Tone, string> = { good: "var(--good)", warn: "var(--warning)", bad: "var(--danger)" };
+const TONE_LABEL: Record<Tone, string> = { good: "Ổn", warn: "Cần để ý", bad: "Cần xử lý" };
+/** Thay đổi nhỏ hơn mức này coi như đứng yên: không tô xanh/đỏ */
+const NOISE = 5;
 
 function Dot({ tone }: { tone: Tone }) {
   return (
@@ -39,6 +41,27 @@ function Dot({ tone }: { tone: Tone }) {
       className="size-2 shrink-0 rounded-full"
       style={{ background: TONE_COLOR[tone] }}
     />
+  );
+}
+
+/** Huy hiệu ±% (hoặc ± điểm); |thay đổi| < 5 → viền trung tính. */
+export function ChangeBadge({
+  change,
+  unit = "%",
+  upIsGood = true,
+}: {
+  change: number | null | undefined;
+  unit?: "%" | "điểm";
+  upIsGood?: boolean;
+}) {
+  if (change === null || change === undefined) return null;
+  const variant = Math.abs(change) < NOISE ? "outline" : (change >= 0) === upIsGood ? "success-light" : "destructive-light";
+  return (
+    <Badge variant={variant} radius="full">
+      {change > 0 ? "+" : ""}
+      {change}
+      {unit === "%" ? "%" : " điểm"}
+    </Badge>
   );
 }
 
@@ -58,14 +81,9 @@ export type KpiItem = {
 };
 
 /** Một hàng 4 số liệu trong một khung (thay 4 thẻ rời), để thẻ tóm tắt tuần là tiêu điểm. */
-export function KpiStrip({ items, sample }: { items: KpiItem[]; sample: boolean }) {
+export function KpiStrip({ items }: { items: KpiItem[] }) {
   return (
     <Card>
-      {sample && (
-        <div className="-mt-1 mb-3 flex justify-end">
-          <SampleBadge />
-        </div>
-      )}
       <dl className="grid gap-6 sm:grid-cols-2 xl:grid-cols-4">
         {items.map((k, i) => (
           <KpiCell key={k.title} item={k} first={i === 0} />
@@ -75,11 +93,16 @@ export function KpiStrip({ items, sample }: { items: KpiItem[]; sample: boolean 
   );
 }
 
+const sparkConfig = { v: { label: "Xu hướng", color: "var(--muted-foreground)" } } satisfies ChartConfig;
+
 function KpiCell({ item: k, first }: { item: KpiItem; first: boolean }) {
-  const config = { v: { label: k.title, color: TONE_COLOR[k.tone] } } satisfies ChartConfig;
   return (
     <div className={`flex flex-col ${first ? "" : "xl:border-l xl:border-line xl:pl-6"}`}>
-      <dt className="text-sm font-medium text-muted-foreground">{k.title}</dt>
+      {/* Trạng thái bằng chấm có nhãn (không chỉ bằng màu sparkline) */}
+      <dt className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
+        <Dot tone={k.tone} />
+        {k.title}
+      </dt>
       <dd className="mt-2 flex items-end justify-between gap-3">
         <span className="whitespace-nowrap">
           <span className="font-serif text-2xl font-semibold tabular-nums">{k.value}</span>
@@ -87,22 +110,16 @@ function KpiCell({ item: k, first }: { item: KpiItem; first: boolean }) {
         </span>
         {/* Đường phẳng không nói gì → ẩn */}
         {new Set(k.series).size > 1 && (
-          <ChartContainer config={config} className="aspect-auto h-8 w-20 shrink-0" aria-hidden>
+          <ChartContainer config={sparkConfig} className="aspect-auto h-8 w-20 shrink-0" aria-hidden>
             <LineChart data={k.series.map((v, i) => ({ i, v }))} margin={{ top: 4, bottom: 4, left: 2, right: 2 }}>
               <YAxis hide domain={["dataMin", "dataMax"]} />
-              <Line dataKey="v" type="monotone" stroke="var(--color-v)" strokeWidth={2} dot={false} isAnimationActive={false} />
+              <Line dataKey="v" type="monotone" stroke="var(--color-v)" strokeWidth={1.5} dot={false} isAnimationActive={false} />
             </LineChart>
           </ChartContainer>
         )}
       </dd>
       <dd className="mt-2 flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
-        {k.change !== undefined && k.change !== null && (
-          <Badge variant={(k.change >= 0) === (k.upIsGood ?? true) ? "success-light" : "destructive-light"} radius="full">
-            {k.change > 0 ? "+" : ""}
-            {k.change}
-            {(k.changeUnit ?? "%") === "%" ? "%" : " điểm"}
-          </Badge>
-        )}
+        <ChangeBadge change={k.change} unit={k.changeUnit} upIsGood={k.upIsGood} />
         <span>{k.note}</span>
       </dd>
     </div>
@@ -178,7 +195,7 @@ const weeklyConfig = {
 } satisfies ChartConfig;
 
 /** Dưới số tuần/ngày có dữ liệu này thì biểu đồ chỉ toàn số 0 → thu thành một dòng (SPEC-v1.0, critique lần 2). */
-const MIN_ACTIVE_WEEKS = 3;
+export const MIN_ACTIVE_WEEKS = 3;
 
 export function WeeklyArea({ rows }: { rows: { week: string; done: number }[] }) {
   const total = rows.reduce((s, r) => s + r.done, 0);
@@ -230,8 +247,8 @@ type Day = { date: string; hasLog: boolean; done: number; exercised: boolean; dr
 const dailyConfig = {
   h: { label: "Việc xong" },
   normal: { label: "Thường", color: "var(--chart-5)" },
-  exercised: { label: "Có tập", color: "var(--chart-3)" },
-  dropped: { label: "Có rơi việc", color: "var(--chart-4)" },
+  exercised: { label: "Có tập", color: "var(--good)" },
+  dropped: { label: "Có rơi việc", color: "var(--warning)" },
 } satisfies ChartConfig;
 
 const dayColor = (d: Day) =>
