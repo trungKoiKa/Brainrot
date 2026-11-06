@@ -108,6 +108,9 @@ Khác Notion:
   (trống → ẩn thẻ), **Xóa tài khoản** (gõ lại email để xác nhận).
 - **Today, Tasks, Goal, Ghi nhanh:** giữ nguyên hành vi v0.5, chỉ đổi nguồn dữ liệu. Ô "Ý tưởng" ghi vào bảng `ideas`.
 - **Dashboard:** giữ KPI và thẻ về việc, mục tiêu, thói quen; **ẩn** Brain thu nhỏ và phần "học" (Knowledge) ở đợt 1.
+  *Trung chốt 07/11/2026 (critique Dashboard):* đầu trang là thẻ tiêu điểm **"Tuần này"** — một câu kết luận (quá hạn
+  trước, rồi % việc đã xếp lịch xong, chưa xếp lịch thì số việc xong) + các số đi kèm; 4 KPI gộp thành **một khung**
+  bên dưới; chế độ Thật không lấp bằng dữ liệu mẫu (sửa SPEC-v0.3 mục 5); "Nhịp làm & học" → "Nhịp làm" (chỉ việc xong).
   Thẻ đếm ngược đọc ngày đích từ Cài đặt. Chế độ **Mẫu** giữ nguyên.
 - **Người mới (dữ liệu trống):** mỗi màn có câu hướng dẫn ngắn thay vì bảng trống (ví dụ Today: "Chưa có việc nào —
   tạo việc đầu tiên ở Tasks").

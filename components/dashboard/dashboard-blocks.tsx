@@ -3,8 +3,6 @@
 import { useSyncExternalStore } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import type { LucideIcon } from "lucide-react";
-import { IconTile } from "@/components/reui/icon-tile";
 import { CheckIcon } from "lucide-react";
 import { Area, AreaChart, Bar, BarChart, CartesianGrid, Cell, Line, LineChart, XAxis, YAxis } from "recharts";
 import { Card, Empty } from "@/components/card";
@@ -44,24 +42,10 @@ function Dot({ tone }: { tone: Tone }) {
   );
 }
 
-// ---------- 4.1 ----------
+// ---------- 4.1: 4 số liệu gọn trong một khung (critique 07/11/2026) ----------
 
-export function KpiCard({
-  title,
-  subtitle,
-  tone,
-  value,
-  series,
-  change,
-  changeUnit = "%",
-  upIsGood = true,
-  note,
-  sample,
-  icon: Icon,
-}: {
+export type KpiItem = {
   title: string;
-  subtitle: string;
-  icon: LucideIcon;
   tone: Tone;
   value: string;
   series: number[];
@@ -69,46 +53,59 @@ export function KpiCard({
   changeUnit?: "%" | "điểm";
   upIsGood?: boolean;
   note: string;
-  sample: boolean;
-}) {
-  const config = { v: { label: title, color: TONE_COLOR[tone] } } satisfies ChartConfig;
+};
+
+/** Một hàng 4 số liệu trong một khung (thay 4 thẻ rời), để thẻ tóm tắt tuần là tiêu điểm. */
+export function KpiStrip({ items, sample }: { items: KpiItem[]; sample: boolean }) {
   return (
-    <Card className="flex flex-col">
-      <div className="flex items-start justify-between gap-2">
-        <div>
-          <h2 className="text-sm font-semibold">{title}</h2>
-          <p className="text-xs text-muted-foreground">{subtitle}</p>
+    <Card>
+      {sample && (
+        <div className="-mt-1 mb-3 flex justify-end">
+          <SampleBadge />
         </div>
-        <span className="flex items-center gap-2">
-          {sample && <SampleBadge />}
-          <IconTile variant="soft" size="sm" style={{ color: TONE_COLOR[tone] }} aria-hidden="true">
-            <Icon />
-          </IconTile>
-        </span>
-      </div>
-      <div className="mt-4 flex items-end justify-between gap-3">
-        <p className="font-serif text-2xl font-semibold whitespace-nowrap">{value}</p>
-        {series.length > 1 && (
-          <ChartContainer config={config} className="aspect-auto h-10 w-24 shrink-0" aria-hidden>
-            <LineChart data={series.map((v, i) => ({ i, v }))} margin={{ top: 4, bottom: 4, left: 2, right: 2 }}>
+      )}
+      <dl className="grid gap-6 sm:grid-cols-2 xl:grid-cols-4">
+        {items.map((k, i) => (
+          <KpiCell key={k.title} item={k} first={i === 0} />
+        ))}
+      </dl>
+    </Card>
+  );
+}
+
+function KpiCell({ item: k, first }: { item: KpiItem; first: boolean }) {
+  const config = { v: { label: k.title, color: TONE_COLOR[k.tone] } } satisfies ChartConfig;
+  return (
+    <div className={`flex flex-col ${first ? "" : "xl:border-l xl:border-line xl:pl-6"}`}>
+      <dt className="text-sm font-medium text-muted-foreground">{k.title}</dt>
+      <dd className="mt-2 flex items-end justify-between gap-3">
+        <span className="font-serif text-2xl font-semibold whitespace-nowrap tabular-nums">{k.value}</span>
+        {k.series.length > 1 && (
+          <ChartContainer config={config} className="aspect-auto h-8 w-20 shrink-0" aria-hidden>
+            <LineChart data={k.series.map((v, i) => ({ i, v }))} margin={{ top: 4, bottom: 4, left: 2, right: 2 }}>
               <YAxis hide domain={["dataMin", "dataMax"]} />
               <Line dataKey="v" type="monotone" stroke="var(--color-v)" strokeWidth={2} dot={false} isAnimationActive={false} />
             </LineChart>
           </ChartContainer>
         )}
-      </div>
-      <div className="mt-4 flex items-center gap-2 border-t border-line pt-3 text-xs text-muted-foreground">
-        {change !== undefined && change !== null && (
-          <Badge variant={(change >= 0) === upIsGood ? "success-light" : "destructive-light"} radius="full">
-            {change > 0 ? "+" : ""}
-            {change}
-            {changeUnit === "%" ? "%" : " điểm"}
+      </dd>
+      <dd className="mt-2 flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
+        {k.change !== undefined && k.change !== null && (
+          <Badge variant={(k.change >= 0) === (k.upIsGood ?? true) ? "success-light" : "destructive-light"} radius="full">
+            {k.change > 0 ? "+" : ""}
+            {k.change}
+            {(k.changeUnit ?? "%") === "%" ? "%" : " điểm"}
           </Badge>
         )}
-        <span>{note}</span>
-      </div>
-    </Card>
+        <span>{k.note}</span>
+      </dd>
+    </div>
   );
+}
+
+/** Chấm màu trạng thái có nhãn cho trình đọc màn hình. */
+export function ToneDot({ tone }: { tone: Tone }) {
+  return <Dot tone={tone} />;
 }
 
 // ---------- 4.2 ----------
@@ -159,14 +156,13 @@ export function ProjectBars({ rows }: { rows: { project: string; doing: number; 
 // ---------- 4.3 ----------
 
 const weeklyConfig = {
-  done: { label: "Task xong", color: "var(--primary)" },
-  learned: { label: "Kiến thức mới", color: "var(--chart-3)" },
+  done: { label: "Việc xong", color: "var(--primary)" },
 } satisfies ChartConfig;
 
-export function WeeklyArea({ rows }: { rows: { week: string; done: number; learned: number }[] }) {
+export function WeeklyArea({ rows }: { rows: { week: string; done: number }[] }) {
+  if (rows.every((r) => r.done === 0)) return <Empty>Chưa có việc nào xong trong 12 tuần qua.</Empty>;
   return (
     <>
-      <Legend config={weeklyConfig} />
       <ChartContainer config={weeklyConfig} className="aspect-auto h-64 w-full">
         <AreaChart data={rows} margin={{ left: -12, right: 8 }}>
           <defs>
@@ -184,7 +180,6 @@ export function WeeklyArea({ rows }: { rows: { week: string; done: number; learn
             content={<ChartTooltipContent labelFormatter={(w) => `Tuần từ ${formatDay(String(w), true)}`} />}
           />
           <Area dataKey="done" type="monotone" stroke="var(--color-done)" strokeWidth={2} fill="url(#fill-done)" />
-          <Area dataKey="learned" type="monotone" stroke="var(--color-learned)" strokeWidth={2} fill="url(#fill-learned)" />
         </AreaChart>
       </ChartContainer>
     </>
@@ -256,7 +251,7 @@ export function DueSoonList({ items, more }: { items: (DashTask & { deadline: st
           ) : (
             <span className="min-w-0 flex-1 truncate">{t.title}</span>
           )}
-          <Badge variant={t.daysLeft < 0 ? "destructive-light" : t.daysLeft <= 3 ? "warning-light" : "outline"} size="sm" className="shrink-0 tabular-nums">
+          <Badge variant={t.daysLeft < 0 ? "destructive-light" : t.daysLeft <= 3 ? "warning-light" : "outline"} className="shrink-0 tabular-nums">
             {deadlineLabel(t.daysLeft)}
           </Badge>
         </li>
