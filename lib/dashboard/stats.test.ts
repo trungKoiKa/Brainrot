@@ -181,12 +181,15 @@ describe("dữ liệu mẫu", () => {
   });
 });
 
-describe("tóm tắt tuần (thẻ tiêu điểm)", () => {
+describe("tóm tắt tuần (thẻ tiêu điểm, 3 tín hiệu)", () => {
+  const log = (date: string, habits: string[] = []) => ({ date, doneCount: 0, exercised: false, dropped: false, habits });
+  const habit = (name: string): DashInput["habits"][number] => ({ id: name, name, from: "2026-01", to: null, order: 0 });
+
   it("không có gì đo được → nói rõ, không tô màu", () => {
     expect(weekSummary(input())).toMatchObject({ tone: "none", headline: "Tuần này chưa có gì để đo.", facts: [] });
   });
 
-  it("quá hạn đứng trước tỉ lệ theo lịch", () => {
+  it("quá hạn đứng trước mọi tín hiệu", () => {
     const s = weekSummary(input({
       tasks: [t({ plannedOn: today, status: "Xong", doneOn: today }), t({ deadline: "2026-10-20" })],
     }));
@@ -195,15 +198,29 @@ describe("tóm tắt tuần (thẻ tiêu điểm)", () => {
     expect(s.facts).toEqual(["1/1 việc theo lịch", "1 việc xong", "1 việc quá hạn"]);
   });
 
-  it("theo tỉ lệ việc đã xếp lịch trong tuần", () => {
-    const s = weekSummary(input({
-      tasks: [t({ plannedOn: today, status: "Xong", doneOn: today }), t({ plannedOn: "2026-10-28" })],
-    }));
-    expect(s).toMatchObject({ tone: "warn", headline: "Tuần này cần để ý: mới xong 50% việc đã xếp lịch." });
+  it("chưa xếp lịch, chưa có log/thói quen → không chấm xanh", () => {
+    const s = weekSummary(input({ tasks: [t({ status: "Xong", doneOn: today })] }));
+    expect(s).toMatchObject({ tone: "none", headline: "Đã xong 1 việc; tuần này chưa xếp lịch việc nào." });
   });
 
-  it("chưa xếp lịch nhưng có việc xong", () => {
-    const s = weekSummary(input({ tasks: [t({ status: "Xong", doneOn: today })] }));
-    expect(s).toMatchObject({ tone: "good", headline: "Đã xong 1 việc, chưa xếp lịch việc nào trong tuần." });
+  it("nói tín hiệu yếu nhất, kèm cái vẫn ổn", () => {
+    const s = weekSummary(input({
+      tasks: [t({ plannedOn: today, status: "Xong", doneOn: today })],
+      logs: [log(today)],
+    }));
+    expect(s.signals.map((x) => [x.key, x.tone])).toEqual([["tasks", "good"], ["log", "bad"]]);
+    expect(s).toMatchObject({ tone: "bad", headline: "Tuần này đang chậm: mới ghi log 1/7 ngày (việc vẫn ổn)." });
+    expect(s.facts).toContain("ghi log 1/7 ngày");
+  });
+
+  it("mọi tín hiệu ổn → liệt kê", () => {
+    const days = ["2026-10-20", "2026-10-21", "2026-10-22", "2026-10-23", "2026-10-24", "2026-10-25", today];
+    const s = weekSummary(input({
+      tasks: [t({ plannedOn: today, status: "Xong", doneOn: today })],
+      logs: days.map((d) => log(d, ["Đọc sách"])),
+      habits: [habit("Đọc sách")],
+    }));
+    expect(s.tone).toBe("good");
+    expect(s.headline).toBe("Tuần này đang ổn: xong 100% việc đã xếp lịch, thói quen đạt 100%, ghi log 7/7 ngày.");
   });
 });

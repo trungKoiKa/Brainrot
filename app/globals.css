@@ -117,6 +117,12 @@
   --invert-foreground: var(--background);
 }
 
+/* Chữ trạng thái "cảnh báo" (Badge warning-light…) trên nền tối: --field-4 tối (#c98500) chỉ đạt 4.46:1 trên nền
+   vàng 15% → sáng hơn một bậc cho chữ, màu Lĩnh vực giữ nguyên (critique Dashboard 07/11/2026) */
+[data-theme="dark"] {
+  --warning: #dca12e;
+}
+
 @theme inline {
   --color-background: var(--background);
   --color-surface: var(--surface);

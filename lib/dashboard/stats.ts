@@ -239,9 +239,20 @@ export function dueSoon({ today, tasks }: DashInput, horizon = 14, max = 5) {
   return { items: list.slice(0, max), more: Math.max(0, list.length - max) };
 }
 
-// ---------- tóm tắt tuần: thẻ tiêu điểm đầu Dashboard (critique 07/11/2026, Trung chốt) ----------
+// ---------- tóm tắt tuần: thẻ tiêu điểm đầu Dashboard (SPEC-v1.0, Trung chốt 07/11/2026) ----------
 
 export type SummaryTone = Tone | "none";
+
+export type WeekSignal = {
+  key: "tasks" | "habits" | "log";
+  tone: Tone;
+  /** Cụm chữ khi tín hiệu này yếu nhất, vd "mới ghi log 1/7 ngày" */
+  weak: string;
+  /** Cụm chữ khi ổn, vd "ghi log 6/7 ngày" */
+  ok: string;
+  /** Tên ngắn khi nhắc "(… vẫn ổn)" */
+  name: string;
+};
 
 export type WeekSummary = {
   tone: SummaryTone;
@@ -251,12 +262,46 @@ export type WeekSummary = {
   facts: string[];
   /** Thứ Hai của tuần (để ghi "từ dd/mm") */
   monday: string;
+  /** Các tín hiệu đo được (để kiểm thử và mở rộng) */
+  signals: WeekSignal[];
 };
 
+const RANK: Record<Tone, number> = { bad: 0, warn: 1, good: 2 };
+const LEAD: Record<Exclude<Tone, "good">, string> = { bad: "Tuần này đang chậm", warn: "Tuần này cần để ý" };
+
 /**
- * Một câu cho tuần này, từ dữ liệu có thật: quá hạn > tỉ lệ việc theo lịch > (không có lịch) việc xong.
- * Không có gì đo được thì nói rõ, không tô màu cảnh báo.
+ * Ba tín hiệu (SPEC-v1.0, critique lần 2): việc theo lịch tuần này · thói quen 7 ngày · ghi log x/7 ngày.
+ * Mỗi cái chỉ tính khi đo được. Có việc quá hạn → nói quá hạn trước; còn lại nói tín hiệu yếu nhất.
  */
+export function weekSignals(input: DashInput): WeekSignal[] {
+  const out: WeekSignal[] = [];
+  const week = weekKpi(input);
+  if (week.value !== null) {
+    out.push({
+      key: "tasks",
+      tone: pctTone(week.value),
+      weak: `mới xong ${week.value}% việc đã xếp lịch`,
+      ok: `xong ${week.value}% việc đã xếp lịch`,
+      name: "việc",
+    });
+  }
+  const habits = habitKpis(input, 7).average;
+  if (habits !== null) {
+    out.push({ key: "habits", tone: pctTone(habits), weak: `thói quen mới đạt ${habits}%`, ok: `thói quen đạt ${habits}%`, name: "thói quen" });
+  }
+  if (input.logs.length > 0) {
+    const logged = dailyRhythm(input, 7).logged;
+    out.push({
+      key: "log",
+      tone: pctTone(Math.round((logged / 7) * 100)),
+      weak: `mới ghi log ${logged}/7 ngày`,
+      ok: `ghi log ${logged}/7 ngày`,
+      name: "ghi log",
+    });
+  }
+  return out;
+}
+
 export function weekSummary(input: DashInput): WeekSummary {
   const { today, tasks } = input;
   const monday = mondayOf(today);
@@ -264,35 +309,35 @@ export function weekSummary(input: DashInput): WeekSummary {
   const doneThisWeek = tasks.filter((t) => isDone(t) && t.doneOn !== null && t.doneOn >= monday && t.doneOn <= today).length;
   const overdue = tasks.filter((t) => !isDone(t) && t.deadline !== null && t.deadline < today).length;
   const goals = goalCounts(input.monthGoals);
+  const signals = weekSignals(input);
   const habits = habitKpis(input, 7).average;
 
   const facts: string[] = [];
   if (week.tally.total > 0) facts.push(`${week.tally.done}/${week.tally.total} việc theo lịch`);
   facts.push(`${doneThisWeek} việc xong`);
   if (goals.total > 0) facts.push(`${goals.completed}/${goals.total} mục tiêu tháng`);
-  if (habits !== null) facts.push(`thói quen ${habits}%`);
+  if (habits !== null) facts.push(`thói quen ${habits}% (7 ngày)`);
+  const log = signals.find((s) => s.key === "log");
+  if (log) facts.push(log.ok);
   if (overdue > 0) facts.push(`${overdue} việc quá hạn`);
 
-  const nothing = week.tally.total === 0 && doneThisWeek === 0 && goals.total === 0 && habits === null && overdue === 0;
-  if (nothing) {
-    return { tone: "none", headline: "Tuần này chưa có gì để đo.", facts: [], monday };
+  const base = { facts, monday, signals };
+  if (overdue > 0) return { ...base, tone: "bad", headline: `Có ${overdue} việc quá hạn cần xử lý trước.` };
+
+  if (signals.length === 0) {
+    if (doneThisWeek > 0) {
+      return { ...base, tone: "none", headline: `Đã xong ${doneThisWeek} việc; tuần này chưa xếp lịch việc nào.` };
+    }
+    if (goals.total === 0) return { ...base, tone: "none", headline: "Tuần này chưa có gì để đo.", facts: [] };
+    return { ...base, tone: "none", headline: "Tuần này chưa xếp lịch việc nào." };
   }
-  if (overdue > 0) {
-    return { tone: "bad", headline: `Có ${overdue} việc quá hạn cần xử lý trước.`, facts, monday };
+
+  // Yếu nhất trước; bằng nhau thì theo thứ tự việc → thói quen → ghi log
+  const worst = [...signals].sort((a, b) => RANK[a.tone] - RANK[b.tone])[0];
+  if (worst.tone === "good") {
+    return { ...base, tone: "good", headline: `Tuần này đang ổn: ${signals.map((s) => s.ok).join(", ")}.` };
   }
-  if (week.value === null) {
-    return {
-      tone: doneThisWeek > 0 ? "good" : "none",
-      headline: doneThisWeek > 0 ? `Đã xong ${doneThisWeek} việc, chưa xếp lịch việc nào trong tuần.` : "Tuần này chưa xếp lịch việc nào.",
-      facts,
-      monday,
-    };
-  }
-  const tone = pctTone(week.value);
-  const headline = {
-    good: `Tuần này đang ổn: xong ${week.value}% việc đã xếp lịch.`,
-    warn: `Tuần này cần để ý: mới xong ${week.value}% việc đã xếp lịch.`,
-    bad: `Tuần này đang chậm: mới xong ${week.value}% việc đã xếp lịch.`,
-  }[tone];
-  return { tone, headline, facts, monday };
+  const fine = signals.filter((s) => s.tone === "good").map((s) => s.name);
+  const tail = fine.length > 0 ? ` (${fine.join(", ")} vẫn ổn)` : "";
+  return { ...base, tone: worst.tone, headline: `${LEAD[worst.tone]}: ${worst.weak}${tail}.` };
 }

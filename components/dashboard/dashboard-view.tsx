@@ -71,6 +71,8 @@ export function DashboardView({ real }: { real: DashInput }) {
   const daily = dailyRhythm(src, period);
   const habitStats = habitKpis(src, period);
   const due = dueSoon(src);
+  // Biểu đồ Nhịp hằng ngày cần ít nhất ngần này ngày có log (7 ngày → 3, 30/90 ngày → 5)
+  const minLoggedDays = Math.min(5, Math.ceil(period / 3));
 
   return (
     <div className="space-y-5">
@@ -100,24 +102,24 @@ export function DashboardView({ real }: { real: DashInput }) {
       </div>
 
       {/* Tiêu điểm: một câu trả lời "tôi đang làm tốt không?" cho tuần này */}
-      <Card
-        title="Tuần này"
-        focal
-        action={
-          <span className="flex items-center gap-2 text-sm text-muted-foreground">
-            {all && <SampleBadge />}
-            từ {formatDay(summary.monday, true)}
-          </span>
-        }
-      >
-        <p className="flex items-center gap-2.5 text-lg font-medium text-pretty">
-          {summary.tone !== "none" && <ToneDot tone={summary.tone} />}
+      {/* Câu kết luận là chữ to nhất thẻ; nhãn "Tuần này" chỉ là nhãn nhỏ (SPEC-v1.0, critique lần 2) */}
+      <Card>
+        <div className="flex items-baseline justify-between gap-3">
+          <h2 className="text-sm font-medium text-muted-foreground">Tuần này · từ {formatDay(summary.monday, true)}</h2>
+          {all && <SampleBadge />}
+        </div>
+        <p className="mt-3 flex items-start gap-3 font-serif text-2xl leading-snug font-semibold text-pretty md:text-3xl">
+          {summary.tone !== "none" && (
+            <span className="mt-[0.55em] flex shrink-0">
+              <ToneDot tone={summary.tone} />
+            </span>
+          )}
           {summary.headline}
         </p>
         {summary.facts.length > 0 ? (
-          <p className="mt-2 text-sm text-muted-foreground tabular-nums">{summary.facts.join(" · ")}</p>
+          <p className="mt-3 text-sm text-muted-foreground tabular-nums">{summary.facts.join(" · ")}</p>
         ) : (
-          <p className="mt-2 text-sm text-muted-foreground">
+          <p className="mt-3 text-sm text-muted-foreground">
             <Link href="/today" className={linkClass}>
               Xếp việc ở Today
             </Link>{" "}
@@ -148,7 +150,7 @@ export function DashboardView({ real }: { real: DashInput }) {
             value: fmt.format(done.value),
             series: done.series,
             change: done.change,
-            note: done.value === 0 ? "chưa có việc xong" : `TB ${fmt.format(done.perDay)}/ngày`,
+            note: done.value === 0 ? "chưa có việc xong" : done.perDay < 0.1 ? "TB dưới 0,1/ngày" : `TB ${fmt.format(done.perDay)}/ngày`,
           },
           {
             title: "Việc theo lịch tuần này",
@@ -162,7 +164,8 @@ export function DashboardView({ real }: { real: DashInput }) {
           {
             title: "Đồ án",
             tone: thesis.tone,
-            value: thesis.left === null ? "—" : thesis.left > 0 ? `${thesis.left} ngày` : thesis.left === 0 ? "Hôm nay" : "Đã qua hạn",
+            value: thesis.left === null ? "—" : thesis.left > 0 ? String(thesis.left) : thesis.left === 0 ? "Hôm nay" : "Đã qua hạn",
+            unit: thesis.left !== null && thesis.left > 0 ? "ngày" : undefined,
             series: thesis.series,
             note: real.thesisDeadline
               ? `hạn ${formatDay(real.thesisDeadline, true)} · ghi log ${thesis.logged}/${period} ngày`
@@ -264,20 +267,24 @@ export function DashboardView({ real }: { real: DashInput }) {
             <span className="flex flex-wrap justify-end gap-1.5">
               {all && <SampleBadge />}
               <Badge variant="outline" radius="full">{daily.logged} ngày có log</Badge>
-              <Badge variant="success-light" radius="full">{daily.exercised} ngày tập</Badge>
-              <Badge variant="warning-light" radius="full">{daily.dropped} ngày rơi việc</Badge>
+              {/* Số 0 không mang màu "tốt"/"cảnh báo" */}
+              <Badge variant={daily.exercised > 0 ? "success-light" : "outline"} radius="full">{daily.exercised} ngày tập</Badge>
+              <Badge variant={daily.dropped > 0 ? "warning-light" : "outline"} radius="full">{daily.dropped} ngày rơi việc</Badge>
             </span>
           )
         }
       >
-        {daily.logged > 0 ? (
+        {daily.logged >= minLoggedDays ? (
           <>
             <p className="-mt-3 mb-4 text-sm text-muted-foreground">Daily Log · số việc xong mỗi ngày</p>
             <DailyBars days={daily.days} />
           </>
         ) : (
+          // Quá ít ngày có log → biểu đồ chỉ toàn cột trống; thu thành một dòng
           <p className="text-sm text-pretty text-muted-foreground">
-            Chưa ghi Daily Log nào trong {period} ngày qua.{" "}
+            {daily.logged === 0
+              ? `Chưa ghi Daily Log nào trong ${period} ngày qua.`
+              : `Mới ghi log ${daily.logged}/${period} ngày; biểu đồ hiện khi có từ ${minLoggedDays} ngày.`}{" "}
             <Link href="/today" className={linkClass}>
               Ghi ở cụm Cuối ngày trên Today
             </Link>

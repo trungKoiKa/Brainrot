@@ -48,6 +48,8 @@ export type KpiItem = {
   title: string;
   tone: Tone;
   value: string;
+  /** Đơn vị in nhỏ cạnh số (vd "ngày"), tách khỏi số để không dính khoảng trắng của chữ số đều */
+  unit?: string;
   series: number[];
   change?: number | null;
   changeUnit?: "%" | "điểm";
@@ -79,8 +81,12 @@ function KpiCell({ item: k, first }: { item: KpiItem; first: boolean }) {
     <div className={`flex flex-col ${first ? "" : "xl:border-l xl:border-line xl:pl-6"}`}>
       <dt className="text-sm font-medium text-muted-foreground">{k.title}</dt>
       <dd className="mt-2 flex items-end justify-between gap-3">
-        <span className="font-serif text-2xl font-semibold whitespace-nowrap tabular-nums">{k.value}</span>
-        {k.series.length > 1 && (
+        <span className="whitespace-nowrap">
+          <span className="font-serif text-2xl font-semibold tabular-nums">{k.value}</span>
+          {k.unit && <span className="ml-1 text-sm text-muted-foreground">{k.unit}</span>}
+        </span>
+        {/* Đường phẳng không nói gì → ẩn */}
+        {new Set(k.series).size > 1 && (
           <ChartContainer config={config} className="aspect-auto h-8 w-20 shrink-0" aria-hidden>
             <LineChart data={k.series.map((v, i) => ({ i, v }))} margin={{ top: 4, bottom: 4, left: 2, right: 2 }}>
               <YAxis hide domain={["dataMin", "dataMax"]} />
@@ -128,11 +134,13 @@ export function ProjectBars({ rows }: { rows: { project: string; doing: number; 
   const router = useRouter();
   const narrow = useNarrow();
   if (rows.length === 0) return <p className="text-sm text-muted-foreground">Không còn việc nào chưa xong.</p>;
-  const open = (index: number) => router.push(`/tasks?project=${encodeURIComponent(rows[index].project)}`);
+  const href = (project: string) => `/tasks?project=${encodeURIComponent(project)}`;
+  const open = (index: number) => router.push(href(rows[index].project));
+  const summary = rows.map((r) => `${r.project}: ${r.doing} đang làm, ${r.todo} chưa làm`).join("; ");
   return (
     <>
       <Legend config={projectConfig} />
-      <ChartContainer config={projectConfig} className="aspect-auto h-64 w-full">
+      <ChartContainer config={projectConfig} className="aspect-auto h-64 w-full" role="img" aria-label={`Việc chưa xong theo dự án. ${summary}.`}>
         <BarChart data={rows} margin={{ left: -12, right: 4 }} barGap={4} maxBarSize={36}>
           <CartesianGrid vertical={false} strokeDasharray="3 3" />
           <XAxis
@@ -149,6 +157,16 @@ export function ProjectBars({ rows }: { rows: { project: string; doing: number; 
           <Bar dataKey="todo" fill="var(--color-todo)" radius={4} className="cursor-pointer" onClick={(_, i) => open(i)} />
         </BarChart>
       </ChartContainer>
+      {/* Đường bàn phím / trình đọc màn hình thay cho bấm cột (chỉ chuột) */}
+      <ul className="mt-3 flex flex-wrap gap-x-4 gap-y-1 text-sm" aria-label="Mở Tasks theo dự án">
+        {rows.map((r) => (
+          <li key={r.project}>
+            <Link href={href(r.project)} className="text-muted-foreground underline-offset-4 hover:text-foreground hover:underline">
+              {r.project} <span className="tabular-nums">({r.doing + r.todo})</span>
+            </Link>
+          </li>
+        ))}
+      </ul>
     </>
   );
 }
@@ -159,11 +177,30 @@ const weeklyConfig = {
   done: { label: "Việc xong", color: "var(--primary)" },
 } satisfies ChartConfig;
 
+/** Dưới số tuần/ngày có dữ liệu này thì biểu đồ chỉ toàn số 0 → thu thành một dòng (SPEC-v1.0, critique lần 2). */
+const MIN_ACTIVE_WEEKS = 3;
+
 export function WeeklyArea({ rows }: { rows: { week: string; done: number }[] }) {
-  if (rows.every((r) => r.done === 0)) return <Empty>Chưa có việc nào xong trong 12 tuần qua.</Empty>;
+  const total = rows.reduce((s, r) => s + r.done, 0);
+  const active = rows.filter((r) => r.done > 0).length;
+  const thisWeek = rows.at(-1)?.done ?? 0;
+  if (active < MIN_ACTIVE_WEEKS) {
+    return (
+      <Empty>
+        {total === 0
+          ? "Chưa có việc nào xong trong 12 tuần qua."
+          : `12 tuần qua: ${total} việc xong, ${active} tuần có việc xong (tuần này ${thisWeek}). Biểu đồ hiện khi có từ ${MIN_ACTIVE_WEEKS} tuần.`}
+      </Empty>
+    );
+  }
   return (
     <>
-      <ChartContainer config={weeklyConfig} className="aspect-auto h-64 w-full">
+      <ChartContainer
+        config={weeklyConfig}
+        className="aspect-auto h-64 w-full"
+        role="img"
+        aria-label={`12 tuần: tổng ${total} việc xong, tuần này ${thisWeek}.`}
+      >
         <AreaChart data={rows} margin={{ left: -12, right: 8 }}>
           <defs>
             {Object.keys(weeklyConfig).map((k) => (
@@ -206,7 +243,12 @@ export function DailyBars({ days }: { days: Day[] }) {
   return (
     <>
       <Legend config={{ normal: dailyConfig.normal, exercised: dailyConfig.exercised, dropped: dailyConfig.dropped }} />
-      <ChartContainer config={dailyConfig} className="aspect-auto h-56 w-full">
+      <ChartContainer
+        config={dailyConfig}
+        className="aspect-auto h-56 w-full"
+        role="img"
+        aria-label={`${days.length} ngày: ${days.filter((d) => d.hasLog).length} ngày có log, tổng ${days.reduce((s, d) => s + d.done, 0)} việc xong.`}
+      >
         <BarChart data={data} margin={{ left: -12, right: 4 }} barCategoryGap={days.length > 40 ? 1 : 3}>
           <CartesianGrid vertical={false} strokeDasharray="3 3" />
           <XAxis dataKey="date" tickLine={false} axisLine={false} tickMargin={8} minTickGap={24} tickFormatter={(d: string) => formatDay(d, true)} />
@@ -239,18 +281,18 @@ export function DailyBars({ days }: { days: Day[] }) {
 // ---------- 4.5 ----------
 
 export function DueSoonList({ items, more }: { items: (DashTask & { deadline: string; daysLeft: number })[]; more: number }) {
-  if (items.length === 0) return <Empty>Không có task nào đến hạn trong 14 ngày tới.</Empty>;
+  if (items.length === 0) return <Empty>Không có việc nào quá hạn hay sắp đến hạn.</Empty>;
   return (
     <ul className="divide-y divide-line text-sm">
       {items.map((t, i) => (
-        <li key={`${t.url}-${i}`} className="flex items-baseline gap-3 py-2 first:pt-0 last:pb-0">
-          {t.url ? (
-            <a href={t.url} target="_blank" rel="noopener noreferrer" className="min-w-0 flex-1 truncate hover:text-primary">
-              {t.title || "(Chưa đặt tên)"}
-            </a>
-          ) : (
-            <span className="min-w-0 flex-1 truncate">{t.title}</span>
-          )}
+        <li key={`${t.title}-${i}`} className="flex items-baseline gap-3 py-2 first:pt-0 last:pb-0">
+          {/* Task không còn trang riêng (v1.0) → mở Tasks, lọc theo dự án của việc */}
+          <Link
+            href={t.project ? `/tasks?project=${encodeURIComponent(t.project)}` : "/tasks"}
+            className="min-w-0 flex-1 truncate underline-offset-4 hover:text-primary hover:underline"
+          >
+            {t.title || "(Chưa đặt tên)"}
+          </Link>
           <Badge variant={t.daysLeft < 0 ? "destructive-light" : t.daysLeft <= 3 ? "warning-light" : "outline"} className="shrink-0 tabular-nums">
             {deadlineLabel(t.daysLeft)}
           </Badge>
@@ -335,7 +377,7 @@ export function HabitBars({
               style={{ "--lane": TONE_COLOR[tone] } as React.CSSProperties}
             />
             <p className="mt-1 text-xs text-muted-foreground tabular-nums">
-              {r.count}/{r.days} ngày · chuỗi {r.streak} · dài nhất {r.best}
+              {r.count}/{r.days} ngày · chuỗi {r.streak} ngày · dài nhất {r.best} ngày
             </p>
           </li>
         );
