@@ -111,6 +111,11 @@ Khác Notion:
   *Trung chốt 07/11/2026 (critique Dashboard):* đầu trang là thẻ tiêu điểm **"Tuần này"** — một câu kết luận (quá hạn
   trước, rồi % việc đã xếp lịch xong, chưa xếp lịch thì số việc xong) + các số đi kèm; 4 KPI gộp thành **một khung**
   bên dưới; chế độ Thật không lấp bằng dữ liệu mẫu (sửa SPEC-v0.3 mục 5); "Nhịp làm & học" → "Nhịp làm" (chỉ việc xong).
+  *Cập nhật 07/11/2026 (critique lần 2, Trung chốt):* câu kết luận xét **3 tín hiệu**, mỗi cái chấm ổn / cần để ý / chậm
+  theo ngưỡng 70% / 40%: **việc theo lịch** tuần này (chỉ khi đã xếp lịch), **thói quen** 7 ngày (khi có thói quen),
+  **ghi log** x/7 ngày gần nhất (khi đã từng ghi Daily Log). Có việc quá hạn → nói quá hạn trước; còn lại câu nói
+  **tín hiệu yếu nhất** (vd "Tuần này đang chậm: mới ghi log 1/7 ngày (việc vẫn ổn)"). Không đo được gì thì không tô màu.
+  Câu kết luận là chữ to nhất thẻ; biểu đồ quá ít dữ liệu thu thành một dòng tóm tắt.
   Thẻ đếm ngược đọc ngày đích từ Cài đặt. Chế độ **Mẫu** giữ nguyên.
 - **Người mới (dữ liệu trống):** mỗi màn có câu hướng dẫn ngắn thay vì bảng trống (ví dụ Today: "Chưa có việc nào —
   tạo việc đầu tiên ở Tasks").
