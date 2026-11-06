@@ -18,8 +18,14 @@ const hourFmt = new Intl.DateTimeFormat("en-GB", { timeZone: TIME_ZONE, hour: "n
 const weekdayFmt = new Intl.DateTimeFormat("vi-VN", { timeZone: TIME_ZONE, weekday: "long" });
 
 /** "Chào buổi sáng" … theo giờ Việt Nam. */
+/** Giờ hiện tại (0–23) theo giờ Việt Nam. */
+export const hourVN = (now: Date = new Date()): number => Number(hourFmt.format(now)) % 24;
+
+/** Từ 18:00 là "cuối ngày": Today mở sẵn Daily Log và chọn việc ngày mai. */
+export const isEveningVN = (now: Date = new Date()): boolean => hourVN(now) >= 18;
+
 export function greetingVN(now: Date = new Date()): string {
-  const h = Number(hourFmt.format(now));
+  const h = hourVN(now);
   if (h < 11) return "Chào buổi sáng";
   if (h < 13) return "Chào buổi trưa";
   if (h < 18) return "Chào buổi chiều";
