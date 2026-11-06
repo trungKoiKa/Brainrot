@@ -116,6 +116,12 @@ Khác Notion:
   **ghi log** x/7 ngày gần nhất (khi đã từng ghi Daily Log). Có việc quá hạn → nói quá hạn trước; còn lại câu nói
   **tín hiệu yếu nhất** (vd "Tuần này đang chậm: mới ghi log 1/7 ngày (việc vẫn ổn)"). Không đo được gì thì không tô màu.
   Câu kết luận là chữ to nhất thẻ; biểu đồ quá ít dữ liệu thu thành một dòng tóm tắt.
+  *Cập nhật 07/11/2026 (critique lần 3, Trung chốt):* thói quen và ghi log tính **từ thứ Hai tới hôm nay** (mẫu số = số
+  ngày đã qua trong tuần), khớp nhãn "Tuần này · từ dd/mm"; câu kết luận không lặp chữ "Tuần này". Dưới câu kết luận có
+  **một link sửa** theo tín hiệu yếu nhất (quá hạn → Tasks, ghi log / việc theo lịch → Today, thói quen → Goal). Khối không
+  có dữ liệu gom vào một khung "Chưa có dữ liệu" cuối trang (mỗi khối một dòng + link); khối có dữ liệu xếp lưới dày
+  không hở. Mỗi số liệu có chấm trạng thái; sparkline màu trung tính; chế độ Mẫu dùng **một** dải thông báo đầu trang
+  (thay nhãn "Mẫu" trên từng khung) kèm nút "Về dữ liệu thật". Thay đổi dưới 5% không tô màu.
   Thẻ đếm ngược đọc ngày đích từ Cài đặt. Chế độ **Mẫu** giữ nguyên.
 - **Người mới (dữ liệu trống):** mỗi màn có câu hướng dẫn ngắn thay vì bảng trống (ví dụ Today: "Chưa có việc nào —
   tạo việc đầu tiên ở Tasks").

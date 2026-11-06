@@ -15,6 +15,7 @@ import {
   thesisKpi,
   weeklyRhythm,
   weekSummary,
+  daysThisWeek,
   type DashInput,
   type DashTask,
 } from "./stats";
@@ -181,46 +182,59 @@ describe("dữ liệu mẫu", () => {
   });
 });
 
-describe("tóm tắt tuần (thẻ tiêu điểm, 3 tín hiệu)", () => {
+describe("tóm tắt tuần (thẻ tiêu điểm, 3 tín hiệu từ thứ Hai)", () => {
+  // today = 2026-10-26 là thứ Hai → tuần này có 1 ngày; dùng thứ Tư 28/10 cho tuần 3 ngày
+  const wed = "2026-10-28";
   const log = (date: string, habits: string[] = []) => ({ date, doneCount: 0, exercised: false, dropped: false, habits });
   const habit = (name: string): DashInput["habits"][number] => ({ id: name, name, from: "2026-01", to: null, order: 0 });
 
-  it("không có gì đo được → nói rõ, không tô màu", () => {
-    expect(weekSummary(input())).toMatchObject({ tone: "none", headline: "Tuần này chưa có gì để đo.", facts: [] });
+  it("daysThisWeek: thứ Hai = 1, Chủ nhật = 7", () => {
+    expect(daysThisWeek("2026-10-26")).toBe(1);
+    expect(daysThisWeek("2026-11-01")).toBe(7);
   });
 
-  it("quá hạn đứng trước mọi tín hiệu", () => {
+  it("không có gì đo được → nói rõ, không tô màu, không link riêng", () => {
+    expect(weekSummary(input())).toMatchObject({ tone: "none", headline: "Chưa có gì để đo.", facts: [], action: null });
+  });
+
+  it("quá hạn đứng trước mọi tín hiệu, link sang Tasks", () => {
     const s = weekSummary(input({
       tasks: [t({ plannedOn: today, status: "Xong", doneOn: today }), t({ deadline: "2026-10-20" })],
     }));
-    expect(s.tone).toBe("bad");
-    expect(s.headline).toBe("Có 1 việc quá hạn cần xử lý trước.");
+    expect(s).toMatchObject({ tone: "bad", headline: "Có 1 việc quá hạn cần xử lý trước.", action: { href: "/tasks" } });
     expect(s.facts).toEqual(["1/1 việc theo lịch", "1 việc xong", "1 việc quá hạn"]);
   });
 
-  it("chưa xếp lịch, chưa có log/thói quen → không chấm xanh", () => {
+  it("chưa xếp lịch, chưa có log/thói quen → không chấm xanh, link xếp việc", () => {
     const s = weekSummary(input({ tasks: [t({ status: "Xong", doneOn: today })] }));
-    expect(s).toMatchObject({ tone: "none", headline: "Đã xong 1 việc; tuần này chưa xếp lịch việc nào." });
+    expect(s).toMatchObject({ tone: "none", headline: "Đã xong 1 việc, chưa xếp lịch việc nào.", action: { href: "/today" } });
   });
 
-  it("nói tín hiệu yếu nhất, kèm cái vẫn ổn", () => {
+  it("ghi log tính từ thứ Hai; log tuần trước không tính", () => {
     const s = weekSummary(input({
-      tasks: [t({ plannedOn: today, status: "Xong", doneOn: today })],
-      logs: [log(today)],
+      today: wed,
+      tasks: [t({ plannedOn: wed, status: "Xong", doneOn: wed })],
+      logs: [log("2026-10-25"), log(wed)],
     }));
     expect(s.signals.map((x) => [x.key, x.tone])).toEqual([["tasks", "good"], ["log", "bad"]]);
-    expect(s).toMatchObject({ tone: "bad", headline: "Tuần này đang chậm: mới ghi log 1/7 ngày (việc vẫn ổn)." });
-    expect(s.facts).toContain("ghi log 1/7 ngày");
+    expect(s).toMatchObject({
+      tone: "bad",
+      headline: "Đang chậm: mới ghi log 1/3 ngày (việc vẫn ổn).",
+      action: { label: "Ghi log hôm nay ở Today", href: "/today" },
+    });
+    expect(s.facts).toContain("ghi log 1/3 ngày");
   });
 
-  it("mọi tín hiệu ổn → liệt kê", () => {
-    const days = ["2026-10-20", "2026-10-21", "2026-10-22", "2026-10-23", "2026-10-24", "2026-10-25", today];
+  it("mọi tín hiệu ổn → liệt kê, link nhìn lại tuần", () => {
+    const days = ["2026-10-26", "2026-10-27", wed];
     const s = weekSummary(input({
-      tasks: [t({ plannedOn: today, status: "Xong", doneOn: today })],
+      today: wed,
+      tasks: [t({ plannedOn: wed, status: "Xong", doneOn: wed })],
       logs: days.map((d) => log(d, ["Đọc sách"])),
       habits: [habit("Đọc sách")],
     }));
     expect(s.tone).toBe("good");
-    expect(s.headline).toBe("Tuần này đang ổn: xong 100% việc đã xếp lịch, thói quen đạt 100%, ghi log 7/7 ngày.");
+    expect(s.headline).toBe("Đang ổn: xong 100% việc đã xếp lịch, thói quen đạt 100%, ghi log 3/3 ngày.");
+    expect(s.action?.href).toBe("/goals?level=week");
   });
 });
