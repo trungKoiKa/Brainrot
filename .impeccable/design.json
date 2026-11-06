@@ -1,0 +1,132 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-11-06T17:00:00+07:00",
+  "title": "Design System: Brainrot",
+  "extensions": {
+    "colorMeta": {
+      "indigo-signal": { "role": "primary", "displayName": "Xanh chàm (Indigo Signal)", "canonical": "#3b5bdb", "tonalRamp": ["oklch(25% 0.08 268)", "oklch(35% 0.13 268)", "oklch(45% 0.18 268)", "oklch(52% 0.2 268)", "oklch(62% 0.16 268)", "oklch(73% 0.11 268)", "oklch(84% 0.06 268)", "oklch(94% 0.025 268)"] },
+      "paper": { "role": "neutral", "displayName": "Giấy kem", "canonical": "#f6f4ef", "tonalRamp": ["oklch(18% 0.004 85)", "oklch(28% 0.006 85)", "oklch(40% 0.008 85)", "oklch(52% 0.01 85)", "oklch(65% 0.01 85)", "oklch(78% 0.01 85)", "oklch(90% 0.01 85)", "oklch(97% 0.008 85)"] },
+      "ink": { "role": "neutral", "displayName": "Mực", "canonical": "#1f1d1a" },
+      "ink-muted": { "role": "neutral", "displayName": "Mực nhạt", "canonical": "#6f6a61" },
+      "line": { "role": "neutral", "displayName": "Kẻ dòng", "canonical": "#e2ddd3" },
+      "danger": { "role": "error", "displayName": "Đỏ trễ hạn", "canonical": "#c92a2a" },
+      "good": { "role": "success", "displayName": "Xanh ổn", "canonical": "#2f7d32" },
+      "field-blue": { "role": "tertiary", "displayName": "Lĩnh vực: xanh dương", "canonical": "#2a78d6" },
+      "field-pink": { "role": "tertiary", "displayName": "Lĩnh vực: hồng", "canonical": "#e87ba4" },
+      "field-green": { "role": "tertiary", "displayName": "Lĩnh vực: xanh lá", "canonical": "#008300" },
+      "field-amber": { "role": "tertiary", "displayName": "Lĩnh vực: hổ phách", "canonical": "#eda100" },
+      "field-neutral": { "role": "neutral", "displayName": "Lĩnh vực: xám", "canonical": "#a19d94" }
+    },
+    "typographyMeta": {
+      "display": { "displayName": "Display", "purpose": "Tiêu đề trang, mỗi màn một lần." },
+      "headline": { "displayName": "Headline", "purpose": "Số lớn KPI, tiêu đề màn đăng nhập." },
+      "title": { "displayName": "Title", "purpose": "Tiêu đề khung, tên mục tiêu." },
+      "body": { "displayName": "Body", "purpose": "Nội dung, dòng task, nút, ô nhập." },
+      "label": { "displayName": "Label", "purpose": "Badge Lĩnh vực, ngày ở sidebar, chú thích biểu đồ." }
+    },
+    "shadows": [
+      { "name": "raised-open", "value": "0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1)", "purpose": "Popover, lịch chọn ngày, sheet khi mở." },
+      { "name": "hover-hint", "value": "0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1)", "purpose": "Tuỳ chọn: gợi ý hover cho thẻ bấm được." }
+    ],
+    "motion": [
+      { "name": "colors", "value": "color, background-color, border-color 150ms cubic-bezier(0.4, 0, 0.2, 1)", "purpose": "Hover nút, chip, link." },
+      { "name": "reveal", "value": "200ms cubic-bezier(0.22, 1, 0.36, 1)", "purpose": "Mở/đóng phần tử (theo quy ước ReUI)." }
+    ],
+    "breakpoints": [
+      { "name": "md", "value": "768px" },
+      { "name": "desktop", "value": "1280px" }
+    ]
+  },
+  "components": [
+    {
+      "name": "Primary Button",
+      "kind": "button",
+      "refersTo": "button-primary",
+      "description": "Thao tác chính của một khung, mỗi khung tối đa một nút.",
+      "html": "<button class=\"ds-btn-primary\">Thêm việc</button>",
+      "css": ".ds-btn-primary { background: var(--primary, #3b5bdb); color: var(--surface, #fff); border: 1px solid transparent; border-radius: 8px; padding: 8px 16px; font: 500 14px/20px Inter, system-ui, sans-serif; cursor: pointer; transition: background-color 150ms; } .ds-btn-primary:hover { background: color-mix(in srgb, var(--primary, #3b5bdb) 80%, transparent); } .ds-btn-primary:focus-visible { outline: none; box-shadow: 0 0 0 3px color-mix(in srgb, var(--primary, #3b5bdb) 50%, transparent); } .ds-btn-primary:active { transform: translateY(1px); }"
+    },
+    {
+      "name": "Danger Ghost Button",
+      "kind": "button",
+      "refersTo": "button-danger-ghost",
+      "description": "Xoá trên dòng task, luôn đi sau bước xác nhận tại dòng.",
+      "html": "<button class=\"ds-btn-danger\">Xoá</button>",
+      "css": ".ds-btn-danger { background: transparent; color: var(--danger, #c92a2a); border: none; border-radius: 6px; padding: 4px 8px; font: 500 14px/20px Inter, system-ui, sans-serif; cursor: pointer; transition: background-color 150ms; } .ds-btn-danger:hover { background: var(--danger-soft, #fdecec); } .ds-btn-danger:focus-visible { outline: 2px solid var(--danger, #c92a2a); outline-offset: 2px; }"
+    },
+    {
+      "name": "Text Field",
+      "kind": "input",
+      "refersTo": "input",
+      "description": "Ô nhập trong form tạo/sửa việc và Ghi nhanh.",
+      "html": "<input class=\"ds-input\" placeholder=\"Việc cần làm…\" />",
+      "css": ".ds-input { width: 100%; background: var(--background, #f6f4ef); color: var(--foreground, #1f1d1a); border: 1px solid var(--line, #e2ddd3); border-radius: 8px; padding: 8px 12px; font: 400 14px/20px Inter, system-ui, sans-serif; outline: none; transition: border-color 150ms; } .ds-input::placeholder { color: var(--muted-foreground, #6f6a61); } .ds-input:focus-visible { border-color: var(--primary, #3b5bdb); }"
+    },
+    {
+      "name": "Filter Chip",
+      "kind": "chip",
+      "refersTo": "filter-chip",
+      "description": "Bộ lọc dự án / ưu tiên ở Tasks.",
+      "html": "<div style=\"display:flex;gap:8px\"><button class=\"ds-chip\" aria-pressed=\"true\">Tất cả</button><button class=\"ds-chip\" aria-pressed=\"false\">Đồ án</button></div>",
+      "css": ".ds-chip { background: transparent; color: var(--muted-foreground, #6f6a61); border: 1px solid var(--line, #e2ddd3); border-radius: 9999px; padding: 4px 12px; font: 400 14px/20px Inter, system-ui, sans-serif; cursor: pointer; transition: color 150ms, background-color 150ms, border-color 150ms; } .ds-chip:hover { color: var(--foreground, #1f1d1a); } .ds-chip[aria-pressed=\"true\"] { border-color: var(--primary, #3b5bdb); background: var(--accent-soft, #e5eafb); color: var(--primary, #3b5bdb); } .ds-chip:focus-visible { outline: 2px solid var(--primary, #3b5bdb); outline-offset: 2px; }"
+    },
+    {
+      "name": "Field Badge",
+      "kind": "chip",
+      "refersTo": "field-badge",
+      "description": "Nhãn Lĩnh vực / Dự án, màu cố định theo lib/fields.ts.",
+      "html": "<span class=\"ds-badge\">Computer Vision</span>",
+      "css": ".ds-badge { display: inline-block; white-space: nowrap; border-radius: 9999px; padding: 2px 8px; font: 500 12px/16px Inter, system-ui, sans-serif; color: var(--field-1, #2a78d6); background: color-mix(in srgb, var(--field-1, #2a78d6) 14%, transparent); }"
+    },
+    {
+      "name": "Card Frame",
+      "kind": "card",
+      "refersTo": "card-frame",
+      "description": "Khung nội dung mọi màn: viền ngoài xám ấm, panel trắng bo đồng tâm, tiêu đề Lora.",
+      "html": "<div class=\"ds-frame\"><div class=\"ds-frame-panel\"><h3 class=\"ds-frame-title\">Hôm nay làm</h3><p class=\"ds-frame-empty\">Chưa có việc nào cho hôm nay.</p></div></div>",
+      "css": ".ds-frame { border: 1px solid var(--line, #e2ddd3); border-radius: 12px; padding: 3px; background: color-mix(in srgb, var(--surface-muted, #efece5) 50%, transparent); } .ds-frame-panel { background: var(--surface, #fff); border: 1px solid var(--line, #e2ddd3); border-radius: 8px; padding: 20px; } .ds-frame-title { margin: 0 0 16px; font: 600 18px/28px Lora, Georgia, serif; color: var(--foreground, #1f1d1a); } .ds-frame-empty { margin: 0; font: 400 14px/20px Inter, system-ui, sans-serif; color: var(--muted-foreground, #6f6a61); }"
+    },
+    {
+      "name": "Sidebar Nav Item",
+      "kind": "nav",
+      "refersTo": "nav-item",
+      "description": "Mục menu sidebar; mục đang chọn có nền accent và aria-current.",
+      "html": "<nav class=\"ds-nav\"><a class=\"ds-nav-item\" aria-current=\"page\" href=\"#\">Today</a><a class=\"ds-nav-item\" href=\"#\">Tasks</a></nav>",
+      "css": ".ds-nav { display: flex; flex-direction: column; gap: 4px; width: 200px; } .ds-nav-item { display: block; border-radius: 6px; padding: 6px 8px; font: 400 14px/20px Inter, system-ui, sans-serif; color: var(--foreground, #1f1d1a); text-decoration: none; transition: background-color 150ms; } .ds-nav-item:hover { background: var(--surface-muted, #efece5); } .ds-nav-item[aria-current=\"page\"] { background: var(--surface-muted, #efece5); font-weight: 500; } .ds-nav-item:focus-visible { outline: 2px solid var(--primary, #3b5bdb); outline-offset: 2px; }"
+    }
+  ],
+  "narrative": {
+    "northStar": "Sổ tay của sinh viên (The Student's Desk Notebook)",
+    "overview": "Brainrot là cuốn sổ nằm sẵn trên bàn học: nền giấy kem ấm, tiêu đề chữ có chân như viết nắn nót, nội dung chữ không chân gọn gàng để đọc nhanh. Mỗi trang trả lời một câu hỏi, nên mỗi màn chỉ có một tiêu đề lớn và các khung nội dung xếp thoáng bên dưới. Cảm giác mềm và thân thiện: góc bo rõ, màu nền chuyển lớp nhẹ, nhấn màu ít. Màu chỉ dùng để mang nghĩa, không để trang trí.",
+    "keyCharacteristics": [
+      "Nền giấy kem (sáng) / than ấm (tối), khung nội dung trắng hoặc xám ấm nổi lên trên.",
+      "Tiêu đề Lora (serif), nội dung Inter (sans), cả hai có bộ ký tự tiếng Việt.",
+      "Một màu nhấn duy nhất: Xanh chàm.",
+      "Bốn màu Lĩnh vực cố định, dùng chung giữa badge, biểu đồ và graph.",
+      "Khung lồng nhau (Frame ReUI) bo 12px, chiều sâu bằng lớp màu chứ không bằng bóng."
+    ],
+    "rules": [
+      { "name": "The One Ink Rule", "body": "Xanh chàm là màu nhấn duy nhất. Không thêm màu thương hiệu thứ hai; cần phân biệt thì dùng màu Lĩnh vực.", "section": "colors" },
+      { "name": "The Four Fields Rule", "body": "Chỉ 4 màu Lĩnh vực được validator xác nhận phân biệt được; mọi lĩnh vực khác là xám và phải có nhãn chữ đi kèm.", "section": "colors" },
+      { "name": "The Token-Only Rule", "body": "Component không viết mã màu cứng; chỉ dùng token, để cả hai theme luôn đúng.", "section": "colors" },
+      { "name": "The Serif-Means-Heading Rule", "body": "Lora chỉ dùng cho tiêu đề và số nổi bật; mọi chữ thao tác là Inter.", "section": "typography" },
+      { "name": "The Tabular Numbers Rule", "body": "Số đếm dùng tabular-nums để không nhảy khi đổi giá trị.", "section": "typography" },
+      { "name": "The Paper-Stack Rule", "body": "Khung ở trạng thái nghỉ thì phẳng; tách lớp bằng màu nền và viền 1px. Bóng chỉ xuất hiện khi phần tử nổi lên.", "section": "elevation" },
+      { "name": "The Concentric Corners Rule", "body": "Thứ gì nằm trong khung bo thì góc nhỏ hơn khung ngoài, để hai đường cong song song.", "section": "shapes" }
+    ],
+    "dos": [
+      "Do lấy màu từ token trong app/globals.css và kiểm tra cả theme sáng lẫn tối (ảnh 1440×900) cho mọi thay đổi giao diện.",
+      "Do dùng component ReUI / shadcn đã cài (Frame, Button, Badge, Alert) đúng như bản phát hành, không tự viết lại.",
+      "Do đi kèm nhãn chữ với mọi màu Lĩnh vực.",
+      "Do chỉ dùng transition-colors (hoặc opacity/transform cụ thể) cho hover; không transition-all cho code mới.",
+      "Do giữ tiêu đề trang một dòng Lora; phần giải thích để ở dòng phụ mực nhạt."
+    ],
+    "donts": [
+      "Don't viết mã màu cứng trong component.",
+      "Don't thêm màu nhấn thứ hai cạnh Xanh chàm.",
+      "Don't dùng bóng để tách khung ở trạng thái nghỉ.",
+      "Don't lồng Card trong Frame hay Frame trong Card.",
+      "Don't dùng chữ nhỏ hơn 12px cho nội dung đọc. Ngoại lệ đang có: chữ viết tắt thứ trong tiêu đề cột bảng thói quen tháng (10.4px, components/habits/habit-month.tsx)."
+    ]
+  }
+}
