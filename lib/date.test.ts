@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { addDays, daysBetween, formatDay, greetingVN, longDateVN, toVNDate, todayVN, weekdayShort } from "./date";
+import { addDays, daysBetween, formatDay, greetingVN, isEveningVN, longDateVN, toVNDate, todayVN, weekdayShort, workdayVN } from "./date";
 
 describe("ngày theo giờ Việt Nam", () => {
   it("todayVN đổi ngày đúng lúc 0 giờ VN (17:00 UTC)", () => {
@@ -25,6 +25,23 @@ describe("ngày theo giờ Việt Nam", () => {
     expect(greetingVN(new Date("2026-10-22T05:00:00Z"))).toBe("Chào buổi trưa"); // 12:00
     expect(greetingVN(new Date("2026-10-22T08:00:00Z"))).toBe("Chào buổi chiều"); // 15:00
     expect(greetingVN(new Date("2026-10-22T13:00:00Z"))).toBe("Chào buổi tối"); // 20:00
+    expect(greetingVN(new Date("2026-10-22T18:30:00Z"))).toBe("Chào buổi tối"); // 01:30 hôm sau
+    expect(greetingVN(new Date("2026-10-22T21:00:00Z"))).toBe("Chào buổi sáng"); // 04:00 hôm sau
+  });
+
+  it("Today đổi ngày lúc 4:00 (giờ VN)", () => {
+    expect(workdayVN(new Date("2026-10-22T16:59:00Z"))).toBe("2026-10-22"); // 23:59
+    expect(workdayVN(new Date("2026-10-22T18:30:00Z"))).toBe("2026-10-22"); // 01:30 ngày 23 → vẫn ngày 22
+    expect(workdayVN(new Date("2026-10-22T20:59:00Z"))).toBe("2026-10-22"); // 03:59
+    expect(workdayVN(new Date("2026-10-22T21:00:00Z"))).toBe("2026-10-23"); // 04:00
+    expect(todayVN(new Date("2026-10-22T18:30:00Z"))).toBe("2026-10-23"); // deadline vẫn đổi lúc 0:00
+  });
+
+  it("cuối ngày từ 18:00 tới 3:59", () => {
+    expect(isEveningVN(new Date("2026-10-22T10:59:00Z"))).toBe(false); // 17:59
+    expect(isEveningVN(new Date("2026-10-22T11:00:00Z"))).toBe(true); // 18:00
+    expect(isEveningVN(new Date("2026-10-22T20:59:00Z"))).toBe(true); // 03:59
+    expect(isEveningVN(new Date("2026-10-22T21:00:00Z"))).toBe(false); // 04:00
   });
 
   it("định dạng ngày", () => {

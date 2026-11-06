@@ -17,15 +17,31 @@ export function todayVN(now: Date = new Date()): string {
 const hourFmt = new Intl.DateTimeFormat("en-GB", { timeZone: TIME_ZONE, hour: "numeric", hourCycle: "h23" });
 const weekdayFmt = new Intl.DateTimeFormat("vi-VN", { timeZone: TIME_ZONE, weekday: "long" });
 
-/** "Chào buổi sáng" … theo giờ Việt Nam. */
 /** Giờ hiện tại (0–23) theo giờ Việt Nam. */
 export const hourVN = (now: Date = new Date()): number => Number(hourFmt.format(now)) % 24;
 
-/** Từ 18:00 là "cuối ngày": Today mở sẵn Daily Log và chọn việc ngày mai. */
-export const isEveningVN = (now: Date = new Date()): boolean => hourVN(now) >= 18;
+/**
+ * Today coi 0:00–3:59 là tối hôm trước (Trung chốt 06/11/2026): thức khuya vẫn ghi Daily Log cho ngày vừa qua.
+ * Chỉ dùng cho Today (lời chào, Daily Log, cụm Cuối ngày); deadline và các màn khác vẫn đổi ngày lúc 0:00.
+ */
+export const DAY_START_HOUR = 4;
 
+/** Thời điểm lùi lại DAY_START_HOUR giờ: ngày của nó là "ngày làm việc" (giờ VN không có DST). */
+export const workdayClock = (now: Date = new Date()): Date => new Date(now.getTime() - DAY_START_HOUR * 3_600_000);
+
+/** Ngày làm việc ở Việt Nam: như todayVN nhưng đổi ngày lúc 4:00. */
+export const workdayVN = (now: Date = new Date()): string => todayVN(workdayClock(now));
+
+/** Từ 18:00 tới 3:59 là "cuối ngày": Today mở sẵn Daily Log và chọn việc ngày mai. */
+export const isEveningVN = (now: Date = new Date()): boolean => {
+  const h = hourVN(now);
+  return h >= 18 || h < DAY_START_HOUR;
+};
+
+/** "Chào buổi sáng" … theo giờ Việt Nam; 0:00–3:59 vẫn là buổi tối. */
 export function greetingVN(now: Date = new Date()): string {
   const h = hourVN(now);
+  if (h < DAY_START_HOUR) return "Chào buổi tối";
   if (h < 11) return "Chào buổi sáng";
   if (h < 13) return "Chào buổi trưa";
   if (h < 18) return "Chào buổi chiều";

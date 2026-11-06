@@ -16,6 +16,12 @@
 > rồi "Ghi nhanh" (ý tưởng) và "Cuối ngày" (Daily Log + Ngày mai làm). Cụm Cuối ngày thu gọn, **từ 18:00** mới mở sẵn
 > (Daily Log chỉ mở khi chưa ghi). Next up và Kiến thức mới gỡ khỏi Today đúng mục 3.
 >
+> **Today, đợt 2 (Trung chốt 06/11/2026, critique lần 2):** buổi tối (18:00–3:59) "Cuối ngày" đứng ngay dưới "Hôm nay làm".
+> **Today đổi ngày lúc 4:00:** 0:00–3:59 vẫn là tối hôm trước cho lời chào, ngày ở dòng phụ, Daily Log, thói quen và việc
+> trong "Hôm nay làm"; deadline/"quá hạn" ở các màn khác và ngày xong của task vẫn đổi lúc 0:00. "Hôm nay làm" ghi "x/y việc
+> xong" (việc có Ngày làm hôm nay); khi trống nói rõ lý do (chưa có việc / xong hết / đã xếp ngày khác) kèm link sang Tasks.
+> Tiêu đề thẻ là heading cấp 2; trên Today, chân sidebar không lặp ngày và đếm ngược.
+>
 > **Xóa task (Trung chốt 05/11/2026):** mỗi dòng task (Tasks, cả việc chưa xong lẫn Đã xong) có icon thùng rác; bấm → hỏi
 > xác nhận ngay tại dòng → **xóa hẳn** (không hoàn tác), liên kết với mục tiêu mất theo. Trước đây xóa trong Notion.
 

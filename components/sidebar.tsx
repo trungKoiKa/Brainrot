@@ -110,7 +110,8 @@ export function AppSidebar({ thesisDeadline }: { thesisDeadline?: string }) {
       </SidebarContent>
 
       <SidebarFooter>
-        <TodayInfo thesisDeadline={thesisDeadline} />
+        {/* Today đã có ngày + đếm ngược ở dòng phụ dưới lời chào (và đổi ngày lúc 4:00) → không lặp ở đây */}
+        {!isActive("/today", pathname) && <TodayInfo thesisDeadline={thesisDeadline} />}
         <SidebarMenu>
           <SidebarMenuItem>
             <ThemeToggle />

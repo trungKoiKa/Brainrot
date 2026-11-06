@@ -33,7 +33,8 @@ export function IdeaForm() {
 
   return (
     <form action={action} className="space-y-2">
-      <label htmlFor="idea" className="text-sm font-medium">
+      {/* Thẻ đã có tiêu đề "Ghi nhanh ý tưởng" → nhãn chỉ cho trình đọc màn hình */}
+      <label htmlFor="idea" className="sr-only">
         Ý tưởng
       </label>
       <div className="flex gap-2">

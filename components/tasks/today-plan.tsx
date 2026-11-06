@@ -1,11 +1,12 @@
 "use client";
 
+import Link from "next/link";
 import { MaybeLink } from "@/components/tasks/maybe-link";
 import { Empty } from "@/components/card";
 import { Badge } from "@/components/reui/badge";
 import { addDays, formatDay, weekdayShort } from "@/lib/date";
 import type { Task } from "@/lib/types";
-import { planToday, tomorrowCandidates } from "@/lib/today";
+import { planToday, todayEmptyKind, tomorrowCandidates, type TodayEmptyKind } from "@/lib/today";
 import { ErrorNotice, TaskCheckbox } from "./task-row";
 import { usePlanTasks } from "./use-plan-tasks";
 
@@ -31,7 +32,26 @@ function Row({ task, onComplete, children }: { task: Task; onComplete: (t: Task)
 }
 
 const smallButton =
-  "shrink-0 rounded-md border border-line px-2 py-1 text-xs text-muted-foreground transition-colors hover:border-primary hover:text-foreground";
+  "shrink-0 rounded-md border border-line px-2 py-1 text-xs text-muted-foreground transition-colors hover:border-primary hover:text-foreground focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-ring/50";
+
+const EMPTY_TEXT: Record<TodayEmptyKind, { text: string; link: string }> = {
+  "no-tasks": { text: "Chưa có việc nào.", link: "Tạo việc đầu tiên ở Tasks" },
+  "all-done": { text: "Xong hết rồi, không còn việc nào.", link: "Thêm việc mới ở Tasks" },
+  "scheduled-later": { text: "Hôm nay chưa xếp việc nào; các việc còn lại đã có lịch ngày khác.", link: "Xem ở Tasks" },
+};
+
+/** "Hôm nay làm" trống: nói đúng lý do và chỉ đường sang Tasks (SPEC-v1.0 "Người mới"). */
+function EmptyPlan({ kind }: { kind: TodayEmptyKind }) {
+  const { text, link } = EMPTY_TEXT[kind];
+  return (
+    <p className="text-sm text-pretty text-muted-foreground">
+      {text}{" "}
+      <Link href="/tasks" className="font-medium text-primary underline-offset-4 hover:underline">
+        {link}
+      </Link>
+    </p>
+  );
+}
 
 /** Khối "Hôm nay làm" trên Today (SPEC-v0.5 4.2): Ngày làm hôm nay · trễ · hạn hôm nay · gợi ý khi trống. */
 export function TodayPlan({ today, tasks: initial }: { today: string; tasks: Task[] }) {
@@ -89,7 +109,7 @@ export function TodayPlan({ today, tasks: initial }: { today: string; tasks: Tas
 
       {p.planned.length + p.late.length + p.due.length === 0 &&
         (p.suggest.length === 0 ? (
-          <Empty>Không còn việc nào chưa xong.</Empty>
+          <EmptyPlan kind={todayEmptyKind(tasks)} />
         ) : (
           <section className="space-y-2">
             <Empty>Chưa xếp việc nào cho hôm nay. Gợi ý:</Empty>
