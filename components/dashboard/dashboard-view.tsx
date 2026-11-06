@@ -2,29 +2,26 @@
 
 import { useMemo, useState } from "react";
 import Link from "next/link";
-import { CalendarDaysIcon, CircleCheckBigIcon, GraduationCapIcon, ListTodoIcon, Maximize2Icon } from "lucide-react";
-import { BrainView } from "@/components/brain/brain-view";
-import { Card, Empty } from "@/components/card";
+import { Card } from "@/components/card";
 import { Badge } from "@/components/reui/badge";
 import { formatDay } from "@/lib/date";
-import type { GraphData } from "@/lib/graph-types";
 import { sampleDashboard } from "@/lib/dashboard/sample";
 import {
   backlogKpi,
   dailyRhythm,
   doneKpi,
   habitKpis,
-  hasDoneDates,
   PERIODS,
   dueSoon,
   tasksByProject,
   thesisKpi,
   weeklyRhythm,
+  weekSummary,
   type DashInput,
   type Period,
   weekKpi,
 } from "@/lib/dashboard/stats";
-import { DailyBars, DueSoonList, HabitBars, KpiCard, MonthGoals, ProjectBars, SampleBadge, WeeklyArea } from "./dashboard-blocks";
+import { DailyBars, DueSoonList, HabitBars, KpiStrip, MonthGoals, ProjectBars, SampleBadge, ToneDot, WeeklyArea } from "./dashboard-blocks";
 
 type Mode = "real" | "sample";
 
@@ -50,8 +47,9 @@ function store(key: string, value: string) {
 }
 
 const fmt = new Intl.NumberFormat("vi-VN");
+const linkClass = "font-medium text-primary underline-offset-4 hover:underline";
 
-export function DashboardView({ real, graph }: { real: DashInput; graph: GraphData }) {
+export function DashboardView({ real }: { real: DashInput }) {
   const [mode, setMode] = useState<Mode>(() => readStored<Mode>(MODE_KEY, ["real", "sample"], "real"));
   const [period, setPeriod] = useState<Period>(() => readStored<Period>(PERIOD_KEY, PERIODS, 30));
   const sample = useMemo(
@@ -59,28 +57,20 @@ export function DashboardView({ real, graph }: { real: DashInput; graph: GraphDa
     [real.today, real.thesisDeadline],
   );
 
-  // Khối nào thiếu nguồn thật thì dùng mẫu (SPEC-v0.3 mục 5)
+  // "Thật là thật" (Trung chốt 07/11/2026, thay SPEC-v0.3 mục 5): chế độ Thật không bao giờ lấp bằng mẫu;
+  // khối thiếu dữ liệu nói rõ và chỉ chỗ thêm. Dữ liệu mẫu chỉ hiện khi bật "Mẫu".
   const all = mode === "sample";
-  const doneSample = all || !hasDoneDates(real.tasks);
-  const logsSample = all || real.logs.length === 0;
-  const habitsSample = all || real.habits.length === 0;
-  // Mục tiêu: chế độ Thật mà chưa đặt mục tiêu tháng → báo trống + link đặt mục tiêu, không dùng mẫu
-  const goalsSample = all;
-  const tasksSrc = all ? sample : real;
-  const doneSrc = doneSample ? sample : real;
-  const logsSrc = logsSample ? sample : real;
-  const weeklySrc: DashInput = all ? sample : { ...real, tasks: doneSample ? sample.tasks : real.tasks };
+  const src: DashInput = all ? { ...sample, thesisDeadline: real.thesisDeadline } : real;
 
-  const backlog = backlogKpi(tasksSrc, period);
-  const done = doneKpi(doneSrc, period);
-  // "Tuần này" luôn là dữ liệu thật ở chế độ Thật: chưa xếp lịch thì hiện "—" (SPEC-v0.5 4.4)
-  const week = weekKpi(tasksSrc);
-  const thesis = thesisKpi({ ...logsSrc, thesisDeadline: real.thesisDeadline }, period);
-  const weekly = weeklyRhythm(weeklySrc);
-  const daily = dailyRhythm(logsSrc, period);
-  // Thói quen thật lấy cả danh sách Habits lẫn Daily Log thật; chưa kết nối Habits → mẫu
-  const habitStats = habitKpis(habitsSample ? sample : real, period);
-  const due = dueSoon(tasksSrc);
+  const summary = weekSummary(src);
+  const backlog = backlogKpi(src, period);
+  const done = doneKpi(src, period);
+  const week = weekKpi(src);
+  const thesis = thesisKpi(src, period);
+  const weekly = weeklyRhythm(src);
+  const daily = dailyRhythm(src, period);
+  const habitStats = habitKpis(src, period);
+  const due = dueSoon(src);
 
   return (
     <div className="space-y-5">
@@ -109,59 +99,83 @@ export function DashboardView({ real, graph }: { real: DashInput; graph: GraphDa
         />
       </div>
 
-      <div className="grid gap-5 sm:grid-cols-2 xl:grid-cols-4">
-        <KpiCard
-          icon={ListTodoIcon}
-          title="Việc tồn"
-          subtitle="Tasks"
-          tone={backlog.tone}
-          value={fmt.format(backlog.value)}
-          series={backlog.series}
-          change={backlog.change}
-          upIsGood={false}
-          note={backlog.overdue > 0 ? `${backlog.overdue} quá hạn` : "không có quá hạn"}
-          sample={all}
-        />
-        <KpiCard
-          icon={CircleCheckBigIcon}
-          title="Hoàn thành"
-          subtitle={`Task xong · ${period} ngày`}
-          tone={done.tone}
-          value={fmt.format(done.value)}
-          series={done.series}
-          change={done.change}
-          note={`TB ${fmt.format(done.perDay)}/ngày`}
-          sample={doneSample}
-        />
-        <KpiCard
-          icon={CalendarDaysIcon}
-          title="Tuần này"
-          subtitle="Task có Ngày làm"
-          tone={week.tone}
-          value={week.value === null ? "—" : `${week.value}%`}
-          series={week.series}
-          change={week.change}
-          changeUnit="điểm"
-          note={week.tally.total === 0 ? "chưa xếp lịch việc nào" : `${week.tally.done}/${week.tally.total} task`}
-          sample={all}
-        />
-        <KpiCard
-          icon={GraduationCapIcon}
-          title="Đồ án"
-          subtitle={real.thesisDeadline ? `Còn đến hạn ${formatDay(real.thesisDeadline, true)}` : "Chưa đặt THESIS_DEADLINE"}
-          tone={thesis.tone}
-          value={thesis.left === null ? "—" : thesis.left > 0 ? `${thesis.left} ngày` : thesis.left === 0 ? "Hôm nay" : "Đã qua hạn"}
-          series={thesis.series}
-          note={`Ghi log ${thesis.logged}/${period} ngày`}
-          sample={logsSample}
-        />
-      </div>
+      {/* Tiêu điểm: một câu trả lời "tôi đang làm tốt không?" cho tuần này */}
+      <Card
+        title="Tuần này"
+        focal
+        action={
+          <span className="flex items-center gap-2 text-sm text-muted-foreground">
+            {all && <SampleBadge />}
+            từ {formatDay(summary.monday, true)}
+          </span>
+        }
+      >
+        <p className="flex items-center gap-2.5 text-lg font-medium text-pretty">
+          {summary.tone !== "none" && <ToneDot tone={summary.tone} />}
+          {summary.headline}
+        </p>
+        {summary.facts.length > 0 ? (
+          <p className="mt-2 text-sm text-muted-foreground tabular-nums">{summary.facts.join(" · ")}</p>
+        ) : (
+          <p className="mt-2 text-sm text-muted-foreground">
+            <Link href="/today" className={linkClass}>
+              Xếp việc ở Today
+            </Link>{" "}
+            hoặc{" "}
+            <Link href="/goals?level=month" className={linkClass}>
+              đặt mục tiêu tháng ở Goal
+            </Link>
+            .
+          </p>
+        )}
+      </Card>
 
-      {/* Bố cục (Trung chốt 26/10/2026): số liệu → việc cần làm → học được gì → nhịp hằng ngày */}
-      <div className="grid gap-5 lg:grid-cols-3">
+      <KpiStrip
+        sample={all}
+        items={[
+          {
+            title: "Việc tồn",
+            tone: backlog.tone,
+            value: fmt.format(backlog.value),
+            series: backlog.series,
+            change: backlog.change,
+            upIsGood: false,
+            note: backlog.overdue > 0 ? `${backlog.overdue} quá hạn` : "không có quá hạn",
+          },
+          {
+            title: `Xong trong ${period} ngày`,
+            tone: done.tone,
+            value: fmt.format(done.value),
+            series: done.series,
+            change: done.change,
+            note: done.value === 0 ? "chưa có việc xong" : `TB ${fmt.format(done.perDay)}/ngày`,
+          },
+          {
+            title: "Việc theo lịch tuần này",
+            tone: week.tone,
+            value: week.value === null ? "—" : `${week.value}%`,
+            series: week.series,
+            change: week.change,
+            changeUnit: "điểm",
+            note: week.tally.total === 0 ? "chưa xếp lịch việc nào" : `${week.tally.done}/${week.tally.total} việc`,
+          },
+          {
+            title: "Đồ án",
+            tone: thesis.tone,
+            value: thesis.left === null ? "—" : thesis.left > 0 ? `${thesis.left} ngày` : thesis.left === 0 ? "Hôm nay" : "Đã qua hạn",
+            series: thesis.series,
+            note: real.thesisDeadline
+              ? `hạn ${formatDay(real.thesisDeadline, true)} · ghi log ${thesis.logged}/${period} ngày`
+              : "chưa đặt hạn",
+          },
+        ]}
+      />
+
+      {/* Bố cục: tóm tắt → số liệu → việc cần làm → nhịp làm + thói quen → nhịp hằng ngày */}
+      <div className="grid gap-5 lg:grid-cols-3 lg:items-start">
         <Card title="Task theo dự án" className="lg:col-span-2" action={all && <SampleBadge />}>
           <p className="-mt-3 mb-4 text-sm text-muted-foreground">Việc chưa xong · bấm cột để mở Tasks</p>
-          <ProjectBars rows={tasksByProject(tasksSrc.tasks)} />
+          <ProjectBars rows={tasksByProject(src.tasks)} />
         </Card>
         {/* Cột phải: hai khối "việc cần làm" xếp chồng (SPEC-v0.4 mục 7, SPEC-v0.5 4.4) */}
         <div className="flex flex-col gap-5">
@@ -169,14 +183,14 @@ export function DashboardView({ real, graph }: { real: DashInput; graph: GraphDa
             title="Mục tiêu tháng này"
             action={
               <span className="flex items-center gap-2">
-                {goalsSample && <SampleBadge />}
+                {all && <SampleBadge />}
                 <Link href="/goals?level=month" className="text-sm text-muted-foreground hover:text-foreground">
-                  Mở
+                  Mở Goal
                 </Link>
               </span>
             }
           >
-            <MonthGoals goals={goalsSample ? sample.monthGoals : real.monthGoals} />
+            <MonthGoals goals={src.monthGoals} />
           </Card>
           <Card
             title="Sắp đến hạn"
@@ -184,66 +198,36 @@ export function DashboardView({ real, graph }: { real: DashInput; graph: GraphDa
               <span className="flex items-center gap-2">
                 {all && <SampleBadge />}
                 <Link href="/tasks" className="text-sm text-muted-foreground hover:text-foreground">
-                  Mở
+                  Mở Tasks
                 </Link>
               </span>
             }
           >
-            <p className="-mt-3 mb-4 text-sm text-muted-foreground">Task chưa xong · hạn trong 14 ngày</p>
+            <p className="-mt-3 mb-4 text-sm text-muted-foreground">Việc chưa xong · quá hạn hoặc hạn trong 14 ngày</p>
             <DueSoonList items={due.items} more={due.more} />
           </Card>
         </div>
       </div>
 
-      <div className="grid gap-5 lg:grid-cols-2">
+      <div className="grid gap-5 lg:grid-cols-3 lg:items-start">
         <Card
-          title="Nhịp làm & học"
+          title="Nhịp làm"
+          className="lg:col-span-2"
           action={
             <span className="flex items-center gap-2">
-              {doneSample && <SampleBadge />}
+              {all && <SampleBadge />}
               <ChangeBadge change={weekly.change} />
             </span>
           }
         >
-          <p className="-mt-3 mb-4 text-sm text-muted-foreground">12 tuần · task xong và kiến thức mới · tuần cuối đang diễn ra</p>
+          <p className="-mt-3 mb-4 text-sm text-muted-foreground">12 tuần · việc xong mỗi tuần · tuần cuối đang diễn ra</p>
           <WeeklyArea rows={weekly.rows} />
-        </Card>
-        {/* Brain nhúng vào Dashboard, nửa hàng, cao bằng biểu đồ bên cạnh; luôn là dữ liệu thật */}
-        <Card
-          title="Brain"
-          action={
-            <Link href="/" className="flex items-center gap-1.5 text-sm text-muted-foreground transition-colors hover:text-foreground">
-              <Maximize2Icon aria-hidden="true" className="size-3.5" />
-              Mở toàn màn hình
-            </Link>
-          }
-        >
-          <p className="-mt-3 mb-4 text-sm text-muted-foreground">Bản đồ kiến thức và dự án · luôn là dữ liệu thật</p>
-          <BrainView data={graph} className="h-73 rounded-xl" />
-        </Card>
-      </div>
-
-      <div className="grid gap-5 lg:grid-cols-3">
-        <Card
-          title="Nhịp hằng ngày"
-          className="lg:col-span-2"
-          action={
-            <span className="flex flex-wrap justify-end gap-1.5">
-              {logsSample && <SampleBadge />}
-              <Badge variant="outline" radius="full">{daily.logged} ngày có log</Badge>
-              <Badge variant="success-light" radius="full">{daily.exercised} ngày tập</Badge>
-              <Badge variant="warning-light" radius="full">{daily.dropped} ngày rơi việc</Badge>
-            </span>
-          }
-        >
-          <p className="-mt-3 mb-4 text-sm text-muted-foreground">Daily Log · số việc xong mỗi ngày</p>
-          <DailyBars days={daily.days} />
         </Card>
         <Card
           title="Thói quen"
           action={
             <span className="flex items-center gap-1.5">
-              {habitsSample && <SampleBadge />}
+              {all && <SampleBadge />}
               {habitStats.average !== null && (
                 <Badge variant="outline" radius="full">
                   TB {habitStats.average}%
@@ -252,19 +236,54 @@ export function DashboardView({ real, graph }: { real: DashInput; graph: GraphDa
             </span>
           }
         >
-          <p className="-mt-3 mb-4 text-sm text-muted-foreground">
-            {period} ngày ·{" "}
-            <Link href="/goals" className="underline underline-offset-2 hover:text-foreground">
-              xem bảng tháng
-            </Link>
-          </p>
           {habitStats.rows.length > 0 ? (
-            <HabitBars rows={habitStats.rows} />
+            <>
+              <p className="-mt-3 mb-4 text-sm text-muted-foreground">
+                {period} ngày ·{" "}
+                <Link href="/goals" className="underline underline-offset-2 hover:text-foreground">
+                  xem bảng tháng
+                </Link>
+              </p>
+              <HabitBars rows={habitStats.rows} />
+            </>
           ) : (
-            <Empty>Chưa có thói quen nào được theo dõi trong kỳ này.</Empty>
+            <p className="text-sm text-pretty text-muted-foreground">
+              Chưa có thói quen nào trong kỳ này.{" "}
+              <Link href="/goals" className={linkClass}>
+                Thêm ở Goal
+              </Link>
+            </p>
           )}
         </Card>
       </div>
+
+      <Card
+        title="Nhịp hằng ngày"
+        action={
+          daily.logged > 0 && (
+            <span className="flex flex-wrap justify-end gap-1.5">
+              {all && <SampleBadge />}
+              <Badge variant="outline" radius="full">{daily.logged} ngày có log</Badge>
+              <Badge variant="success-light" radius="full">{daily.exercised} ngày tập</Badge>
+              <Badge variant="warning-light" radius="full">{daily.dropped} ngày rơi việc</Badge>
+            </span>
+          )
+        }
+      >
+        {daily.logged > 0 ? (
+          <>
+            <p className="-mt-3 mb-4 text-sm text-muted-foreground">Daily Log · số việc xong mỗi ngày</p>
+            <DailyBars days={daily.days} />
+          </>
+        ) : (
+          <p className="text-sm text-pretty text-muted-foreground">
+            Chưa ghi Daily Log nào trong {period} ngày qua.{" "}
+            <Link href="/today" className={linkClass}>
+              Ghi ở cụm Cuối ngày trên Today
+            </Link>
+          </p>
+        )}
+      </Card>
     </div>
   );
 }

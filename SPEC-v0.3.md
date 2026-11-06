@@ -59,7 +59,7 @@ tăng/giảm so với kỳ trước + một ghi chú ngắn.
 | **Planner** · tuần này | % slot đã xong tuần này | % hoàn thành các tuần đã lưu trữ | ±điểm % so với tuần trước · "x/y slot" | theo % (≥ 70 xanh, 40–69 vàng, < 40 đỏ) |
 | **Đồ án** · hạn nộp | "Còn N ngày" | Daily Log có ghi theo ngày | "Ghi log N/M ngày" · ngày hạn `dd/mm` | đỏ ≤ 14 ngày, vàng ≤ 30, xanh còn lại |
 
-\* cần "Ngày xong" (mục 6); chưa có → dùng dữ liệu mẫu và gắn nhãn "Mẫu".
+\* cần "Ngày xong" (mục 6); chưa có → ở chế độ Thật hiện số 0 (từ 07/11/2026 không lấp bằng mẫu).
 
 ### 4.2 Task theo dự án (biểu đồ cột)
 
@@ -103,7 +103,8 @@ tăng/giảm so với kỳ trước + một ghi chú ngắn.
   kiến thức theo tuần, Daily Log 90 ngày (có/không log, tập, rơi việc), Planner (4 dự án, 12 tuần lưu trữ).
   Số liệu "hợp lý" với Trung: 2–6 task xong/ngày làm việc, cuối tuần ít hơn, dồn việc Đồ án gần hạn 06/12.
 - **Công tắc Thật / Mẫu** ở đầu trang: Mẫu → mọi khối dùng dữ liệu mẫu (để xem trang "đầy" và để demo).
-  Thật → dùng Notion + Planner; khối nào thiếu nguồn thật thì tự dùng mẫu và gắn huy hiệu **"Mẫu"** cạnh tiêu đề.
+  Thật → chỉ dữ liệu thật. ~~Khối nào thiếu nguồn thật thì tự dùng mẫu và gắn huy hiệu "Mẫu"~~ — **bỏ 07/11/2026**
+  (Trung chốt sau critique: "Thật là thật"): khối thiếu dữ liệu hiện một dòng hướng dẫn kèm link tới chỗ thêm.
 - Mặc định **Thật** *(chốt)*; lựa chọn (và kỳ) nhớ trong `localStorage`. Dữ liệu mẫu **không bao giờ ghi vào Notion**.
 
 ## 6. "Ngày xong" cho Tasks *(chốt 26/10/2026)*

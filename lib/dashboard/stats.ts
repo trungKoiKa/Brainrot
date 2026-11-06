@@ -1,7 +1,7 @@
 // Tính số liệu cho Dashboard (SPEC-v0.3 mục 4). Hàm thuần: ngày là chuỗi YYYY-MM-DD theo giờ VN.
 import { addDays, daysBetween, mondayOf } from "@/lib/date";
 import { isHabitActive, streaks } from "@/lib/habits";
-import type { Goal } from "@/lib/goals";
+import { goalCounts, type Goal } from "@/lib/goals";
 import type { Habit, TaskStatus } from "@/lib/types";
 import { monthOf } from "@/lib/period";
 
@@ -35,8 +35,6 @@ export type Tally = { done: number; total: number };
 export type DashInput = {
   today: string;
   tasks: DashTask[];
-  /** Ngày học của từng trang Knowledge */
-  knowledge: string[];
   logs: DashLog[];
   thesisDeadline: string | null;
   /** Database Habits (SPEC-v0.4); rỗng khi chưa kết nối */
@@ -162,9 +160,9 @@ export function tasksByProject(tasks: DashTask[]) {
   return [...groups.values()].sort((a, b) => rank(a.project) - rank(b.project));
 }
 
-// ---------- 4.3 nhịp làm & học theo tuần ----------
+// ---------- 4.3 nhịp làm theo tuần (v1.0 bỏ phần "học": Knowledge ẩn tới v1.1) ----------
 
-export function weeklyRhythm({ today, tasks, knowledge }: DashInput, weeks = 12) {
+export function weeklyRhythm({ today, tasks }: DashInput, weeks = 12) {
   const thisMonday = mondayOf(today);
   const rows = Array.from({ length: weeks }, (_, i) => {
     const week = addDays(thisMonday, (i - weeks + 1) * 7);
@@ -173,10 +171,9 @@ export function weeklyRhythm({ today, tasks, knowledge }: DashInput, weeks = 12)
     return {
       week,
       done: tasks.filter((t) => isDone(t) && inWeek(t.doneOn)).length,
-      learned: knowledge.filter(inWeek).length,
     };
   });
-  const sum = (part: typeof rows) => part.reduce((s, r) => s + r.done + r.learned, 0);
+  const sum = (part: typeof rows) => part.reduce((s, r) => s + r.done, 0);
   return { rows, change: change(sum(rows.slice(-4)), sum(rows.slice(-8, -4))) };
 }
 
@@ -240,4 +237,62 @@ export function dueSoon({ today, tasks }: DashInput, horizon = 14, max = 5) {
     .map((t) => ({ ...t, daysLeft: daysBetween(today, t.deadline) }))
     .sort((a, b) => a.deadline.localeCompare(b.deadline));
   return { items: list.slice(0, max), more: Math.max(0, list.length - max) };
+}
+
+// ---------- tóm tắt tuần: thẻ tiêu điểm đầu Dashboard (critique 07/11/2026, Trung chốt) ----------
+
+export type SummaryTone = Tone | "none";
+
+export type WeekSummary = {
+  tone: SummaryTone;
+  /** Câu kết luận, trả lời "tôi đang làm tốt không?" */
+  headline: string;
+  /** Các số đi kèm, chỉ có những gì đo được */
+  facts: string[];
+  /** Thứ Hai của tuần (để ghi "từ dd/mm") */
+  monday: string;
+};
+
+/**
+ * Một câu cho tuần này, từ dữ liệu có thật: quá hạn > tỉ lệ việc theo lịch > (không có lịch) việc xong.
+ * Không có gì đo được thì nói rõ, không tô màu cảnh báo.
+ */
+export function weekSummary(input: DashInput): WeekSummary {
+  const { today, tasks } = input;
+  const monday = mondayOf(today);
+  const week = weekKpi(input);
+  const doneThisWeek = tasks.filter((t) => isDone(t) && t.doneOn !== null && t.doneOn >= monday && t.doneOn <= today).length;
+  const overdue = tasks.filter((t) => !isDone(t) && t.deadline !== null && t.deadline < today).length;
+  const goals = goalCounts(input.monthGoals);
+  const habits = habitKpis(input, 7).average;
+
+  const facts: string[] = [];
+  if (week.tally.total > 0) facts.push(`${week.tally.done}/${week.tally.total} việc theo lịch`);
+  facts.push(`${doneThisWeek} việc xong`);
+  if (goals.total > 0) facts.push(`${goals.completed}/${goals.total} mục tiêu tháng`);
+  if (habits !== null) facts.push(`thói quen ${habits}%`);
+  if (overdue > 0) facts.push(`${overdue} việc quá hạn`);
+
+  const nothing = week.tally.total === 0 && doneThisWeek === 0 && goals.total === 0 && habits === null && overdue === 0;
+  if (nothing) {
+    return { tone: "none", headline: "Tuần này chưa có gì để đo.", facts: [], monday };
+  }
+  if (overdue > 0) {
+    return { tone: "bad", headline: `Có ${overdue} việc quá hạn cần xử lý trước.`, facts, monday };
+  }
+  if (week.value === null) {
+    return {
+      tone: doneThisWeek > 0 ? "good" : "none",
+      headline: doneThisWeek > 0 ? `Đã xong ${doneThisWeek} việc, chưa xếp lịch việc nào trong tuần.` : "Tuần này chưa xếp lịch việc nào.",
+      facts,
+      monday,
+    };
+  }
+  const tone = pctTone(week.value);
+  const headline = {
+    good: `Tuần này đang ổn: xong ${week.value}% việc đã xếp lịch.`,
+    warn: `Tuần này cần để ý: mới xong ${week.value}% việc đã xếp lịch.`,
+    bad: `Tuần này đang chậm: mới xong ${week.value}% việc đã xếp lịch.`,
+  }[tone];
+  return { tone, headline, facts, monday };
 }

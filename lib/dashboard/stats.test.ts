@@ -14,6 +14,7 @@ import {
   tasksByProject,
   thesisKpi,
   weeklyRhythm,
+  weekSummary,
   type DashInput,
   type DashTask,
 } from "./stats";
@@ -23,7 +24,7 @@ const t = (o: Partial<DashTask> = {}): DashTask => ({
   title: "", url: "", project: null, status: "Chưa làm", deadline: null, doneOn: null, plannedOn: null, createdOn: "2026-10-01", ...o,
 });
 const input = (o: Partial<DashInput> = {}): DashInput => ({
-  today, tasks: [], knowledge: [], logs: [], thesisDeadline: "2026-12-06", habits: [], monthGoals: [], ...o,
+  today, tasks: [], logs: [], thesisDeadline: "2026-12-06", habits: [], monthGoals: [], ...o,
 });
 
 describe("ngày", () => {
@@ -113,12 +114,11 @@ describe("biểu đồ", () => {
 
   it("weeklyRhythm: 12 tuần, tuần cuối là tuần hiện tại", () => {
     const { rows } = weeklyRhythm(input({
-      tasks: [t({ status: "Xong", doneOn: "2026-10-27" })],
-      knowledge: ["2026-10-20", "2026-10-26"],
+      tasks: [t({ status: "Xong", doneOn: "2026-10-27" }), t({ status: "Xong", doneOn: "2026-10-20" })],
     }));
     expect(rows).toHaveLength(12);
-    expect(rows.at(-1)).toEqual({ week: "2026-10-26", done: 1, learned: 1 });
-    expect(rows.at(-2)).toEqual({ week: "2026-10-19", done: 0, learned: 1 });
+    expect(rows.at(-1)).toEqual({ week: "2026-10-26", done: 1 });
+    expect(rows.at(-2)).toEqual({ week: "2026-10-19", done: 1 });
   });
 
   it("dailyRhythm: ngày không có log vẫn có cột", () => {
@@ -173,11 +173,37 @@ describe("dữ liệu mẫu", () => {
     expect(sampleDashboard(today)).toEqual(a);
     expect(a.tasks.some((x) => x.status === "Xong" && x.doneOn)).toBe(true);
     expect(a.tasks.some((x) => x.status !== "Xong")).toBe(true);
-    expect(a.knowledge.length).toBeGreaterThan(10);
     expect(a.logs.length).toBeGreaterThan(30);
     expect(a.tasks.some((x) => x.plannedOn !== null && x.plannedOn >= mondayOf(today))).toBe(true);
     expect(a.habits).toHaveLength(5);
     expect(a.logs.some((l) => l.habits.length > 0)).toBe(true);
     expect(a.tasks.every((x) => !x.doneOn || x.doneOn <= today)).toBe(true);
+  });
+});
+
+describe("tóm tắt tuần (thẻ tiêu điểm)", () => {
+  it("không có gì đo được → nói rõ, không tô màu", () => {
+    expect(weekSummary(input())).toMatchObject({ tone: "none", headline: "Tuần này chưa có gì để đo.", facts: [] });
+  });
+
+  it("quá hạn đứng trước tỉ lệ theo lịch", () => {
+    const s = weekSummary(input({
+      tasks: [t({ plannedOn: today, status: "Xong", doneOn: today }), t({ deadline: "2026-10-20" })],
+    }));
+    expect(s.tone).toBe("bad");
+    expect(s.headline).toBe("Có 1 việc quá hạn cần xử lý trước.");
+    expect(s.facts).toEqual(["1/1 việc theo lịch", "1 việc xong", "1 việc quá hạn"]);
+  });
+
+  it("theo tỉ lệ việc đã xếp lịch trong tuần", () => {
+    const s = weekSummary(input({
+      tasks: [t({ plannedOn: today, status: "Xong", doneOn: today }), t({ plannedOn: "2026-10-28" })],
+    }));
+    expect(s).toMatchObject({ tone: "warn", headline: "Tuần này cần để ý: mới xong 50% việc đã xếp lịch." });
+  });
+
+  it("chưa xếp lịch nhưng có việc xong", () => {
+    const s = weekSummary(input({ tasks: [t({ status: "Xong", doneOn: today })] }));
+    expect(s).toMatchObject({ tone: "good", headline: "Đã xong 1 việc, chưa xếp lịch việc nào trong tuần." });
   });
 });
