@@ -7,17 +7,19 @@ import {
   EllipsisIcon,
   ListPlusIcon,
   XIcon,
-  type LucideIcon,
   CheckIcon,
   Link2Icon,
   PencilIcon,
   Trash2Icon,
 } from "lucide-react";
+import { completeTask, reopenTaskAction } from "@/app/actions/tasks";
+import { MaybeLink } from "@/components/tasks/maybe-link";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { carryOverGoalsAction, createGoalAction, linkTaskAction, trashGoalAction, updateGoalAction } from "@/app/actions/goals";
 import { formatDay } from "@/lib/date";
 import { fieldClass, primaryButtonClass } from "@/components/form-bits";
 import { Badge } from "@/components/reui/badge";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { ErrorNotice } from "@/components/tasks/task-row";
 import {
   DEFAULT_THRESHOLD,
@@ -33,7 +35,7 @@ import {
 import type { Level } from "@/lib/period";
 import { ProgressRing } from "./progress-ring";
 
-export type LinkedTask = { id: string; title: string; plannedOn: string | null; done: boolean };
+export type LinkedTask = { id: string; title: string; url: string; plannedOn: string | null; done: boolean };
 
 const UNDO_MS = 5000;
 const iconButton =
@@ -112,6 +114,14 @@ export function GoalPanel({
     router.refresh();
   }
 
+  /** Tích xong / bỏ tích việc ngay trên dòng mục tiêu: % tự xong do server tính → tải lại. */
+  async function toggleTask(t: LinkedTask): Promise<void> {
+    setError(null);
+    const res = t.done ? await reopenTaskAction(t.id) : await completeTask(t.id);
+    if (!res.ok) return setError(res.error);
+    router.refresh();
+  }
+
   function remove(goal: Goal) {
     const index = goals.findIndex((g) => g.id === goal.id);
     clearTimeout(undoTimer.current);
@@ -171,6 +181,7 @@ export function GoalPanel({
                   tasks={linked[g.id] ?? []}
                   openTasks={openTasks}
                   onLinkTask={linkTask}
+                  onToggleTask={toggleTask}
                   habits={habits}
                   onPatch={(c) => patch(g.id, c)}
                   onLink={(h, t) => link(g.id, h, t)}
@@ -238,6 +249,7 @@ function GoalRow({
   onPatch,
   onLink,
   onLinkTask,
+  onToggleTask,
   onRemove,
 }: {
   goal: Goal;
@@ -247,10 +259,10 @@ function GoalRow({
   onPatch: (change: Partial<Pick<Goal, "title" | "type" | "done">>) => void;
   onLink: (habitId: string | null, threshold: number | null) => Promise<void>;
   onLinkTask: (taskId: string, goalId: string | null) => Promise<void>;
+  onToggleTask: (task: LinkedTask) => void;
   onRemove: () => void;
 }) {
   const [picking, setPicking] = useState(false);
-  const [menu, setMenu] = useState(false);
   const [linking, setLinking] = useState(false);
   const [editing, setEditing] = useState(false);
   const [draft, setDraft] = useState(goal.title);
@@ -264,7 +276,7 @@ function GoalRow({
   }
 
   return (
-    <li className="py-1.5">
+    <li id={`goal-${goal.id}`} className="scroll-mt-20 py-1.5">
       <div className="group flex items-center gap-2">
         <button
           type="button"
@@ -319,33 +331,22 @@ function GoalRow({
             <button type="button" className={iconButton} aria-label={`Xóa: ${goal.title}`} onClick={onRemove}>
               <Trash2Icon aria-hidden="true" className="size-3.5" />
             </button>
-            <Popover open={menu} onOpenChange={setMenu}>
-              <PopoverTrigger render={<button type="button" className={iconButton} aria-label={`Thêm tùy chọn: ${goal.title}`} />}>
+            <DropdownMenu>
+              <DropdownMenuTrigger render={<button type="button" className={iconButton} aria-label={`Thêm tùy chọn: ${goal.title}`} />}>
                 <EllipsisIcon aria-hidden="true" className="size-4" />
-              </PopoverTrigger>
-              <PopoverContent align="end" className="w-52 gap-0.5 p-1">
-                {(
-                  [
-                    { label: "Gắn việc", Icon: ListPlusIcon, run: () => setPicking(true) },
-                    { label: "Gắn thói quen", Icon: Link2Icon, run: () => setLinking(true) },
-                    { label: `Chuyển sang ${other}`, Icon: ArrowDownUpIcon, run: () => onPatch({ type: other }) },
-                  ] satisfies { label: string; Icon: LucideIcon; run: () => void }[]
-                ).map(({ label, Icon, run }) => (
-                  <button
-                    key={label}
-                    type="button"
-                    onClick={() => {
-                      setMenu(false);
-                      run();
-                    }}
-                    className="flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-left text-sm outline-none hover:bg-surface-muted focus-visible:ring-3 focus-visible:ring-ring/50"
-                  >
-                    <Icon aria-hidden="true" className="size-4 text-muted-foreground" />
-                    {label}
-                  </button>
-                ))}
-              </PopoverContent>
-            </Popover>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-52">
+                <DropdownMenuItem onClick={() => setPicking(true)}>
+                  <ListPlusIcon aria-hidden="true" /> Gắn việc
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => setLinking(true)}>
+                  <Link2Icon aria-hidden="true" /> Gắn thói quen
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => onPatch({ type: other })}>
+                  <ArrowDownUpIcon aria-hidden="true" /> Chuyển sang {other}
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
           </span>
         )}
       </div>
@@ -354,13 +355,22 @@ function GoalRow({
           <AutoChips auto={goal.auto} />
         </div>
       )}
-      <div className="mt-1 pl-7 text-xs">
+      <div className="mt-1 pl-7 text-sm">
         {tasks.length > 0 && (
           <ul className="space-y-0.5" aria-label={`Việc của mục tiêu: ${goal.title}`}>
             {tasks.map((t) => (
-              <li key={t.id} className="flex items-baseline gap-2">
-                <span className={`min-w-0 flex-1 break-words ${t.done ? "text-muted-foreground line-through" : ""}`}>{t.title || "(Chưa đặt tên)"}</span>
-                <span className="shrink-0 text-muted-foreground tabular-nums">
+              <li key={t.id} className="flex items-center gap-2">
+                <input
+                  type="checkbox"
+                  checked={t.done}
+                  onChange={() => onToggleTask(t)}
+                  aria-label={t.done ? `Bỏ đánh dấu xong: ${t.title}` : `Đánh dấu xong: ${t.title}`}
+                  className="size-4 shrink-0 cursor-pointer accent-[var(--primary)]"
+                />
+                <MaybeLink href={t.url} className={`min-w-0 flex-1 break-words hover:text-primary ${t.done ? "text-muted-foreground line-through" : ""}`}>
+                  {t.title || "(Chưa đặt tên)"}
+                </MaybeLink>
+                <span className="shrink-0 text-xs text-muted-foreground tabular-nums">
                   {t.done ? "xong" : t.plannedOn ? formatDay(t.plannedOn, true) : "chưa xếp ngày"}
                 </span>
                 <button
@@ -368,50 +378,24 @@ function GoalRow({
                   aria-label={`Bỏ gắn “${t.title}” khỏi mục tiêu`}
                   title="Bỏ gắn"
                   onClick={() => onLinkTask(t.id, null)}
-                  className="flex size-5 shrink-0 items-center justify-center self-center rounded text-muted-foreground outline-none hover:text-foreground focus-visible:ring-3 focus-visible:ring-ring/50"
+                  className="flex size-7 shrink-0 items-center justify-center rounded-md text-muted-foreground outline-none hover:bg-surface-muted hover:text-foreground focus-visible:ring-3 focus-visible:ring-ring/50"
                 >
-                  <XIcon aria-hidden="true" className="size-3" />
+                  <XIcon aria-hidden="true" className="size-3.5" />
                 </button>
               </li>
             ))}
           </ul>
         )}
-        {!picking && (
-          <button
-            type="button"
-            onClick={() => setPicking(true)}
-            className="mt-0.5 rounded-md text-muted-foreground underline-offset-4 outline-none hover:text-foreground hover:underline focus-visible:ring-3 focus-visible:ring-ring/50"
-          >
-            {tasks.length === 0 ? "Chưa có việc — gắn việc để xếp ngày và theo dõi tiến độ" : "+ Gắn việc"}
-          </button>
-        )}
-        {picking && (
-          <div role="group" aria-label={`Chọn việc gắn vào: ${goal.title}`} className="mt-1 rounded-lg border border-line bg-surface-muted p-1.5">
-            {openTasks.length === 0 ? (
-              <p className="px-1.5 py-1 text-muted-foreground">Không còn việc nào chưa gắn mục tiêu. Thêm việc mới ở Tasks.</p>
-            ) : (
-              <ul className="max-h-40 space-y-0.5 overflow-y-auto">
-                {openTasks.map((t) => (
-                  <li key={t.id}>
-                    <button
-                      type="button"
-                      onClick={async () => {
-                        await onLinkTask(t.id, goal.id);
-                        setPicking(false);
-                      }}
-                      className="w-full rounded-md px-1.5 py-1 text-left break-words outline-none hover:bg-surface focus-visible:ring-3 focus-visible:ring-ring/50"
-                    >
-                      {t.title || "(Chưa đặt tên)"}
-                    </button>
-                  </li>
-                ))}
-              </ul>
-            )}
-            <button type="button" onClick={() => setPicking(false)} className="mt-1 px-1.5 text-muted-foreground hover:text-foreground">
-              Đóng
-            </button>
-          </div>
-        )}
+        <TaskPicker
+          open={picking}
+          onOpenChange={setPicking}
+          goalTitle={goal.title}
+          openTasks={openTasks}
+          onPick={(id) => onLinkTask(id, goal.id)}
+          trigger={
+            <span className="text-xs">{tasks.length === 0 ? "Chưa có việc — gắn việc để xếp ngày và theo dõi tiến độ" : "+ Gắn việc"}</span>
+          }
+        />
       </div>
       {linking && (
         <LinkHabit
@@ -580,11 +564,92 @@ function CarryOver({
             router.refresh();
           })
         }
-        className="rounded-md font-medium text-primary underline-offset-4 outline-none hover:underline focus-visible:ring-3 focus-visible:ring-ring/50 disabled:opacity-50"
+        className="rounded-md border border-line px-3 py-1.5 font-medium outline-none hover:border-primary focus-visible:ring-3 focus-visible:ring-ring/50 disabled:opacity-50"
       >
         {pending ? "Đang chuyển…" : `Chuyển ${count} mục tiêu chưa xong sang ${label}`}
       </button>
       {result && <span role="status" className="text-muted-foreground">{result}</span>}
     </p>
+  );
+}
+
+/**
+ * Chọn việc gắn vào mục tiêu (SPEC-v1.0, Goal đợt 4): popover có ô tìm kiếm tự focus, giữ mở để gắn liên tiếp
+ * nhiều việc, dòng đang gắn hiện "Đang gắn…". Đóng bằng Esc / bấm ngoài, focus về nút mở.
+ */
+function TaskPicker({
+  open,
+  onOpenChange,
+  goalTitle,
+  openTasks,
+  onPick,
+  trigger,
+}: {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  goalTitle: string;
+  openTasks: { id: string; title: string }[];
+  onPick: (taskId: string) => Promise<void>;
+  trigger: React.ReactNode;
+}) {
+  const [query, setQuery] = useState("");
+  const [busy, setBusy] = useState<string | null>(null);
+  const q = query.trim().toLowerCase();
+  const shown = openTasks.filter((t) => t.title.toLowerCase().includes(q));
+  return (
+    <Popover
+      open={open}
+      onOpenChange={(o) => {
+        onOpenChange(o);
+        if (!o) setQuery("");
+      }}
+    >
+      <PopoverTrigger
+        render={
+          <button
+            type="button"
+            className="mt-0.5 rounded-md text-left text-muted-foreground underline-offset-4 outline-none hover:text-foreground hover:underline focus-visible:ring-3 focus-visible:ring-ring/50"
+          />
+        }
+      >
+        {trigger}
+      </PopoverTrigger>
+      <PopoverContent align="start" className="w-80 gap-2 p-2">
+        <input
+          autoFocus
+          type="search"
+          value={query}
+          onChange={(e) => setQuery(e.target.value)}
+          aria-label={`Tìm việc để gắn vào: ${goalTitle}`}
+          placeholder="Tìm việc chưa gắn mục tiêu…"
+          className={`${fieldClass} py-1.5`}
+        />
+        {openTasks.length === 0 ? (
+          <p className="px-1 py-1 text-sm text-muted-foreground">Không còn việc nào chưa gắn mục tiêu. Thêm việc mới ở Tasks.</p>
+        ) : shown.length === 0 ? (
+          <p className="px-1 py-1 text-sm text-muted-foreground">Không có việc nào khớp “{query.trim()}”.</p>
+        ) : (
+          <ul className="max-h-56 space-y-0.5 overflow-y-auto" aria-label="Việc chưa gắn mục tiêu">
+            {shown.map((t) => (
+              <li key={t.id}>
+                <button
+                  type="button"
+                  disabled={busy !== null}
+                  onClick={async () => {
+                    setBusy(t.id);
+                    await onPick(t.id);
+                    setBusy(null);
+                  }}
+                  className="flex w-full items-center justify-between gap-2 rounded-md px-2 py-1.5 text-left text-sm break-words outline-none hover:bg-surface-muted focus-visible:ring-3 focus-visible:ring-ring/50 disabled:opacity-60"
+                >
+                  <span className="min-w-0">{t.title || "(Chưa đặt tên)"}</span>
+                  {busy === t.id && <span className="shrink-0 text-xs text-muted-foreground">Đang gắn…</span>}
+                </button>
+              </li>
+            ))}
+          </ul>
+        )}
+      </PopoverContent>
+    </Popover>
   );
 }

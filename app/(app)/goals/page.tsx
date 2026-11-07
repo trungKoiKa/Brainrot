@@ -89,7 +89,7 @@ async function GoalsContent({ searchParams }: Pick<PageProps<"/goals">, "searchP
       g.id,
       g.taskIds.flatMap((id) => {
         const t = taskById.get(id);
-        return t ? [{ id, title: t.title, plannedOn: t.plannedOn, done: t.status === "Xong" }] : [];
+        return t ? [{ id, title: t.title, url: t.url, plannedOn: t.plannedOn, done: t.status === "Xong" }] : [];
       }),
     ]),
   );
@@ -146,15 +146,27 @@ async function GoalsContent({ searchParams }: Pick<PageProps<"/goals">, "searchP
       {level === "week" && logs && weekTasks && (
         <Card title="7 ngày trong tuần">
           {focusGoals.length > 0 && (
-            <div className="mb-4 rounded-lg bg-surface-muted px-3 py-2.5 text-sm">
-              <p className="font-medium">Tập trung tuần này</p>
-              <ul className="mt-1 space-y-0.5">
-                {focusGoals.map((g) => (
-                  <li key={g.id} className={`break-words ${isGoalDone(g) ? "text-muted-foreground line-through" : ""}`}>
-                    {g.title}
-                  </li>
-                ))}
-              </ul>
+            <div className="mb-4 flex flex-wrap items-center gap-2 text-sm">
+              <span className="font-medium">Tập trung tuần này</span>
+              {focusGoals.map((g) => {
+                const list = linkedTasks[g.id] ?? [];
+                return (
+                  <a
+                    key={g.id}
+                    href={`#goal-${g.id}`}
+                    className={`inline-flex max-w-full items-center gap-2 rounded-full border border-line px-3 py-1 outline-none hover:border-primary focus-visible:ring-3 focus-visible:ring-ring/50 ${
+                      isGoalDone(g) ? "text-muted-foreground line-through" : ""
+                    }`}
+                  >
+                    <span className="min-w-0 truncate">{g.title}</span>
+                    {list.length > 0 && (
+                      <span className="shrink-0 text-xs text-muted-foreground tabular-nums no-underline">
+                        {list.filter((t) => t.done).length}/{list.length} việc
+                      </span>
+                    )}
+                  </a>
+                );
+              })}
             </div>
           )}
           <WeekCards key={period.key} weekStart={period.start} today={today} tasks={weekTasks.data} logs={logs.data} goalOfTask={goalOfTask} trayIds={trayIds} />
