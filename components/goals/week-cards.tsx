@@ -22,7 +22,23 @@ type Moved = { task: Task; from: string | null; to: string | null };
  * 7 thẻ ngày (SPEC-v0.5 4.3): task theo Ngày làm / Ngày xong / Hạn + Daily Log của tuần đang xem.
  * Tích xong và "Dời sang…" (đổi Ngày làm) ngay trên thẻ; dời xong có "Hoàn tác".
  */
-export function WeekCards({ weekStart, today, tasks: initial, logs }: { weekStart: string; today: string; tasks: Task[]; logs: DailyLog[] }) {
+export function WeekCards({
+  weekStart,
+  today,
+  tasks: initial,
+  logs,
+  goalOfTask,
+  trayIds,
+}: {
+  weekStart: string;
+  today: string;
+  tasks: Task[];
+  logs: DailyLog[];
+  /** id việc → tên mục tiêu (nhãn dưới tên việc) */
+  goalOfTask: Record<string, string>;
+  /** id việc gắn vào mục tiêu của tuần này (khay "Chưa xếp ngày") */
+  trayIds: string[];
+}) {
   const { tasks, complete, plan, error, dismissError } = usePlanTasks(initial);
   const [open, setOpen] = useState<Record<string, boolean>>({});
   const [moving, setMoving] = useState<string | null>(null); // id task đang mở hàng chọn ngày
@@ -37,6 +53,7 @@ export function WeekCards({ weekStart, today, tasks: initial, logs }: { weekStar
   const cards = weekDayCards(weekStart, tasks, logs);
   const empty = cards.every((c) => c.total === 0 && !c.log);
   const days = Array.from({ length: 7 }, (_, i) => addDays(weekStart, i));
+  const tray = tasks.filter((t) => trayIds.includes(t.id) && t.status !== "Xong" && !t.plannedOn);
 
   function move(t: Task, to: string | null) {
     setMoving(null);
@@ -56,10 +73,86 @@ export function WeekCards({ weekStart, today, tasks: initial, logs }: { weekStar
     return d === null ? "không còn lịch" : i >= 0 ? `${SHORT[i]} ${formatDay(d, true)}` : formatDay(d, true);
   };
 
+  /** Một dòng việc (thẻ ngày và khay "Chưa xếp ngày"): tích xong, nhãn mục tiêu, nhãn hạn, Dời sang… */
+  function renderTask(t: Task & { dueOnly?: boolean }, past: boolean) {
+    const done = t.status === "Xong";
+    return (
+      <li key={t.id} className="space-y-1">
+        <div className="flex gap-2">
+          <TaskCheckbox task={t} onComplete={complete} />
+          <MaybeLink
+            href={t.url}
+            className={`min-w-0 break-words hover:text-primary ${done ? "text-muted-foreground line-through" : ""}`}
+          >
+            {t.title || "(Chưa đặt tên)"}
+          </MaybeLink>
+        </div>
+        {goalOfTask[t.id] && (
+          <p className="pl-6 text-xs text-muted-foreground">
+            <span className="sr-only">Mục tiêu: </span>
+            {goalOfTask[t.id]}
+          </p>
+        )}
+        {!done && (
+          <div className="flex flex-wrap items-center gap-1.5 pl-6">
+            {t.dueOnly && (
+              // đỏ chỉ khi đã quá hạn; hạn hôm nay / sắp tới là nhãn trung tính
+              <Badge variant={past ? "destructive-light" : "outline"}>{past ? "quá hạn" : "hạn"}</Badge>
+            )}
+            <button
+              type="button"
+              aria-expanded={moving === t.id}
+              aria-label={`Dời “${t.title}” sang ngày khác`}
+              onClick={() => setMoving((m) => (m === t.id ? null : t.id))}
+              className="inline-flex items-center gap-1 rounded-md border border-line px-1.5 py-0.5 text-xs text-muted-foreground outline-none hover:border-primary hover:text-foreground focus-visible:ring-3 focus-visible:ring-ring/50"
+            >
+              <CalendarDaysIcon aria-hidden="true" className="size-3" />
+              Dời sang…
+            </button>
+            {moving === t.id && (
+              <div role="group" aria-label={`Chọn ngày mới cho “${t.title}”`} className="flex w-full flex-wrap gap-1 pt-1">
+                {days.map((d, k) =>
+                  d === t.plannedOn ? null : (
+                    <button
+                      key={d}
+                      type="button"
+                      onClick={() => move(t, d)}
+                      className="rounded-md border border-line px-1.5 py-0.5 text-xs tabular-nums outline-none hover:border-primary focus-visible:ring-3 focus-visible:ring-ring/50"
+                    >
+                      {SHORT[k]} {formatDay(d, true)}
+                    </button>
+                  ),
+                )}
+                {t.plannedOn && (
+                  <button
+                    type="button"
+                    onClick={() => move(t, null)}
+                    className="rounded-md px-1.5 py-0.5 text-xs text-muted-foreground outline-none hover:text-foreground focus-visible:ring-3 focus-visible:ring-ring/50"
+                  >
+                    Bỏ lịch
+                  </button>
+                )}
+              </div>
+            )}
+          </div>
+        )}
+      </li>
+    );
+  }
+
   return (
     <div className="space-y-3">
       {error && <ErrorNotice message={error} onDismiss={dismissError} />}
       {empty && <Empty>Tuần này chưa có task nào có Ngày làm hay Hạn, chưa có ghi chú ngày nào. Đặt Ngày làm ở Tasks hoặc Today.</Empty>}
+      {tray.length > 0 && (
+        <section aria-label="Chưa xếp ngày" className="rounded-lg border border-dashed border-line bg-surface p-3">
+          <h3 className="font-serif text-base font-semibold">
+            Chưa xếp ngày <span className="font-sans text-sm font-normal text-muted-foreground tabular-nums">({tray.length})</span>
+          </h3>
+          <p className="text-xs text-muted-foreground">Việc của mục tiêu tuần này chưa có Ngày làm.</p>
+          <ul className="mt-3 grid gap-x-6 gap-y-2.5 text-sm md:grid-cols-2 xl:grid-cols-3">{tray.map((t) => renderTask(t, false))}</ul>
+        </section>
+      )}
       <div className="grid gap-3 md:grid-cols-4 xl:grid-cols-7">
         {cards.map((c, i) => {
           const isToday = c.date === today;
@@ -109,65 +202,7 @@ export function WeekCards({ weekStart, today, tasks: initial, logs }: { weekStar
                 {c.tasks.length === 0 && !c.log && <p className="text-xs text-muted-foreground">Trống.</p>}
                 {c.tasks.length > 0 && (
                   <ul className="space-y-2.5">
-                    {c.tasks.map((t) => {
-                      const done = t.status === "Xong";
-                      return (
-                        <li key={t.id} className="space-y-1">
-                          <div className="flex gap-2">
-                            <TaskCheckbox task={t} onComplete={complete} />
-                            <MaybeLink
-                              href={t.url}
-                              className={`min-w-0 break-words hover:text-primary ${done ? "text-muted-foreground line-through" : ""}`}
-                            >
-                              {t.title || "(Chưa đặt tên)"}
-                            </MaybeLink>
-                          </div>
-                          {!done && (
-                            <div className="flex flex-wrap items-center gap-1.5 pl-6">
-                              {t.dueOnly && (
-                                // đỏ chỉ khi đã quá hạn; hạn hôm nay / sắp tới là nhãn trung tính
-                                <Badge variant={past ? "destructive-light" : "outline"}>{past ? "quá hạn" : "hạn"}</Badge>
-                              )}
-                              <button
-                                type="button"
-                                aria-expanded={moving === t.id}
-                                aria-label={`Dời “${t.title}” sang ngày khác`}
-                                onClick={() => setMoving((m) => (m === t.id ? null : t.id))}
-                                className="inline-flex items-center gap-1 rounded-md border border-line px-1.5 py-0.5 text-xs text-muted-foreground outline-none hover:border-primary hover:text-foreground focus-visible:ring-3 focus-visible:ring-ring/50"
-                              >
-                                <CalendarDaysIcon aria-hidden="true" className="size-3" />
-                                Dời sang…
-                              </button>
-                              {moving === t.id && (
-                                <div role="group" aria-label={`Chọn ngày mới cho “${t.title}”`} className="flex w-full flex-wrap gap-1 pt-1">
-                                  {days.map((d, k) =>
-                                    d === t.plannedOn ? null : (
-                                      <button
-                                        key={d}
-                                        type="button"
-                                        onClick={() => move(t, d)}
-                                        className="rounded-md border border-line px-1.5 py-0.5 text-xs tabular-nums outline-none hover:border-primary focus-visible:ring-3 focus-visible:ring-ring/50"
-                                      >
-                                        {SHORT[k]} {formatDay(d, true)}
-                                      </button>
-                                    ),
-                                  )}
-                                  {t.plannedOn && (
-                                    <button
-                                      type="button"
-                                      onClick={() => move(t, null)}
-                                      className="rounded-md px-1.5 py-0.5 text-xs text-muted-foreground outline-none hover:text-foreground focus-visible:ring-3 focus-visible:ring-ring/50"
-                                    >
-                                      Bỏ lịch
-                                    </button>
-                                  )}
-                                </div>
-                              )}
-                            </div>
-                          )}
-                        </li>
-                      );
-                    })}
+                    {c.tasks.map((t) => renderTask(t, past))}
                   </ul>
                 )}
                 {c.log && (

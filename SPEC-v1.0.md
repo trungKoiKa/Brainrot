@@ -29,6 +29,14 @@
 > mục tiêu là thẻ tiêu điểm; vòng % + 3 ô số gộp thành một dòng; biểu đồ kỳ con ẩn khi chưa có mục tiêu nào; ở Tuần,
 > 7 ngày đứng trước mục tiêu. Nút "Hôm nay" đổi thành "Kỳ này".
 >
+> **Goal, đợt 2 — chuỗi Mục tiêu → Việc → Ngày (Trung chốt 07/11/2026):** (1) dưới mỗi mục tiêu hiện các việc đã gắn
+> (tên, Ngày làm hoặc "chưa xếp ngày", đã xong gạch ngang); (2) việc trên thẻ ngày ở Tuần ghi mục tiêu của nó;
+> (3) ở Tuần có khay "Chưa xếp ngày": việc chưa xong đã gắn vào mục tiêu của tuần đó mà chưa có Ngày làm, có nút
+> "Dời sang…" như thẻ ngày. **Nhìn lại → mục tiêu:** mỗi dòng của "mục tiêu cần tập trung" kỳ trước có nút "Thêm làm
+> mục tiêu" (loại Ưu tiên; dòng trùng tên mục tiêu có sẵn thì ghi "Đã có"). **Chuyển kỳ:** nút "Chuyển N mục tiêu chưa
+> xong sang <kỳ sau>" tạo bản sao (giữ loại, không sao thói quen/việc gắn, bỏ qua tên đã có ở kỳ sau). **Nhìn lại không mất
+> chữ:** bản nháp đang gõ tự lưu trong trình duyệt theo từng kỳ, khôi phục khi quay lại, xoá khi lưu thành công.
+>
 > **Xóa task (Trung chốt 05/11/2026):** mỗi dòng task (Tasks, cả việc chưa xong lẫn Đã xong) có icon thùng rác; bấm → hỏi
 > xác nhận ngay tại dòng → **xóa hẳn** (không hoàn tác), liên kết với mục tiêu mất theo. Trước đây xóa trong Notion.
 >

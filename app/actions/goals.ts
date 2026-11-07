@@ -2,9 +2,9 @@
 
 import { GOAL_TYPES, MAX_GOAL_TITLE, type GoalType } from "@/lib/goals";
 import { dbScope } from "@/lib/db/actions-db";
-import { createGoal, trashGoal, updateGoal, type GoalPatch } from "@/lib/db/mutations";
+import { carryOverGoals, createGoal, trashGoal, updateGoal, type GoalPatch } from "@/lib/db/mutations";
 import { refreshData } from "@/lib/db/revalidate";
-import { LEVELS, parsePeriod, type Level } from "@/lib/period";
+import { LEVELS, parsePeriod, shiftPeriod, type Level } from "@/lib/period";
 import { SESSION_EXPIRED, isSignedIn } from "@/lib/session";
 
 export type GoalResult = { ok: true } | { ok: false; error: string };
@@ -103,4 +103,23 @@ export async function trashGoalAction(id: string, trashed: boolean): Promise<Goa
   // Cố ý KHÔNG refreshData(): panel đã cập nhật lạc quan, mà tải lại trang làm đổi key của panel
   // (goal-panel dựng lại) → mất nút Hoàn tác 5 giây. Trang khác đọc lại dữ liệu khi được mở.
   return { ok: true };
+}
+
+export type CarryResult = { ok: true; count: number } | { ok: false; error: string };
+
+/** Chuyển mục tiêu chưa xong của kỳ `key` sang kỳ kế tiếp (SPEC-v1.0, Goal đợt 2). */
+export async function carryOverGoalsAction(level: Level, key: string): Promise<CarryResult> {
+  const denied = await guard();
+  if (denied) return denied;
+  const period = LEVELS.includes(level) ? parsePeriod(level, key) : null;
+  if (!period) return { ok: false, error: "Yêu cầu không hợp lệ." };
+  try {
+    const { db, userId } = await dbScope();
+    const count = await carryOverGoals(db, userId, period.level, period.start, shiftPeriod(period, 1).start);
+    refreshData();
+    return { ok: true, count };
+  } catch (e) {
+    console.error("carryOverGoals failed:", e instanceof Error ? e.message : e);
+    return { ok: false, error: WRITE_FAILED };
+  }
 }
