@@ -2,7 +2,7 @@
 
 import { getGoals, getTaskProjects } from "@/lib/db/data";
 import { dbScope } from "@/lib/db/actions-db";
-import { createTask, deleteTask, markTaskDone, setTaskPlannedOn, updateTask } from "@/lib/db/mutations";
+import { createTask, deleteTask, markTaskDone, reopenTask, setTaskPlannedOn, updateTask } from "@/lib/db/mutations";
 import { refreshData } from "@/lib/db/revalidate";
 import { SESSION_EXPIRED, isSignedIn } from "@/lib/session";
 import { parseTaskInput, parseTaskUpdate } from "@/lib/task-form";
@@ -26,6 +26,23 @@ export async function completeTask(pageId: string): Promise<CompleteTaskResult> 
   }
 
   refreshData(); // bỏ cache router → lần render kế tiếp đọc dữ liệu mới
+  return { ok: true };
+}
+
+/** Hoàn tác tích xong / bỏ tích trong "Đã xong" (SPEC-v1.0, 07/11/2026). */
+export async function reopenTaskAction(pageId: string): Promise<CompleteTaskResult> {
+  if (!(await isSignedIn())) return { ok: false, error: SESSION_EXPIRED };
+  if (typeof pageId !== "string" || !PAGE_ID.test(pageId)) return { ok: false, error: "ID task không hợp lệ." };
+
+  try {
+    const { db, userId } = await dbScope();
+    await reopenTask(db, userId, pageId);
+  } catch (e) {
+    console.error("reopenTask failed:", e instanceof Error ? e.message : e);
+    return { ok: false, error: WRITE_FAILED };
+  }
+
+  refreshData();
   return { ok: true };
 }
 

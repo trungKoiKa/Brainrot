@@ -7,6 +7,7 @@ import {
   createTask,
   deleteTask,
   markTaskDone,
+  reopenTask,
   saveDailyLog,
   saveReflection,
   setDayHabits,
@@ -56,6 +57,10 @@ describe("tasks", () => {
     expect(done.status).toBe("Xong");
     expect(done.plannedOn).toBe("2026-10-30");
     expect(done.doneOn).toMatch(/^\d{4}-\d{2}-\d{2}$/);
+
+    await reopenTask(db, ME, t.id); // hoàn tác tích xong (SPEC-v1.0, 07/11/2026)
+    expect((await listTasks(db, ME)).find((x) => x.id === t.id)).toMatchObject({ status: "Chưa làm", doneOn: null, plannedOn: "2026-10-30" });
+    await markTaskDone(db, ME, t.id);
 
     await updateTask(db, ME, t.id, update("Mở lại")); // mở lại → bỏ Ngày xong
     expect((await listTasks(db, ME)).find((x) => x.id === t.id)?.doneOn).toBeNull();
@@ -116,6 +121,7 @@ describe("cách ly giữa người dùng", () => {
   it("biết id của người khác cũng không sửa / tích / dời / xóa được", async () => {
     const [theirs] = await listTasks(db, other);
     await expect(markTaskDone(db, ME, theirs.id)).rejects.toThrow();
+    await expect(reopenTask(db, ME, theirs.id)).rejects.toThrow();
     await expect(setTaskPlannedOn(db, ME, theirs.id, "2026-11-01")).rejects.toThrow();
     await expect(updateTask(db, ME, theirs.id, update("Chiếm đoạt"))).rejects.toThrow();
     await expect(deleteTask(db, ME, theirs.id)).rejects.toThrow();
