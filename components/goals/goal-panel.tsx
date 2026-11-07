@@ -4,15 +4,20 @@ import { useEffect, useRef, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import {
   ArrowDownUpIcon,
+  EllipsisIcon,
+  ListPlusIcon,
+  XIcon,
+  type LucideIcon,
   CheckIcon,
   Link2Icon,
   PencilIcon,
   Trash2Icon,
 } from "lucide-react";
-import { carryOverGoalsAction, createGoalAction, trashGoalAction, updateGoalAction } from "@/app/actions/goals";
+import { carryOverGoalsAction, createGoalAction, linkTaskAction, trashGoalAction, updateGoalAction } from "@/app/actions/goals";
 import { formatDay } from "@/lib/date";
 import { fieldClass, primaryButtonClass } from "@/components/form-bits";
 import { Badge } from "@/components/reui/badge";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { ErrorNotice } from "@/components/tasks/task-row";
 import {
   DEFAULT_THRESHOLD,
@@ -48,6 +53,7 @@ export function GoalPanel({
   ended,
   linked,
   next: carry,
+  openTasks,
 }: {
   level: Level;
   periodKey: string;
@@ -59,6 +65,8 @@ export function GoalPanel({
   linked: Record<string, LinkedTask[]>;
   /** Có mục tiêu chưa xong → nút chuyển sang kỳ sau; null = không hiện */
   next: { label: string } | null;
+  /** Việc chưa xong, chưa gắn mục tiêu nào — chọn được ở "Gắn việc" (SPEC-v1.0, Goal đợt 3) */
+  openTasks: { id: string; title: string }[];
 }) {
   const router = useRouter();
   const [goals, setGoals] = useState(initial);
@@ -92,6 +100,14 @@ export function GoalPanel({
   async function link(id: string, habitId: string | null, threshold: number | null): Promise<void> {
     setError(null);
     const res = await updateGoalAction(id, { habitId, threshold });
+    if (!res.ok) return setError(res.error);
+    router.refresh();
+  }
+
+  /** Gắn / bỏ gắn việc: danh sách việc do server tính → xong thì tải lại dữ liệu trang. */
+  async function linkTask(taskId: string, goalId: string | null): Promise<void> {
+    setError(null);
+    const res = await linkTaskAction(taskId, goalId);
     if (!res.ok) return setError(res.error);
     router.refresh();
   }
@@ -137,7 +153,9 @@ export function GoalPanel({
       </div>
 
       <div className="mt-5 space-y-3">
-        {groupGoals(goals).map(({ type, goals: list }) => (
+        {groupGoals(goals)
+          .filter((grp) => grp.goals.length > 0)
+          .map(({ type, goals: list }) => (
           <section key={type} className="flex flex-col gap-1.5">
             <h3 className="flex items-center gap-2">
               <Badge variant={type === "Ưu tiên" ? "primary-light" : "outline"}>{type}</Badge>
@@ -145,13 +163,14 @@ export function GoalPanel({
                 {list.filter((g) => g.title.trim()).length}
               </span>
             </h3>
-            <ul className="min-h-12 divide-y divide-dashed divide-line">
-              {list.length === 0 && <li className="py-2 text-sm text-muted-foreground">Chưa có mục tiêu {type.toLowerCase()}.</li>}
+            <ul className="divide-y divide-dashed divide-line">
               {list.map((g) => (
                 <GoalRow
                   key={g.id}
                   goal={g}
                   tasks={linked[g.id] ?? []}
+                  openTasks={openTasks}
+                  onLinkTask={linkTask}
                   habits={habits}
                   onPatch={(c) => patch(g.id, c)}
                   onLink={(h, t) => link(g.id, h, t)}
@@ -214,18 +233,24 @@ function AutoChips({ auto }: { auto: AutoInfo[] }) {
 function GoalRow({
   goal,
   tasks,
+  openTasks,
   habits,
   onPatch,
   onLink,
+  onLinkTask,
   onRemove,
 }: {
   goal: Goal;
   tasks: LinkedTask[];
+  openTasks: { id: string; title: string }[];
   habits: { id: string; name: string }[];
   onPatch: (change: Partial<Pick<Goal, "title" | "type" | "done">>) => void;
   onLink: (habitId: string | null, threshold: number | null) => Promise<void>;
+  onLinkTask: (taskId: string, goalId: string | null) => Promise<void>;
   onRemove: () => void;
 }) {
+  const [picking, setPicking] = useState(false);
+  const [menu, setMenu] = useState(false);
   const [linking, setLinking] = useState(false);
   const [editing, setEditing] = useState(false);
   const [draft, setDraft] = useState(goal.title);
@@ -287,31 +312,40 @@ function GoalRow({
           </button>
         )}
         {!editing && (
-          <span className="flex shrink-0 opacity-100 transition-opacity md:opacity-0 md:group-focus-within:opacity-100 md:group-hover:opacity-100">
+          <span className="flex shrink-0 items-center">
             <button type="button" className={iconButton} aria-label={`Sửa: ${goal.title}`} onClick={() => setEditing(true)}>
               <PencilIcon aria-hidden="true" className="size-3.5" />
-            </button>
-            <button
-              type="button"
-              className={iconButton}
-              aria-label={`Gắn thói quen: ${goal.title}`}
-              title="Gắn thói quen để tự xong"
-              onClick={() => setLinking((v) => !v)}
-            >
-              <Link2Icon aria-hidden="true" className="size-3.5" />
-            </button>
-            <button
-              type="button"
-              className={iconButton}
-              aria-label={`Chuyển sang ${other}: ${goal.title}`}
-              title={`Chuyển sang ${other}`}
-              onClick={() => onPatch({ type: other })}
-            >
-              <ArrowDownUpIcon aria-hidden="true" className="size-3.5" />
             </button>
             <button type="button" className={iconButton} aria-label={`Xóa: ${goal.title}`} onClick={onRemove}>
               <Trash2Icon aria-hidden="true" className="size-3.5" />
             </button>
+            <Popover open={menu} onOpenChange={setMenu}>
+              <PopoverTrigger render={<button type="button" className={iconButton} aria-label={`Thêm tùy chọn: ${goal.title}`} />}>
+                <EllipsisIcon aria-hidden="true" className="size-4" />
+              </PopoverTrigger>
+              <PopoverContent align="end" className="w-52 gap-0.5 p-1">
+                {(
+                  [
+                    { label: "Gắn việc", Icon: ListPlusIcon, run: () => setPicking(true) },
+                    { label: "Gắn thói quen", Icon: Link2Icon, run: () => setLinking(true) },
+                    { label: `Chuyển sang ${other}`, Icon: ArrowDownUpIcon, run: () => onPatch({ type: other }) },
+                  ] satisfies { label: string; Icon: LucideIcon; run: () => void }[]
+                ).map(({ label, Icon, run }) => (
+                  <button
+                    key={label}
+                    type="button"
+                    onClick={() => {
+                      setMenu(false);
+                      run();
+                    }}
+                    className="flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-left text-sm outline-none hover:bg-surface-muted focus-visible:ring-3 focus-visible:ring-ring/50"
+                  >
+                    <Icon aria-hidden="true" className="size-4 text-muted-foreground" />
+                    {label}
+                  </button>
+                ))}
+              </PopoverContent>
+            </Popover>
           </span>
         )}
       </div>
@@ -320,18 +354,65 @@ function GoalRow({
           <AutoChips auto={goal.auto} />
         </div>
       )}
-      {tasks.length > 0 && (
-        <ul className="mt-1 space-y-0.5 pl-7 text-xs" aria-label={`Việc của mục tiêu: ${goal.title}`}>
-          {tasks.map((t) => (
-            <li key={t.id} className="flex items-baseline gap-2">
-              <span className={`min-w-0 flex-1 break-words ${t.done ? "text-muted-foreground line-through" : ""}`}>{t.title || "(Chưa đặt tên)"}</span>
-              <span className="shrink-0 text-muted-foreground tabular-nums">
-                {t.done ? "xong" : t.plannedOn ? formatDay(t.plannedOn, true) : "chưa xếp ngày"}
-              </span>
-            </li>
-          ))}
-        </ul>
-      )}
+      <div className="mt-1 pl-7 text-xs">
+        {tasks.length > 0 && (
+          <ul className="space-y-0.5" aria-label={`Việc của mục tiêu: ${goal.title}`}>
+            {tasks.map((t) => (
+              <li key={t.id} className="flex items-baseline gap-2">
+                <span className={`min-w-0 flex-1 break-words ${t.done ? "text-muted-foreground line-through" : ""}`}>{t.title || "(Chưa đặt tên)"}</span>
+                <span className="shrink-0 text-muted-foreground tabular-nums">
+                  {t.done ? "xong" : t.plannedOn ? formatDay(t.plannedOn, true) : "chưa xếp ngày"}
+                </span>
+                <button
+                  type="button"
+                  aria-label={`Bỏ gắn “${t.title}” khỏi mục tiêu`}
+                  title="Bỏ gắn"
+                  onClick={() => onLinkTask(t.id, null)}
+                  className="flex size-5 shrink-0 items-center justify-center self-center rounded text-muted-foreground outline-none hover:text-foreground focus-visible:ring-3 focus-visible:ring-ring/50"
+                >
+                  <XIcon aria-hidden="true" className="size-3" />
+                </button>
+              </li>
+            ))}
+          </ul>
+        )}
+        {!picking && (
+          <button
+            type="button"
+            onClick={() => setPicking(true)}
+            className="mt-0.5 rounded-md text-muted-foreground underline-offset-4 outline-none hover:text-foreground hover:underline focus-visible:ring-3 focus-visible:ring-ring/50"
+          >
+            {tasks.length === 0 ? "Chưa có việc — gắn việc để xếp ngày và theo dõi tiến độ" : "+ Gắn việc"}
+          </button>
+        )}
+        {picking && (
+          <div role="group" aria-label={`Chọn việc gắn vào: ${goal.title}`} className="mt-1 rounded-lg border border-line bg-surface-muted p-1.5">
+            {openTasks.length === 0 ? (
+              <p className="px-1.5 py-1 text-muted-foreground">Không còn việc nào chưa gắn mục tiêu. Thêm việc mới ở Tasks.</p>
+            ) : (
+              <ul className="max-h-40 space-y-0.5 overflow-y-auto">
+                {openTasks.map((t) => (
+                  <li key={t.id}>
+                    <button
+                      type="button"
+                      onClick={async () => {
+                        await onLinkTask(t.id, goal.id);
+                        setPicking(false);
+                      }}
+                      className="w-full rounded-md px-1.5 py-1 text-left break-words outline-none hover:bg-surface focus-visible:ring-3 focus-visible:ring-ring/50"
+                    >
+                      {t.title || "(Chưa đặt tên)"}
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            )}
+            <button type="button" onClick={() => setPicking(false)} className="mt-1 px-1.5 text-muted-foreground hover:text-foreground">
+              Đóng
+            </button>
+          </div>
+        )}
+      </div>
       {linking && (
         <LinkHabit
           goal={goal}

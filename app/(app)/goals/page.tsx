@@ -95,6 +95,8 @@ async function GoalsContent({ searchParams }: Pick<PageProps<"/goals">, "searchP
   );
   const goalOfTask: Record<string, string> = {};
   for (const g of goals) for (const id of g.taskIds) goalOfTask[id] ??= g.title;
+  const openTasks = weekTasks.data.filter((t) => t.status !== "Xong" && t.goalIds.length === 0).map((t) => ({ id: t.id, title: t.title }));
+  const focusGoals = panelGoals.filter((g) => g.type === "Ưu tiên" && g.title.trim());
   const trayIds = [...new Set(panelGoals.flatMap((g) => g.taskIds))];
   const nextPeriod = shiftPeriod(period, 1);
   const hasUndone = panelGoals.some((g) => g.title.trim() && !isGoalDone(g));
@@ -143,6 +145,18 @@ async function GoalsContent({ searchParams }: Pick<PageProps<"/goals">, "searchP
       {/* Tuần: 7 ngày là việc của tuần, đứng trước danh sách mục tiêu */}
       {level === "week" && logs && weekTasks && (
         <Card title="7 ngày trong tuần">
+          {focusGoals.length > 0 && (
+            <div className="mb-4 rounded-lg bg-surface-muted px-3 py-2.5 text-sm">
+              <p className="font-medium">Tập trung tuần này</p>
+              <ul className="mt-1 space-y-0.5">
+                {focusGoals.map((g) => (
+                  <li key={g.id} className={`break-words ${isGoalDone(g) ? "text-muted-foreground line-through" : ""}`}>
+                    {g.title}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
           <WeekCards key={period.key} weekStart={period.start} today={today} tasks={weekTasks.data} logs={logs.data} goalOfTask={goalOfTask} trayIds={trayIds} />
         </Card>
       )}
@@ -167,6 +181,7 @@ async function GoalsContent({ searchParams }: Pick<PageProps<"/goals">, "searchP
               habits={linkable.map((h) => ({ id: h.id, name: h.name }))}
               ended={ended}
               linked={linkedTasks}
+              openTasks={openTasks}
               next={hasUndone ? { label: periodLabel(nextPeriod) } : null}
             />
           </Card>

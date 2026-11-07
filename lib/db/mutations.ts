@@ -201,3 +201,18 @@ export async function carryOverGoals(db: Db, userId: string, level: Level, from:
   if (todo.length) await db.insert(goals).values(todo.map((g) => ({ userId, level, start: to, title: g.title, type: g.type })));
   return todo.length;
 }
+
+/**
+ * Gắn việc vào mục tiêu từ dòng mục tiêu (SPEC-v1.0, Goal đợt 3): mỗi việc một mục tiêu → thay liên kết cũ;
+ * `goalId` null = bỏ gắn. Việc và mục tiêu đều phải của người dùng.
+ */
+export async function setTaskGoal(db: Db, userId: string, taskId: string, goalId: string | null): Promise<void> {
+  const [t] = await db.select({ id: tasks.id }).from(tasks).where(ownTask(userId, taskId));
+  if (!t) throw new Error("Không tìm thấy task");
+  if (goalId) {
+    const [g] = await db.select({ id: goals.id }).from(goals).where(and(eq(goals.id, goalId), eq(goals.userId, userId), isNull(goals.deletedAt)));
+    if (!g) throw new Error("Không tìm thấy mục tiêu");
+  }
+  await db.delete(goalTasks).where(eq(goalTasks.taskId, taskId));
+  if (goalId) await db.insert(goalTasks).values({ goalId, taskId });
+}
