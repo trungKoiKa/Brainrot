@@ -105,7 +105,7 @@ export async function trashGoalAction(id: string, trashed: boolean): Promise<Goa
   return { ok: true };
 }
 
-export type CarryResult = { ok: true; count: number } | { ok: false; error: string };
+export type CarryResult = { ok: true; ids: string[] } | { ok: false; error: string };
 
 /** Chuyển mục tiêu chưa xong của kỳ `key` sang kỳ kế tiếp (SPEC-v1.0, Goal đợt 2). */
 export async function carryOverGoalsAction(level: Level, key: string): Promise<CarryResult> {
@@ -115,9 +115,9 @@ export async function carryOverGoalsAction(level: Level, key: string): Promise<C
   if (!period) return { ok: false, error: "Yêu cầu không hợp lệ." };
   try {
     const { db, userId } = await dbScope();
-    const count = await carryOverGoals(db, userId, period.level, period.start, shiftPeriod(period, 1).start);
+    const ids = await carryOverGoals(db, userId, period.level, period.start, shiftPeriod(period, 1).start);
     refreshData();
-    return { ok: true, count };
+    return { ok: true, ids };
   } catch (e) {
     console.error("carryOverGoals failed:", e instanceof Error ? e.message : e);
     return { ok: false, error: WRITE_FAILED };
