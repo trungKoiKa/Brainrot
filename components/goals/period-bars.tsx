@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { toneColor } from "./progress-ring";
 
-export type PeriodBar = { href: string; label: string; pct: number; total: number; current: boolean };
+export type PeriodBar = { href: string; label: string; pct: number; total: number; current: boolean; /** kỳ đã kết thúc → mới tô màu theo ngưỡng */ ended: boolean };
 
 /** Cột % các kỳ con (Năm → Quý/Tháng, Quý → Tháng, Tháng → Tuần), bấm cột để mở kỳ đó (SPEC-v0.4 4.2). */
 export function PeriodBars({ bars }: { bars: PeriodBar[] }) {
@@ -12,6 +12,7 @@ export function PeriodBars({ bars }: { bars: PeriodBar[] }) {
           <span className="text-xs tabular-nums text-muted-foreground">{b.total ? `${b.pct}%` : "—"}</span>
           <Link
             href={b.href}
+            aria-label={b.total ? `${b.label}: ${b.pct}% (${b.total} mục tiêu)` : `${b.label}: chưa có mục tiêu`}
             title={b.total ? `${b.label}: ${b.pct}% (${b.total} mục tiêu)` : `${b.label}: chưa có mục tiêu`}
             className="flex w-full flex-1 items-end rounded-md transition-opacity hover:opacity-80"
           >
@@ -19,7 +20,7 @@ export function PeriodBars({ bars }: { bars: PeriodBar[] }) {
               className="w-full rounded-md"
               style={{
                 height: b.total ? `${Math.max(b.pct, 4)}%` : 4,
-                background: b.total ? toneColor(b.pct) : "var(--line)",
+                background: b.total ? toneColor(b.pct, !b.ended) : "var(--line)",
               }}
             />
           </Link>

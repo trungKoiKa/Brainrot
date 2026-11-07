@@ -1,7 +1,19 @@
 // Vòng tròn % (SPEC-v0.4 4.2) — SVG thuần, màu theo ngưỡng giống chấm trạng thái Dashboard.
-export const toneColor = (pct: number) => (pct >= 70 ? "var(--good)" : pct >= 40 ? "var(--chart-4)" : "var(--danger)");
+// `neutral`: kỳ chưa kết thúc → chưa phán xét, dùng màu chủ đạo (SPEC-v1.0, Goal đợt 1).
+export const toneColor = (pct: number, neutral = false) =>
+  neutral ? "var(--primary)" : pct >= 70 ? "var(--good)" : pct >= 40 ? "var(--warning)" : "var(--danger)";
 
-export function ProgressRing({ pct, size = 96, empty = false }: { pct: number; size?: number; empty?: boolean }) {
+export function ProgressRing({
+  pct,
+  size = 96,
+  empty = false,
+  neutral = false,
+}: {
+  pct: number;
+  size?: number;
+  empty?: boolean;
+  neutral?: boolean;
+}) {
   const r = 42;
   const c = 2 * Math.PI * r;
   return (
@@ -14,7 +26,7 @@ export function ProgressRing({ pct, size = 96, empty = false }: { pct: number; s
             cy="50"
             r={r}
             fill="none"
-            stroke={toneColor(pct)}
+            stroke={toneColor(pct, neutral)}
             strokeWidth="10"
             strokeLinecap="round"
             strokeDasharray={`${(pct / 100) * c} ${c}`}
