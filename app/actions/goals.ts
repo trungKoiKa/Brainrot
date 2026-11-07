@@ -2,7 +2,7 @@
 
 import { GOAL_TYPES, MAX_GOAL_TITLE, type GoalType } from "@/lib/goals";
 import { dbScope } from "@/lib/db/actions-db";
-import { carryOverGoals, createGoal, trashGoal, updateGoal, type GoalPatch } from "@/lib/db/mutations";
+import { carryOverGoals, createGoal, setTaskGoal, trashGoal, updateGoal, type GoalPatch } from "@/lib/db/mutations";
 import { refreshData } from "@/lib/db/revalidate";
 import { LEVELS, parsePeriod, shiftPeriod, type Level } from "@/lib/period";
 import { SESSION_EXPIRED, isSignedIn } from "@/lib/session";
@@ -122,4 +122,22 @@ export async function carryOverGoalsAction(level: Level, key: string): Promise<C
     console.error("carryOverGoals failed:", e instanceof Error ? e.message : e);
     return { ok: false, error: WRITE_FAILED };
   }
+}
+
+/** Gắn việc vào mục tiêu (hoặc bỏ gắn khi `goalId` null) ngay từ dòng mục tiêu. */
+export async function linkTaskAction(taskId: string, goalId: string | null): Promise<GoalResult> {
+  const denied = await guard();
+  if (denied) return denied;
+  if (typeof taskId !== "string" || !PAGE_ID.test(taskId) || (goalId !== null && (typeof goalId !== "string" || !PAGE_ID.test(goalId)))) {
+    return { ok: false, error: "Yêu cầu không hợp lệ." };
+  }
+  try {
+    const { db, userId } = await dbScope();
+    await setTaskGoal(db, userId, taskId, goalId);
+  } catch (e) {
+    console.error("setTaskGoal failed:", e instanceof Error ? e.message : e);
+    return { ok: false, error: WRITE_FAILED };
+  }
+  refreshData();
+  return { ok: true };
 }

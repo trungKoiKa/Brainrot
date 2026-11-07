@@ -177,7 +177,7 @@ export function WeekCards({
                         {c.doneCount}/{c.total}
                       </Badge>
                     ) : (
-                      <Badge variant={c.pct >= 70 ? "success-light" : "warning-light"} className="tabular-nums">
+                      <Badge variant={c.pct >= 70 ? "success-light" : "outline"} className="tabular-nums">
                         {c.pct}%
                       </Badge>
                     )}

@@ -45,7 +45,10 @@ export function HabitMonth({
       <Card title="Thói quen" action={<span className="text-sm text-muted-foreground">{stats.elapsed} ngày đã qua</span>}>
         {error && <ErrorNotice message={error} onDismiss={dismissError} />}
         {stats.rows.length === 0 ? (
-          <p className="text-sm text-muted-foreground">Chưa có thói quen nào trong tháng này — thêm ở phần dưới.</p>
+          <div className="space-y-4">
+            <p className="text-sm text-muted-foreground">Chưa có thói quen nào trong tháng này.</p>
+            <HabitManager month={month} habits={[]} />
+          </div>
         ) : (
           <div ref={scroller} className="-mx-5 overflow-x-auto px-5 md:-mx-6 md:px-6">
             <table className="w-full border-separate border-spacing-0 text-sm">
@@ -125,6 +128,7 @@ export function HabitMonth({
         )}
       </Card>
 
+      {stats.rows.length > 0 && (
       <div className="grid gap-5 lg:grid-cols-2">
         <Card title="Tổng kết tháng">
           {stats.rows.length === 0 ? (
@@ -156,6 +160,7 @@ export function HabitMonth({
           <HabitManager month={month} habits={stats.rows.map((r) => r.habit)} />
         </Card>
       </div>
+      )}
     </div>
   );
 }

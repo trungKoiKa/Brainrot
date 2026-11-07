@@ -13,6 +13,7 @@ import {
   saveReflection,
   setDayHabits,
   setHabitEnd,
+  setTaskGoal,
   setTaskPlannedOn,
   trashGoal,
   updateGoal,
@@ -206,6 +207,24 @@ describe("goals và nhìn lại", () => {
     expect(next.map((g) => g.title).sort()).toEqual(["Việc dở", "có sẵn"]);
     expect(next.find((g) => g.title === "Việc dở")?.type).toBe("Ưu tiên");
     expect(await carryOverGoals(db, ME, "week", "2027-03-01", "2027-03-08")).toBe(0); // chạy lại không nhân đôi
+  });
+
+  it("gắn việc từ dòng mục tiêu: thay liên kết cũ, bỏ gắn, không chạm đồ của người khác", async () => {
+    await createTask(db, ME, input("Việc gắn từ mục tiêu"));
+    const t = (await listTasks(db, ME)).find((x) => x.title === "Việc gắn từ mục tiêu")!;
+    const g1 = await createGoal(db, ME, "week", "2027-04-05", "G1", "Thường");
+    const g2 = await createGoal(db, ME, "week", "2027-04-05", "G2", "Thường");
+    const foreign = await createGoal(db, other, "week", "2027-04-05", "Của bạn", "Thường");
+
+    await setTaskGoal(db, ME, t.id, g1);
+    await setTaskGoal(db, ME, t.id, g2);
+    expect((await listTasks(db, ME)).find((x) => x.id === t.id)?.goalIds).toEqual([g2]); // một việc một mục tiêu
+    await expect(setTaskGoal(db, ME, t.id, foreign)).rejects.toThrow();
+    expect((await listTasks(db, ME)).find((x) => x.id === t.id)?.goalIds).toEqual([g2]); // lỗi thì giữ nguyên
+    await setTaskGoal(db, ME, t.id, null);
+    expect((await listTasks(db, ME)).find((x) => x.id === t.id)?.goalIds).toEqual([]);
+    const [theirs] = await listTasks(db, other);
+    await expect(setTaskGoal(db, ME, theirs.id, g1)).rejects.toThrow();
   });
 
   it("nhìn lại: mỗi (cấp, kỳ) một bản ghi", async () => {

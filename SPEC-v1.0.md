@@ -37,6 +37,14 @@
 > xong sang <kỳ sau>" tạo bản sao (giữ loại, không sao thói quen/việc gắn, bỏ qua tên đã có ở kỳ sau). **Nhìn lại không mất
 > chữ:** bản nháp đang gõ tự lưu trong trình duyệt theo từng kỳ, khôi phục khi quay lại, xoá khi lưu thành công.
 >
+> **Goal, đợt 3 (Trung chốt 07/11/2026, critique lần 2, 26/40):** (1) **Gắn việc từ dòng mục tiêu:** dòng mục tiêu có
+> nút "Gắn việc" (chọn từ việc chưa xong và chưa gắn mục tiêu nào; mỗi việc vẫn chỉ một mục tiêu); mỗi việc đã gắn có nút
+> bỏ gắn; mục tiêu chưa có việc hiện một dòng gợi ý. (2) Nhóm Ưu tiên / Thường **rỗng thì không hiện**; tháng chưa có
+> thói quen thì thêm thói quen ngay trong thẻ Thói quen, không có thẻ Tổng kết trống. (3) Nút trên dòng mục tiêu: bút và
+> thùng rác luôn thấy; "Gắn thói quen" và "Chuyển loại" nằm trong menu "⋯" có chữ. (4) Ở Tuần, trên 7 ngày có dải "Tập trung
+> tuần này" liệt kê các mục tiêu Ưu tiên (xong thì gạch ngang). (5) % của ngày đã qua dưới 70% dùng nhãn viền trung tính
+> (không vàng); xanh chỉ khi ≥ 70%.
+>
 > **Xóa task (Trung chốt 05/11/2026):** mỗi dòng task (Tasks, cả việc chưa xong lẫn Đã xong) có icon thùng rác; bấm → hỏi
 > xác nhận ngay tại dòng → **xóa hẳn** (không hoàn tác), liên kết với mục tiêu mất theo. Trước đây xóa trong Notion.
 >
