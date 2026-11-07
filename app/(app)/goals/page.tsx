@@ -74,8 +74,7 @@ async function GoalsContent({ searchParams }: Pick<PageProps<"/goals">, "searchP
     (h) => monthOf(h.from) <= monthOf(period.end) && (h.to === null || monthOf(h.to) >= monthOf(period.start)),
   );
   const panelGoals = goalsOf(goals, period);
-  // key đổi khi dữ liệu server đổi (vd. vừa gắn thói quen) → khối mục tiêu nạp lại trạng thái mới
-  const panelKey = `${href(period)}|${panelGoals.map((g) => `${g.id}:${g.done}:${g.autoDone}:${g.habitId}:${g.threshold}`).join(",")}`;
+  const panelKey = href(period); // chỉ đổi khi đổi kỳ; dữ liệu mới vào qua prop `initial` (giữ popover, focus, thông báo)
   const bars = (list: Period[]): PeriodBar[] =>
     list.map((p) => {
       const c = goalCounts(goalsOf(goals, p));

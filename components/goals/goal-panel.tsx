@@ -72,6 +72,12 @@ export function GoalPanel({
 }) {
   const router = useRouter();
   const [goals, setGoals] = useState(initial);
+  // Dữ liệu server mới (sau router.refresh) thay danh sách, không dựng lại cả khối → popover / focus / thông báo còn nguyên
+  const [seen, setSeen] = useState(initial);
+  if (initial !== seen) {
+    setSeen(initial);
+    setGoals(initial);
+  }
   const [error, setError] = useState<string | null>(null);
   const [undo, setUndo] = useState<{ goal: Goal; index: number } | null>(null);
   const undoTimer = useRef<ReturnType<typeof setTimeout>>(undefined);
@@ -193,6 +199,10 @@ export function GoalPanel({
         ))}
       </div>
 
+      {counts.total > 0 && goals.some((g) => g.title.trim() && (linked[g.id] ?? []).length === 0) && (
+        <p className="mt-3 text-xs text-muted-foreground">Gắn việc vào mục tiêu để xếp ngày trong tuần và theo dõi tiến độ.</p>
+      )}
+
       {priorityCount > PRIORITY_SOFT_LIMIT && (
         <p className="mt-3 text-xs text-muted-foreground">
           Đang có {priorityCount} mục tiêu ưu tiên — nên giữ tối đa {PRIORITY_SOFT_LIMIT} để tập trung.
@@ -313,15 +323,10 @@ function GoalRow({
             className={`${fieldClass} py-1`}
           />
         ) : (
-          <button
-            type="button"
-            onClick={() => setEditing(true)}
-            title="Bấm để sửa"
-            className="flex min-w-0 flex-1 items-baseline gap-2 text-left text-sm"
-          >
+          <div className="flex min-w-0 flex-1 items-baseline gap-2 text-sm">
             <span className={`truncate ${isGoalDone(goal) ? "text-muted-foreground line-through" : ""}`}>{goal.title}</span>
             {goal.autoDone && !goal.done && <Badge variant="success-light" className="shrink-0">tự xong</Badge>}
-          </button>
+          </div>
         )}
         {!editing && (
           <span className="flex shrink-0 items-center">
@@ -359,7 +364,8 @@ function GoalRow({
         {tasks.length > 0 && (
           <ul className="space-y-0.5" aria-label={`Việc của mục tiêu: ${goal.title}`}>
             {tasks.map((t) => (
-              <li key={t.id} className="flex items-center gap-2">
+              <li key={t.id} className="flex flex-wrap items-center gap-x-2">
+                <label className="flex size-6 shrink-0 cursor-pointer items-center justify-center">
                 <input
                   type="checkbox"
                   checked={t.done}
@@ -367,7 +373,8 @@ function GoalRow({
                   aria-label={t.done ? `Bỏ đánh dấu xong: ${t.title}` : `Đánh dấu xong: ${t.title}`}
                   className="size-4 shrink-0 cursor-pointer accent-[var(--primary)]"
                 />
-                <MaybeLink href={t.url} className={`min-w-0 flex-1 break-words hover:text-primary ${t.done ? "text-muted-foreground line-through" : ""}`}>
+                </label>
+                <MaybeLink href={t.url} className={`min-w-0 flex-1 basis-40 break-words hover:text-primary ${t.done ? "text-muted-foreground line-through" : ""}`}>
                   {t.title || "(Chưa đặt tên)"}
                 </MaybeLink>
                 <span className="shrink-0 text-xs text-muted-foreground tabular-nums">
@@ -393,7 +400,7 @@ function GoalRow({
           openTasks={openTasks}
           onPick={(id) => onLinkTask(id, goal.id)}
           trigger={
-            <span className="text-xs">{tasks.length === 0 ? "Chưa có việc — gắn việc để xếp ngày và theo dõi tiến độ" : "+ Gắn việc"}</span>
+            <span className="text-xs">+ Gắn việc</span>
           }
         />
       </div>
@@ -594,6 +601,8 @@ function TaskPicker({
 }) {
   const [query, setQuery] = useState("");
   const [busy, setBusy] = useState<string | null>(null);
+  const [last, setLast] = useState<string | null>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
   const q = query.trim().toLowerCase();
   const shown = openTasks.filter((t) => t.title.toLowerCase().includes(q));
   return (
@@ -620,6 +629,7 @@ function TaskPicker({
           type="search"
           value={query}
           onChange={(e) => setQuery(e.target.value)}
+          ref={inputRef}
           aria-label={`Tìm việc để gắn vào: ${goalTitle}`}
           placeholder="Tìm việc chưa gắn mục tiêu…"
           className={`${fieldClass} py-1.5`}
@@ -638,6 +648,8 @@ function TaskPicker({
                   onClick={async () => {
                     setBusy(t.id);
                     await onPick(t.id);
+                    setLast(t.title || "(Chưa đặt tên)");
+                    inputRef.current?.focus(); // dòng vừa bấm đã biến mất → trả focus về ô tìm kiếm
                     setBusy(null);
                   }}
                   className="flex w-full items-center justify-between gap-2 rounded-md px-2 py-1.5 text-left text-sm break-words outline-none hover:bg-surface-muted focus-visible:ring-3 focus-visible:ring-ring/50 disabled:opacity-60"
@@ -649,6 +661,9 @@ function TaskPicker({
             ))}
           </ul>
         )}
+        <p role="status" aria-live="polite" className="sr-only">
+          {last ? `Đã gắn: ${last}` : ""}
+        </p>
       </PopoverContent>
     </Popover>
   );
