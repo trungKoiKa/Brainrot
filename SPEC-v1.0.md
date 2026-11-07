@@ -45,6 +45,11 @@
 > tuần này" liệt kê các mục tiêu Ưu tiên (xong thì gạch ngang). (5) % của ngày đã qua dưới 70% dùng nhãn viền trung tính
 > (không vàng); xanh chỉ khi ≥ 70%.
 >
+> **Goal, đợt 4 (Trung chốt 07/11/2026, critique lần 3):** "Gắn việc" mở popover có ô tìm kiếm tự focus, giữ mở để gắn
+> liên tiếp nhiều việc, hiện "Đang gắn…"; menu "⋯" là menu chuẩn (phím mũi tên, trả focus). Việc đã gắn dưới mục tiêu là dòng
+> việc thật: ô tích xong / bỏ tích, tên mở trang Tasks, nút bỏ gắn ≥ 28px. Dải "Tập trung tuần này" thành các chip
+> "mục tiêu · xong/tổng việc", bấm nhảy tới dòng mục tiêu. "Chuyển … sang kỳ sau" là nút phụ có viền.
+>
 > **Xóa task (Trung chốt 05/11/2026):** mỗi dòng task (Tasks, cả việc chưa xong lẫn Đã xong) có icon thùng rác; bấm → hỏi
 > xác nhận ngay tại dòng → **xóa hẳn** (không hoàn tác), liên kết với mục tiêu mất theo. Trước đây xóa trong Notion.
 >
