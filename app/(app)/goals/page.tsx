@@ -99,8 +99,8 @@ async function GoalsContent({ searchParams }: Pick<PageProps<"/goals">, "searchP
   const trayIds = [...new Set(panelGoals.flatMap((g) => g.taskIds))];
   const nextPeriod = shiftPeriod(period, 1);
   const hasUndone = panelGoals.some((g) => g.title.trim() && !isGoalDone(g));
-  // Biểu đồ kỳ con chỉ hiện khi có ít nhất một kỳ con đã có mục tiêu (toàn vạch gạch ngang thì không nói gì)
-  const showBars = children.some((p) => goalCounts(goalsOf(goals, p)).total > 0);
+  // Biểu đồ kỳ con chỉ hiện khi có từ hai kỳ con có mục tiêu (một cột giữa dãy vạch gạch ngang thì không so sánh được gì)
+  const showBars = children.filter((p) => goalCounts(goalsOf(goals, p)).total > 0).length >= 2;
   const ended = period.end < today;
 
   return (
@@ -172,7 +172,7 @@ async function GoalsContent({ searchParams }: Pick<PageProps<"/goals">, "searchP
         </Card>
       )}
 
-        <div className={`grid gap-5 ${showBars ? "lg:grid-cols-5" : ""}`}>
+        <div className={`grid gap-5 ${showBars ? "lg:grid-cols-5 lg:items-start" : ""}`}>
           <Card focal title={`Mục tiêu ${LEVEL_LABEL[level].toLowerCase()}`} className={showBars ? "lg:col-span-3" : ""}>
             {prevFocus && (
               <PrevFocus

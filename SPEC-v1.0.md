@@ -59,6 +59,11 @@
 > tiêu có sẵn ở kỳ sau không bị đụng). Bỏ gắn một việc khỏi mục tiêu hiện "Đã bỏ gắn … · Hoàn tác" ~5 giây (gắn lại đúng mục
 > tiêu đó).
 >
+> **Goal, đợt 7 (Trung chốt 07/11/2026, critique lần 5, 28/40):** mọi lần lưu mục tiêu (sửa, đổi loại, tích, xoá, thêm) đều
+> làm mới dữ liệu trang để chip "Tập trung tuần này" và danh sách việc không cũ; trong lúc còn lưu dở, bản lạc quan không bị
+> dữ liệu server cũ ghi đè. "Đã bỏ gắn … · Hoàn tác" chỉ hiện khi bỏ gắn thành công. Biểu đồ kỳ con chỉ hiện khi **từ hai** kỳ
+> con có mục tiêu; thẻ mục tiêu không bị kéo dãn theo biểu đồ.
+>
 > **Xóa task (Trung chốt 05/11/2026):** mỗi dòng task (Tasks, cả việc chưa xong lẫn Đã xong) có icon thùng rác; bấm → hỏi
 > xác nhận ngay tại dòng → **xóa hẳn** (không hoàn tác), liên kết với mục tiêu mất theo. Trước đây xóa trong Notion.
 >
