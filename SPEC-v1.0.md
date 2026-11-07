@@ -24,6 +24,11 @@
 >
 > **Xóa task (Trung chốt 05/11/2026):** mỗi dòng task (Tasks, cả việc chưa xong lẫn Đã xong) có icon thùng rác; bấm → hỏi
 > xác nhận ngay tại dòng → **xóa hẳn** (không hoàn tác), liên kết với mục tiêu mất theo. Trước đây xóa trong Notion.
+>
+> **Hoàn tác tích xong (Trung chốt 07/11/2026, critique Tasks):** tích xong trên Tasks → hiện "Đã xong … · **Hoàn tác**"
+> khoảng 5 giây (cũng là thông báo cho trình đọc màn hình). Trong "Đã xong", ô tích bỏ được → việc về **Chưa làm**, xoá
+> Ngày xong, giữ liên kết mục tiêu. Tasks dùng khung Card chung; nhãn ưu tiên màu trung tính (đỏ chỉ cho quá hạn), ẩn ở
+> việc đã xong; form thêm việc giữ dự án/ưu tiên vừa chọn, đưa con trỏ về ô tên sau khi thêm. Vẫn nhóm theo dự án.
 
 ## 1. Vấn đề
 

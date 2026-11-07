@@ -11,8 +11,8 @@ import { periodLabel, periodOf } from "@/lib/period";
 export default function TasksPage({ searchParams }: PageProps<"/tasks">) {
   return (
     <div className="mx-auto max-w-5xl">
-      <PageHeader title="Tasks" subtitle="Việc chưa xong, nhóm theo dự án. Bấm ✎ để sửa." />
-      <Suspense fallback={<div className="h-48 animate-pulse rounded-2xl border border-line bg-surface" />}>
+      <PageHeader title="Tasks" subtitle="Nơi duy nhất thêm, sửa và xoá việc; việc chưa xong nhóm theo dự án." />
+      <Suspense fallback={<div className="h-48 animate-pulse rounded-xl border border-line bg-surface" />}>
         <TasksContent searchParams={searchParams} />
       </Suspense>
     </div>

@@ -30,8 +30,8 @@ const isDay = (s: string) => {
 /** `projects`: các lựa chọn hiện có của select "Dự án" — không cho tạo dự án mới từ web. */
 export function parseTaskInput(form: FormData, projects: readonly string[]): Parsed<TaskInput> {
   const title = str(form.get("title")).replace(/\s*\n\s*/g, " ");
-  if (!title) return { ok: false, error: "Tên task đang trống." };
-  if (title.length > MAX_TEXT) return { ok: false, error: `Tên task dài quá ${MAX_TEXT} ký tự.` };
+  if (!title) return { ok: false, error: "Tên việc đang trống." };
+  if (title.length > MAX_TEXT) return { ok: false, error: `Tên việc dài quá ${MAX_TEXT} ký tự.` };
 
   const project = str(form.get("project")) || null;
   if (project && !projects.includes(project)) return { ok: false, error: `Dự án "${project}" không có trong danh sách dự án.` };

@@ -44,7 +44,12 @@ export function DeadlineField({
       <input type="hidden" name={name} value={value} />
       <PopoverTrigger
         render={
-          <button type="button" aria-label={label} className={`${triggerClass} inline-flex items-center gap-2`} />
+          // Nhãn đọc kèm ngày đã chọn (aria-label thay chữ hiển thị → phải tự ghép ngày vào)
+          <button
+            type="button"
+            aria-label={value ? `${label}: ${formatDay(value)}` : label}
+            className={`${triggerClass} inline-flex items-center gap-2`}
+          />
         }
       >
         <span className={value ? "" : "text-muted-foreground"}>{value ? `${label === "Deadline" ? "" : `${label}: `}${formatDay(value)}` : label}</span>

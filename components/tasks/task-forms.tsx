@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState, useState } from "react";
+import { useActionState, useEffect, useRef, useState } from "react";
 import { createTaskAction, updateTaskAction, type TaskFormState } from "@/app/actions/tasks";
 import type { Task } from "@/lib/types";
 import { EDITABLE_STATUSES, PRIORITIES } from "@/lib/task-form";
@@ -29,7 +29,14 @@ function Select({
   onChange: (v: string) => void;
 }) {
   return (
-    <select name={name} aria-label={label} value={value} onChange={(e) => onChange(e.target.value)} className={compactField}>
+    <select
+      name={name}
+      aria-label={label}
+      value={value}
+      onChange={(e) => onChange(e.target.value)}
+      // Chưa chọn → chữ mờ như ô ngày trống, để không trông như đã chọn
+      className={`${compactField} ${value ? "" : "text-muted-foreground"}`}
+    >
       {empty !== undefined && <option value="">{empty}</option>}
       {options.map((o) => (
         <option key={o} value={o}>
@@ -42,25 +49,42 @@ function Select({
 
 const EMPTY_NEW = { title: "", project: "", priority: "", deadline: "", plannedOn: "" };
 
-/** Hàng "Thêm task" ở đầu trang Tasks (SPEC-v0.2 4.2). Controlled: lỗi thì nội dung đã gõ vẫn còn. */
-export function NewTaskForm({ projects }: { projects: string[] }) {
-  const [values, setValues] = useState(EMPTY_NEW);
+/**
+ * Hàng "Thêm việc" ở đầu trang Tasks (SPEC-v0.2 4.2). Controlled: lỗi thì nội dung đã gõ vẫn còn.
+ * Thêm xong (SPEC-v1.0, 07/11/2026): giữ dự án/ưu tiên vừa chọn, con trỏ về ô tên, dòng "Đã thêm" tự mất sau 3 giây.
+ */
+export function NewTaskForm({ projects, defaultProject = "" }: { projects: string[]; defaultProject?: string }) {
+  const [values, setValues] = useState({ ...EMPTY_NEW, project: defaultProject });
+  const titleRef = useRef<HTMLInputElement>(null);
   const [state, action, pending] = useActionState(async (prev: TaskFormState, form: FormData) => {
     const next = await createTaskAction(prev, form);
-    if (next.ok) setValues(EMPTY_NEW);
+    if (next.ok) {
+      setValues((s) => ({ ...EMPTY_NEW, project: s.project, priority: s.priority }));
+      requestAnimationFrame(() => titleRef.current?.focus());
+    }
     return next;
   }, {});
   const set = (key: keyof typeof values) => (v: string) => setValues((s) => ({ ...s, [key]: v }));
+  // Thông báo thành công tự ẩn; lỗi thì giữ tới lần gửi sau
+  const [hiddenAt, setHiddenAt] = useState<number | undefined>(undefined);
+  useEffect(() => {
+    if (!state.ok || !state.at) return;
+    const at = state.at;
+    const timer = setTimeout(() => setHiddenAt(at), 3000);
+    return () => clearTimeout(timer);
+  }, [state]);
+  const shown = state.ok && state.at === hiddenAt ? {} : state;
 
   return (
-    <form action={action} className="mb-6 space-y-2 rounded-2xl border border-line bg-surface p-4 md:p-5">
+    <form action={action} className="space-y-2">
       <div className="flex flex-wrap gap-2">
         <input
+          ref={titleRef}
           name="title"
-          aria-label="Tên task mới"
+          aria-label="Tên việc mới"
           value={values.title}
           onChange={(e) => set("title")(e.target.value)}
-          placeholder="Thêm task mới…"
+          placeholder="Thêm việc mới…"
           autoComplete="off"
           className={`${fieldClass} min-w-56 flex-1`}
         />
@@ -72,7 +96,7 @@ export function NewTaskForm({ projects }: { projects: string[] }) {
           {pending ? "Đang thêm…" : "Thêm"}
         </button>
       </div>
-      <Status state={state} />
+      <Status state={shown} />
     </form>
   );
 }
@@ -122,7 +146,7 @@ export function EditTaskForm({
         <input type="hidden" name="id" value={task.id} />
         <input
           name="title"
-          aria-label="Tên task"
+          aria-label="Tên việc"
           value={values.title}
           onChange={(e) => set("title")(e.target.value)}
           autoFocus
@@ -138,7 +162,7 @@ export function EditTaskForm({
           {goals && (
             <Select
               name="goal"
-              label="Goal"
+              label="Mục tiêu"
               value={values.goal}
               options={goalOptions.map((g) => g.id)}
               labels={Object.fromEntries(goalOptions.map((g) => [g.id, g.label]))}
