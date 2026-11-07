@@ -186,3 +186,18 @@ export async function saveReflection(db: Db, userId: string, level: Level, start
   await db.insert(reflections).values({ userId, level, start, ...fields });
   return "created";
 }
+
+/**
+ * Chuyển mục tiêu chưa xong sang kỳ sau (SPEC-v1.0, Goal đợt 2): bản sao giữ loại, không sao thói quen / việc gắn;
+ * bỏ qua tên đã có ở kỳ sau. Trả về số mục tiêu đã tạo.
+ */
+export async function carryOverGoals(db: Db, userId: string, level: Level, from: string, to: string): Promise<number> {
+  const rows = await db
+    .select({ title: goals.title, type: goals.type, done: goals.done, start: goals.start })
+    .from(goals)
+    .where(and(eq(goals.userId, userId), eq(goals.level, level), isNull(goals.deletedAt), inArray(goals.start, [from, to])));
+  const existing = new Set(rows.filter((g) => g.start === to).map((g) => g.title.trim().toLowerCase()));
+  const todo = rows.filter((g) => g.start === from && !g.done && g.title.trim() && !existing.has(g.title.trim().toLowerCase()));
+  if (todo.length) await db.insert(goals).values(todo.map((g) => ({ userId, level, start: to, title: g.title, type: g.type })));
+  return todo.length;
+}

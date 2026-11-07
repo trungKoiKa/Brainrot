@@ -4,6 +4,7 @@ import { connection } from "next/server";
 import { ChevronLeftIcon, ChevronRightIcon } from "lucide-react";
 import { Card } from "@/components/card";
 import { GoalPanel } from "@/components/goals/goal-panel";
+import { PrevFocus } from "@/components/goals/prev-focus";
 import { ReflectionForm } from "@/components/goals/reflection-form";
 import { PeriodBars, type PeriodBar } from "@/components/goals/period-bars";
 import { WeekCards } from "@/components/goals/week-cards";
@@ -12,7 +13,7 @@ import { HabitMonth } from "@/components/habits/habit-month";
 import { PageHeader } from "@/components/page-header";
 import { StaleBanner } from "@/components/stale-banner";
 import { todayVN } from "@/lib/date";
-import { goalCounts, goalsOf, type Goal } from "@/lib/goals";
+import { goalCounts, goalsOf, isGoalDone, type Goal } from "@/lib/goals";
 import { doneHabits } from "@/lib/habits";
 import { anyStale, getDailyLogsBetween, getGoals, getHabits, getReflections, getTasks } from "@/lib/db/data";
 import { resolveGoals } from "@/lib/db/goal-status";
@@ -59,7 +60,7 @@ async function GoalsContent({ searchParams }: Pick<PageProps<"/goals">, "searchP
     getHabits(),
     getReflections(),
     level === "month" || level === "week" ? getDailyLogsBetween(period.start, period.end) : null,
-    level === "week" ? getTasks() : null,
+    getTasks(), // việc gắn dưới mỗi mục tiêu (mọi cấp) + thẻ ngày / khay ở Tuần
   ]);
   const reflection = reflectionOf(reflections.data, period);
   const prevFocus = previousFocus(reflections.data, period);
@@ -81,13 +82,29 @@ async function GoalsContent({ searchParams }: Pick<PageProps<"/goals">, "searchP
       return { href: href(p), label: shortLabel(p), pct: c.progress, total: c.total, current: p.start <= today && today <= p.end, ended: p.end < today };
     });
 
+  // Chuỗi Mục tiêu → Việc → Ngày (SPEC-v1.0, Goal đợt 2)
+  const taskById = new Map(weekTasks.data.map((t) => [t.id, t]));
+  const linkedTasks = Object.fromEntries(
+    panelGoals.map((g) => [
+      g.id,
+      g.taskIds.flatMap((id) => {
+        const t = taskById.get(id);
+        return t ? [{ id, title: t.title, plannedOn: t.plannedOn, done: t.status === "Xong" }] : [];
+      }),
+    ]),
+  );
+  const goalOfTask: Record<string, string> = {};
+  for (const g of goals) for (const id of g.taskIds) goalOfTask[id] ??= g.title;
+  const trayIds = [...new Set(panelGoals.flatMap((g) => g.taskIds))];
+  const nextPeriod = shiftPeriod(period, 1);
+  const hasUndone = panelGoals.some((g) => g.title.trim() && !isGoalDone(g));
   // Biểu đồ kỳ con chỉ hiện khi có ít nhất một kỳ con đã có mục tiêu (toàn vạch gạch ngang thì không nói gì)
   const showBars = children.some((p) => goalCounts(goalsOf(goals, p)).total > 0);
   const ended = period.end < today;
 
   return (
     <div className="space-y-5">
-      <StaleBanner show={anyStale(goalsLoaded, habits, reflections, ...resolved.loaded, ...(logs ? [logs] : []), ...(weekTasks ? [weekTasks] : []))} />
+      <StaleBanner show={anyStale(goalsLoaded, habits, reflections, weekTasks, ...resolved.loaded, ...(logs ? [logs] : []))} />
       {/* Châm ngôn năm (SPEC-v0.4 mục 5): hiện ở mọi chế độ của năm đó */}
       {motto && <p className="font-serif text-lg text-muted-foreground italic">“{motto}”</p>}
 
@@ -126,16 +143,20 @@ async function GoalsContent({ searchParams }: Pick<PageProps<"/goals">, "searchP
       {/* Tuần: 7 ngày là việc của tuần, đứng trước danh sách mục tiêu */}
       {level === "week" && logs && weekTasks && (
         <Card title="7 ngày trong tuần">
-          <WeekCards key={period.key} weekStart={period.start} today={today} tasks={weekTasks.data} logs={logs.data} />
+          <WeekCards key={period.key} weekStart={period.start} today={today} tasks={weekTasks.data} logs={logs.data} goalOfTask={goalOfTask} trayIds={trayIds} />
         </Card>
       )}
 
         <div className={`grid gap-5 ${showBars ? "lg:grid-cols-5" : ""}`}>
           <Card focal title={`Mục tiêu ${LEVEL_LABEL[level].toLowerCase()}`} className={showBars ? "lg:col-span-3" : ""}>
             {prevFocus && (
-              <p className="mb-4 rounded-lg bg-surface-muted px-3 py-2 text-sm whitespace-pre-line">
-                <span className="font-medium">Kỳ trước bạn định tập trung:</span> {prevFocus}
-              </p>
+              <PrevFocus
+                key={period.key}
+                text={prevFocus}
+                level={level}
+                periodKey={period.key}
+                existing={panelGoals.map((g) => g.title)}
+              />
             )}
             {/* key theo kỳ → đổi kỳ thì danh sách nạp lại từ server */}
             <GoalPanel
@@ -145,6 +166,8 @@ async function GoalsContent({ searchParams }: Pick<PageProps<"/goals">, "searchP
               initial={panelGoals}
               habits={linkable.map((h) => ({ id: h.id, name: h.name }))}
               ended={ended}
+              linked={linkedTasks}
+              next={hasUndone ? { label: periodLabel(nextPeriod) } : null}
             />
           </Card>
           {showBars && (

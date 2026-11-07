@@ -9,7 +9,8 @@ import {
   PencilIcon,
   Trash2Icon,
 } from "lucide-react";
-import { createGoalAction, trashGoalAction, updateGoalAction } from "@/app/actions/goals";
+import { carryOverGoalsAction, createGoalAction, trashGoalAction, updateGoalAction } from "@/app/actions/goals";
+import { formatDay } from "@/lib/date";
 import { fieldClass, primaryButtonClass } from "@/components/form-bits";
 import { Badge } from "@/components/reui/badge";
 import { ErrorNotice } from "@/components/tasks/task-row";
@@ -27,6 +28,8 @@ import {
 import type { Level } from "@/lib/period";
 import { ProgressRing } from "./progress-ring";
 
+export type LinkedTask = { id: string; title: string; plannedOn: string | null; done: boolean };
+
 const UNDO_MS = 5000;
 const iconButton =
   "flex size-7 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-surface-muted hover:text-foreground";
@@ -43,6 +46,8 @@ export function GoalPanel({
   initial,
   habits,
   ended,
+  linked,
+  next: carry,
 }: {
   level: Level;
   periodKey: string;
@@ -50,6 +55,10 @@ export function GoalPanel({
   habits: { id: string; name: string }[];
   /** kỳ đã kết thúc → vòng % mới tô màu theo ngưỡng */
   ended: boolean;
+  /** Việc đã gắn vào từng mục tiêu (SPEC-v1.0, Goal đợt 2) */
+  linked: Record<string, LinkedTask[]>;
+  /** Có mục tiêu chưa xong → nút chuyển sang kỳ sau; null = không hiện */
+  next: { label: string } | null;
 }) {
   const router = useRouter();
   const [goals, setGoals] = useState(initial);
@@ -142,6 +151,7 @@ export function GoalPanel({
                 <GoalRow
                   key={g.id}
                   goal={g}
+                  tasks={linked[g.id] ?? []}
                   habits={habits}
                   onPatch={(c) => patch(g.id, c)}
                   onLink={(h, t) => link(g.id, h, t)}
@@ -166,6 +176,10 @@ export function GoalPanel({
             Hoàn tác
           </button>
         </div>
+      )}
+
+      {carry && counts.total > counts.completed && (
+        <CarryOver level={level} periodKey={periodKey} count={counts.total - counts.completed} label={carry.label} onError={setError} />
       )}
 
       <AddGoal
@@ -199,12 +213,14 @@ function AutoChips({ auto }: { auto: AutoInfo[] }) {
 
 function GoalRow({
   goal,
+  tasks,
   habits,
   onPatch,
   onLink,
   onRemove,
 }: {
   goal: Goal;
+  tasks: LinkedTask[];
   habits: { id: string; name: string }[];
   onPatch: (change: Partial<Pick<Goal, "title" | "type" | "done">>) => void;
   onLink: (habitId: string | null, threshold: number | null) => Promise<void>;
@@ -303,6 +319,18 @@ function GoalRow({
         <div className="mt-0.5 pl-7">
           <AutoChips auto={goal.auto} />
         </div>
+      )}
+      {tasks.length > 0 && (
+        <ul className="mt-1 space-y-0.5 pl-7 text-xs" aria-label={`Việc của mục tiêu: ${goal.title}`}>
+          {tasks.map((t) => (
+            <li key={t.id} className="flex items-baseline gap-2">
+              <span className={`min-w-0 flex-1 break-words ${t.done ? "text-muted-foreground line-through" : ""}`}>{t.title || "(Chưa đặt tên)"}</span>
+              <span className="shrink-0 text-muted-foreground tabular-nums">
+                {t.done ? "xong" : t.plannedOn ? formatDay(t.plannedOn, true) : "chưa xếp ngày"}
+              </span>
+            </li>
+          ))}
+        </ul>
       )}
       {linking && (
         <LinkHabit
@@ -438,5 +466,44 @@ function AddGoal({
         {pending ? "Đang thêm…" : "Thêm"}
       </button>
     </form>
+  );
+}
+
+/** "Chuyển N mục tiêu chưa xong sang <kỳ sau>" (SPEC-v1.0, Goal đợt 2): tạo bản sao ở kỳ sau, không đụng mục tiêu hiện tại. */
+function CarryOver({
+  level,
+  periodKey,
+  count,
+  label,
+  onError,
+}: {
+  level: Level;
+  periodKey: string;
+  count: number;
+  label: string;
+  onError: (message: string) => void;
+}) {
+  const router = useRouter();
+  const [pending, start] = useTransition();
+  const [result, setResult] = useState<string | null>(null);
+  return (
+    <p className="mt-4 flex flex-wrap items-center gap-x-3 gap-y-1 text-sm">
+      <button
+        type="button"
+        disabled={pending}
+        onClick={() =>
+          start(async () => {
+            const res = await carryOverGoalsAction(level, periodKey);
+            if (!res.ok) return onError(res.error);
+            setResult(res.count ? `Đã chuyển ${res.count} mục tiêu sang ${label}.` : `${label} đã có đủ các mục tiêu này.`);
+            router.refresh();
+          })
+        }
+        className="rounded-md font-medium text-primary underline-offset-4 outline-none hover:underline focus-visible:ring-3 focus-visible:ring-ring/50 disabled:opacity-50"
+      >
+        {pending ? "Đang chuyển…" : `Chuyển ${count} mục tiêu chưa xong sang ${label}`}
+      </button>
+      {result && <span role="status" className="text-muted-foreground">{result}</span>}
+    </p>
   );
 }

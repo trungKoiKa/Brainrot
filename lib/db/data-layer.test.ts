@@ -1,6 +1,7 @@
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import type { Db } from "./client";
 import {
+  carryOverGoals,
   createGoal,
   createHabit,
   createIdea,
@@ -190,6 +191,21 @@ describe("goals và nhìn lại", () => {
     await expect(updateGoal(db, ME, id, { title: "x" })).rejects.toThrow(); // đã xóa
     await trashGoal(db, ME, id, false);
     expect((await listGoals(db, ME)).some((g) => g.id === id)).toBe(true);
+  });
+
+  it("chuyển mục tiêu chưa xong sang kỳ sau: bỏ qua đã xong, tên trùng, mục tiêu của người khác", async () => {
+    await createGoal(db, ME, "week", "2027-03-01", "Việc dở", "Ưu tiên");
+    const doneId = await createGoal(db, ME, "week", "2027-03-01", "Đã xong", "Thường");
+    await updateGoal(db, ME, doneId, { done: true });
+    await createGoal(db, ME, "week", "2027-03-01", "Có sẵn", "Thường");
+    await createGoal(db, ME, "week", "2027-03-08", "có sẵn", "Thường");
+    await createGoal(db, other, "week", "2027-03-01", "Của bạn", "Thường");
+
+    expect(await carryOverGoals(db, ME, "week", "2027-03-01", "2027-03-08")).toBe(1);
+    const next = (await listGoals(db, ME)).filter((g) => g.start === "2027-03-08");
+    expect(next.map((g) => g.title).sort()).toEqual(["Việc dở", "có sẵn"]);
+    expect(next.find((g) => g.title === "Việc dở")?.type).toBe("Ưu tiên");
+    expect(await carryOverGoals(db, ME, "week", "2027-03-01", "2027-03-08")).toBe(0); // chạy lại không nhân đôi
   });
 
   it("nhìn lại: mỗi (cấp, kỳ) một bản ghi", async () => {
