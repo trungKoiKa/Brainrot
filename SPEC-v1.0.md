@@ -50,6 +50,11 @@
 > việc thật: ô tích xong / bỏ tích, tên mở trang Tasks, nút bỏ gắn ≥ 28px. Dải "Tập trung tuần này" thành các chip
 > "mục tiêu · xong/tổng việc", bấm nhảy tới dòng mục tiêu. "Chuyển … sang kỳ sau" là nút phụ có viền.
 >
+> **Goal, đợt 5 (Trung chốt 07/11/2026, critique lần 4, 27/40):** khối mục tiêu **không dựng lại** sau khi gắn việc / tích
+> việc (popover, ô tìm kiếm, thông báo còn nguyên; dữ liệu mới vào qua props). Gắn xong, focus về ô tìm kiếm và trình đọc
+> màn hình nghe "Đã gắn: …". Tên mục tiêu chỉ là chữ (sửa bằng nút bút, không còn hai cách). Ô tích việc vùng bấm 24px, dòng
+> việc xuống dòng được ở màn hẹp. Gợi ý "Gắn việc vào mục tiêu để xếp ngày…" hiện **một lần** cho cả khối, không lặp từng mục tiêu.
+>
 > **Xóa task (Trung chốt 05/11/2026):** mỗi dòng task (Tasks, cả việc chưa xong lẫn Đã xong) có icon thùng rác; bấm → hỏi
 > xác nhận ngay tại dòng → **xóa hẳn** (không hoàn tác), liên kết với mục tiêu mất theo. Trước đây xóa trong Notion.
 >
