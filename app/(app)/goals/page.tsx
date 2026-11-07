@@ -38,7 +38,7 @@ export default function GoalsPage({ searchParams }: PageProps<"/goals">) {
   return (
     <div className="mx-auto max-w-6xl">
       <PageHeader title="Goal" subtitle="Mục tiêu, thói quen và nhìn lại theo năm · quý · tháng · tuần." />
-      <Suspense fallback={<div className="h-96 animate-pulse rounded-2xl border border-line bg-surface" />}>
+      <Suspense fallback={<div className="h-96 animate-pulse rounded-xl border border-line bg-surface" />}>
         <GoalsContent searchParams={searchParams} />
       </Suspense>
     </div>
@@ -78,8 +78,12 @@ async function GoalsContent({ searchParams }: Pick<PageProps<"/goals">, "searchP
   const bars = (list: Period[]): PeriodBar[] =>
     list.map((p) => {
       const c = goalCounts(goalsOf(goals, p));
-      return { href: href(p), label: shortLabel(p), pct: c.progress, total: c.total, current: p.start <= today && today <= p.end };
+      return { href: href(p), label: shortLabel(p), pct: c.progress, total: c.total, current: p.start <= today && today <= p.end, ended: p.end < today };
     });
+
+  // Biểu đồ kỳ con chỉ hiện khi có ít nhất một kỳ con đã có mục tiêu (toàn vạch gạch ngang thì không nói gì)
+  const showBars = children.some((p) => goalCounts(goalsOf(goals, p)).total > 0);
+  const ended = period.end < today;
 
   return (
     <div className="space-y-5">
@@ -113,14 +117,21 @@ async function GoalsContent({ searchParams }: Pick<PageProps<"/goals">, "searchP
           </Link>
           {period.key !== current.key && (
             <Link href={href(current)} className="ml-2 rounded-full border border-line px-3 py-1 text-sm hover:border-primary">
-              Hôm nay
+              Kỳ này
             </Link>
           )}
         </nav>
       </div>
 
-        <div className={`grid gap-5 ${children.length ? "lg:grid-cols-5" : ""}`}>
-          <Card title={`Mục tiêu ${LEVEL_LABEL[level].toLowerCase()}`} className={children.length ? "lg:col-span-3" : ""}>
+      {/* Tuần: 7 ngày là việc của tuần, đứng trước danh sách mục tiêu */}
+      {level === "week" && logs && weekTasks && (
+        <Card title="7 ngày trong tuần">
+          <WeekCards key={period.key} weekStart={period.start} today={today} tasks={weekTasks.data} logs={logs.data} />
+        </Card>
+      )}
+
+        <div className={`grid gap-5 ${showBars ? "lg:grid-cols-5" : ""}`}>
+          <Card focal title={`Mục tiêu ${LEVEL_LABEL[level].toLowerCase()}`} className={showBars ? "lg:col-span-3" : ""}>
             {prevFocus && (
               <p className="mb-4 rounded-lg bg-surface-muted px-3 py-2 text-sm whitespace-pre-line">
                 <span className="font-medium">Kỳ trước bạn định tập trung:</span> {prevFocus}
@@ -133,9 +144,10 @@ async function GoalsContent({ searchParams }: Pick<PageProps<"/goals">, "searchP
               periodKey={period.key}
               initial={panelGoals}
               habits={linkable.map((h) => ({ id: h.id, name: h.name }))}
+              ended={ended}
             />
           </Card>
-          {children.length > 0 && (
+          {showBars && (
             <Card title={`Tiến độ các ${level === "month" ? "tuần" : "kỳ con"}`} className="lg:col-span-2">
               {level === "year" ? (
                 <div className="space-y-6">
@@ -155,15 +167,9 @@ async function GoalsContent({ searchParams }: Pick<PageProps<"/goals">, "searchP
           {children
             .filter((p) => p.level === (level === "year" ? "quarter" : "month"))
             .map((p) => (
-              <ChildCard key={p.key} period={p} goals={goalsOf(goals, p)} current={p.start <= today && today <= p.end} />
+              <ChildCard key={p.key} period={p} goals={goalsOf(goals, p)} current={p.start <= today && today <= p.end} today={today} />
             ))}
         </div>
-      )}
-
-      {level === "week" && logs && weekTasks && (
-        <Card title="7 ngày trong tuần">
-          <WeekCards key={period.key} weekStart={period.start} today={today} tasks={weekTasks.data} logs={logs.data} />
-        </Card>
       )}
 
       {level === "month" && logs && (
@@ -185,18 +191,18 @@ async function GoalsContent({ searchParams }: Pick<PageProps<"/goals">, "searchP
 }
 
 /** Thẻ quý (trong Năm) / tháng (trong Quý): % + mục tiêu Ưu tiên, bấm để mở (SPEC-v0.4 6.3). */
-function ChildCard({ period, goals, current }: { period: Period; goals: Goal[]; current: boolean }) {
+function ChildCard({ period, goals, current, today }: { period: Period; goals: Goal[]; current: boolean; today: string }) {
   const c = goalCounts(goals);
   const priority = goals.filter((g) => g.type === "Ưu tiên" && g.title.trim());
   return (
     // Viền nổi bật đặt ở ring của link (Card đã có border-line, thêm border-* nữa thì không chắc class nào thắng)
     <Link
       href={href(period)}
-      className={`block rounded-2xl ring-primary transition-shadow hover:ring-1 focus-visible:outline-2 focus-visible:outline-primary ${current ? "ring-1" : ""}`}
+      className={`block rounded-xl ring-primary transition-shadow hover:ring-1 focus-visible:outline-2 focus-visible:outline-primary ${current ? "ring-1" : ""}`}
     >
       <Card className="h-full">
         <div className="flex items-center gap-4">
-          <ProgressRing pct={c.progress} size={64} empty={c.total === 0} />
+          <ProgressRing pct={c.progress} size={64} empty={c.total === 0} neutral={period.end >= today} />
           <div>
             <h2 className="font-serif text-lg font-semibold">{periodLabel(period)}</h2>
             <p className="text-xs text-muted-foreground">

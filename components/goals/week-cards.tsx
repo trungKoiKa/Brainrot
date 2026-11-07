@@ -1,8 +1,8 @@
 "use client";
 
 import { MaybeLink } from "@/components/tasks/maybe-link";
-import { useState } from "react";
-import { ChevronDownIcon } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
+import { CalendarDaysIcon, ChevronDownIcon } from "lucide-react";
 import { Empty } from "@/components/card";
 import { Badge } from "@/components/reui/badge";
 import { ErrorNotice, TaskCheckbox } from "@/components/tasks/task-row";
@@ -13,17 +13,48 @@ import { weekDayCards } from "@/lib/week-days";
 
 const WEEKDAY = ["Thứ Hai", "Thứ Ba", "Thứ Tư", "Thứ Năm", "Thứ Sáu", "Thứ Bảy", "Chủ nhật"];
 const SHORT = ["T2", "T3", "T4", "T5", "T6", "T7", "CN"];
+/** Thời gian hiện "Hoàn tác" sau khi dời ngày (SPEC-v1.0, Goal đợt 1) */
+const UNDO_MS = 5000;
+
+type Moved = { task: Task; from: string | null; to: string | null };
 
 /**
  * 7 thẻ ngày (SPEC-v0.5 4.3): task theo Ngày làm / Ngày xong / Hạn + Daily Log của tuần đang xem.
- * Tích xong và "Dời sang…" (đổi Ngày làm) ngay trên thẻ.
+ * Tích xong và "Dời sang…" (đổi Ngày làm) ngay trên thẻ; dời xong có "Hoàn tác".
  */
 export function WeekCards({ weekStart, today, tasks: initial, logs }: { weekStart: string; today: string; tasks: Task[]; logs: DailyLog[] }) {
   const { tasks, complete, plan, error, dismissError } = usePlanTasks(initial);
   const [open, setOpen] = useState<Record<string, boolean>>({});
+  const [moving, setMoving] = useState<string | null>(null); // id task đang mở hàng chọn ngày
+  const [moved, setMoved] = useState<Moved | null>(null);
+  const undoRef = useRef<HTMLButtonElement>(null);
+  useEffect(() => {
+    if (!moved) return;
+    const timer = setTimeout(() => setMoved(null), UNDO_MS);
+    return () => clearTimeout(timer);
+  }, [moved]);
+
   const cards = weekDayCards(weekStart, tasks, logs);
   const empty = cards.every((c) => c.total === 0 && !c.log);
   const days = Array.from({ length: 7 }, (_, i) => addDays(weekStart, i));
+
+  function move(t: Task, to: string | null) {
+    setMoving(null);
+    setMoved({ task: t, from: t.plannedOn, to });
+    plan(t, to);
+    requestAnimationFrame(() => undoRef.current?.focus());
+  }
+
+  function undo() {
+    if (!moved) return;
+    plan(moved.task, moved.from);
+    setMoved(null);
+  }
+
+  const where = (d: string | null) => {
+    const i = d ? days.indexOf(d) : -1;
+    return d === null ? "không còn lịch" : i >= 0 ? `${SHORT[i]} ${formatDay(d, true)}` : formatDay(d, true);
+  };
 
   return (
     <div className="space-y-3">
@@ -33,43 +64,47 @@ export function WeekCards({ weekStart, today, tasks: initial, logs }: { weekStar
         {cards.map((c, i) => {
           const isToday = c.date === today;
           const expanded = open[c.date] ?? isToday; // mobile: hôm nay mở sẵn
+          const past = c.date < today;
           return (
             <section
               key={c.date}
               aria-label={`${WEEKDAY[i]} ${formatDay(c.date, true)}`}
-              className={`min-w-0 rounded-2xl border bg-surface p-3 ${isToday ? "border-primary" : "border-line"}`}
+              className={`min-w-0 rounded-lg border bg-surface p-3 ${isToday ? "border-primary" : "border-line"}`}
             >
-              <button
-                type="button"
-                onClick={() => setOpen((o) => ({ ...o, [c.date]: !expanded }))}
-                aria-expanded={expanded}
-                className="flex w-full items-center gap-2 text-left md:pointer-events-none"
-              >
+              <div className="flex w-full items-start gap-2">
                 <div className="min-w-0 flex-1">
-                  <div className="flex items-baseline justify-between gap-2">
-                    <h3 className="font-serif text-base font-semibold">{WEEKDAY[i]}</h3>
+                  <h3 className="font-serif text-base font-semibold">{WEEKDAY[i]}</h3>
+                  <div className="mt-0.5 flex items-center justify-between gap-2">
+                    <p className="text-xs text-muted-foreground">{formatDay(c.date, true)}</p>
                     {c.pct === null ? (
                       <span className="text-sm text-muted-foreground">—</span>
-                    ) : c.date > today && c.doneCount === 0 ? (
-                      // ngày chưa tới: số việc đã xếp, không tô đỏ như bị trễ
-                      <Badge variant="outline" size="sm" className="tabular-nums" title={`${c.total} việc đã xếp`}>
-                        0/{c.total}
+                    ) : !past ? (
+                      // hôm nay / ngày chưa tới: chưa chốt → số xong/đã xếp, trung tính (không tô đỏ như bị trễ)
+                      <Badge variant="outline" className="tabular-nums" title={`${c.doneCount}/${c.total} việc xong`}>
+                        {c.doneCount}/{c.total}
                       </Badge>
                     ) : (
-                      <Badge variant={c.pct >= 70 ? "success-light" : c.pct >= 40 ? "warning-light" : "destructive-light"} size="sm" className="tabular-nums">
+                      <Badge variant={c.pct >= 70 ? "success-light" : "warning-light"} className="tabular-nums">
                         {c.pct}%
                       </Badge>
                     )}
                   </div>
-                  <p className="text-xs text-muted-foreground">{formatDay(c.date, true)}</p>
                   {isToday && (
-                    <Badge variant="primary-light" size="xs" className="mt-1">
+                    <Badge variant="primary-light" className="mt-1">
                       Hôm nay
                     </Badge>
                   )}
                 </div>
-                <ChevronDownIcon className={`size-4 text-muted-foreground transition-transform md:hidden ${expanded ? "rotate-180" : ""}`} />
-              </button>
+                <button
+                  type="button"
+                  onClick={() => setOpen((o) => ({ ...o, [c.date]: !expanded }))}
+                  aria-expanded={expanded}
+                  aria-label={`${expanded ? "Thu gọn" : "Mở"} ${WEEKDAY[i]}`}
+                  className="flex size-7 shrink-0 items-center justify-center rounded-md text-muted-foreground outline-none hover:bg-surface-muted focus-visible:ring-3 focus-visible:ring-ring/50 md:hidden"
+                >
+                  <ChevronDownIcon aria-hidden="true" className={`size-4 transition-transform ${expanded ? "rotate-180" : ""}`} />
+                </button>
+              </div>
               <div className={`mt-3 space-y-3 text-sm ${expanded ? "" : "hidden"} md:block`}>
                 {c.tasks.length === 0 && !c.log && <p className="text-xs text-muted-foreground">Trống.</p>}
                 {c.tasks.length > 0 && (
@@ -90,28 +125,44 @@ export function WeekCards({ weekStart, today, tasks: initial, logs }: { weekStar
                           {!done && (
                             <div className="flex flex-wrap items-center gap-1.5 pl-6">
                               {t.dueOnly && (
-                                <Badge variant="destructive-light" size="xs">
-                                  hạn
-                                </Badge>
+                                // đỏ chỉ khi đã quá hạn; hạn hôm nay / sắp tới là nhãn trung tính
+                                <Badge variant={past ? "destructive-light" : "outline"}>{past ? "quá hạn" : "hạn"}</Badge>
                               )}
-                              <select
+                              <button
+                                type="button"
+                                aria-expanded={moving === t.id}
                                 aria-label={`Dời “${t.title}” sang ngày khác`}
-                                value=""
-                                onChange={(e) => plan(t, e.target.value === "none" ? null : e.target.value)}
-                                className="max-w-full rounded-md border border-line bg-surface px-1.5 py-0.5 text-xs text-muted-foreground hover:border-primary"
+                                onClick={() => setMoving((m) => (m === t.id ? null : t.id))}
+                                className="inline-flex items-center gap-1 rounded-md border border-line px-1.5 py-0.5 text-xs text-muted-foreground outline-none hover:border-primary hover:text-foreground focus-visible:ring-3 focus-visible:ring-ring/50"
                               >
-                                <option value="" disabled>
-                                  Dời sang…
-                                </option>
-                                {days.map((d, k) =>
-                                  d === t.plannedOn ? null : (
-                                    <option key={d} value={d}>
-                                      {SHORT[k]} {formatDay(d, true)}
-                                    </option>
-                                  ),
-                                )}
-                                {t.plannedOn && <option value="none">Bỏ lịch</option>}
-                              </select>
+                                <CalendarDaysIcon aria-hidden="true" className="size-3" />
+                                Dời sang…
+                              </button>
+                              {moving === t.id && (
+                                <div role="group" aria-label={`Chọn ngày mới cho “${t.title}”`} className="flex w-full flex-wrap gap-1 pt-1">
+                                  {days.map((d, k) =>
+                                    d === t.plannedOn ? null : (
+                                      <button
+                                        key={d}
+                                        type="button"
+                                        onClick={() => move(t, d)}
+                                        className="rounded-md border border-line px-1.5 py-0.5 text-xs tabular-nums outline-none hover:border-primary focus-visible:ring-3 focus-visible:ring-ring/50"
+                                      >
+                                        {SHORT[k]} {formatDay(d, true)}
+                                      </button>
+                                    ),
+                                  )}
+                                  {t.plannedOn && (
+                                    <button
+                                      type="button"
+                                      onClick={() => move(t, null)}
+                                      className="rounded-md px-1.5 py-0.5 text-xs text-muted-foreground outline-none hover:text-foreground focus-visible:ring-3 focus-visible:ring-ring/50"
+                                    >
+                                      Bỏ lịch
+                                    </button>
+                                  )}
+                                </div>
+                              )}
                             </div>
                           )}
                         </li>
@@ -137,6 +188,28 @@ export function WeekCards({ weekStart, today, tasks: initial, logs }: { weekStar
             </section>
           );
         })}
+      </div>
+
+      {/* Dải Hoàn tác sau khi dời: cố định cuối màn hình, aria-live cho trình đọc màn hình */}
+      <div aria-live="polite" className="pointer-events-none fixed inset-x-0 bottom-6 z-30 flex justify-center px-4">
+        {moved && (
+          <div
+            role="status"
+            className="pointer-events-auto flex max-w-md items-center gap-4 rounded-xl border border-line bg-surface px-4 py-3 text-sm shadow-lg"
+          >
+            <span className="min-w-0 truncate">
+              Đã dời “{moved.task.title || "(Chưa đặt tên)"}” sang {where(moved.to)}
+            </span>
+            <button
+              ref={undoRef}
+              type="button"
+              onClick={undo}
+              className="shrink-0 rounded-md font-medium text-primary underline-offset-4 outline-none hover:underline focus-visible:ring-3 focus-visible:ring-ring/50"
+            >
+              Hoàn tác
+            </button>
+          </div>
+        )}
       </div>
     </div>
   );

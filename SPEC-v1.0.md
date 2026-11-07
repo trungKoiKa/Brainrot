@@ -22,6 +22,13 @@
 > xong" (việc có Ngày làm hôm nay); khi trống nói rõ lý do (chưa có việc / xong hết / đã xếp ngày khác) kèm link sang Tasks.
 > Tiêu đề thẻ là heading cấp 2; trên Today, chân sidebar không lặp ngày và đếm ngược.
 >
+> **Goal, đợt 1 (Trung chốt 07/11/2026, critique Goal):** mở Goal mặc định ở **Tháng**. Màu chỉ báo trạng thái: nhãn
+> "Ưu tiên" trung tính (primary), "hạn" đỏ **chỉ khi đã quá hạn**, % ngày/kỳ **trung tính cho tới khi ngày/kỳ kết thúc**
+> rồi mới xanh/vàng/đỏ (vàng dùng `--warning`, không dùng `--chart-4`). Thẻ ngày ở Tuần: "Dời sang…" là nút mở hàng
+> chọn ngày (không đổi khi gõ phím mũi tên), dời xong hiện "Đã dời … sang … · **Hoàn tác**" ~5 giây. Bố cục: danh sách
+> mục tiêu là thẻ tiêu điểm; vòng % + 3 ô số gộp thành một dòng; biểu đồ kỳ con ẩn khi chưa có mục tiêu nào; ở Tuần,
+> 7 ngày đứng trước mục tiêu. Nút "Hôm nay" đổi thành "Kỳ này".
+>
 > **Xóa task (Trung chốt 05/11/2026):** mỗi dòng task (Tasks, cả việc chưa xong lẫn Đã xong) có icon thùng rác; bấm → hỏi
 > xác nhận ngay tại dòng → **xóa hẳn** (không hoàn tác), liên kết với mục tiêu mất theo. Trước đây xóa trong Notion.
 >

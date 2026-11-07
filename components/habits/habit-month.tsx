@@ -11,7 +11,7 @@ import { HabitManager } from "./habit-manager";
 import { useHabitDays } from "./use-habit-days";
 
 // Ngưỡng màu giống chấm trạng thái Dashboard: ≥ 70% ổn, 40–69% cần để ý, < 40% cần xử lý (SPEC-v0.4 3.3)
-const tone = (pct: number) => (pct >= 70 ? "var(--good)" : pct >= 40 ? "var(--chart-4)" : "var(--danger)");
+const tone = (pct: number) => (pct >= 70 ? "var(--good)" : pct >= 40 ? "var(--warning)" : "var(--danger)");
 const WEEKDAY = ["CN", "T2", "T3", "T4", "T5", "T6", "T7"];
 const weekday = (day: string) => WEEKDAY[new Date(`${day}T00:00:00Z`).getUTCDay()];
 
@@ -105,7 +105,7 @@ export function HabitMonth({
                             aria-pressed={on}
                             aria-label={`${r.habit.name} ngày ${Number(d.slice(8))}`}
                             onClick={() => toggle(d, r.habit.name, !on)}
-                            className={`flex size-5 items-center justify-center rounded border transition-colors ${
+                            className={`flex size-6 items-center justify-center rounded border transition-colors ${
                               on ? "border-primary bg-primary text-primary-foreground" : "border-line hover:border-primary"
                             } disabled:cursor-default disabled:opacity-30 disabled:hover:border-line`}
                           >

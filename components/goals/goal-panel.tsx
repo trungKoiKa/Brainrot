@@ -5,18 +5,13 @@ import { useRouter } from "next/navigation";
 import {
   ArrowDownUpIcon,
   CheckIcon,
-  CircleCheckIcon,
   Link2Icon,
-  ListChecksIcon,
-  LoaderIcon,
   PencilIcon,
   Trash2Icon,
-  type LucideIcon,
 } from "lucide-react";
 import { createGoalAction, trashGoalAction, updateGoalAction } from "@/app/actions/goals";
 import { fieldClass, primaryButtonClass } from "@/components/form-bits";
 import { Badge } from "@/components/reui/badge";
-import { IconTile } from "@/components/reui/icon-tile";
 import { ErrorNotice } from "@/components/tasks/task-row";
 import {
   DEFAULT_THRESHOLD,
@@ -47,11 +42,14 @@ export function GoalPanel({
   periodKey,
   initial,
   habits,
+  ended,
 }: {
   level: Level;
   periodKey: string;
   initial: Goal[];
   habits: { id: string; name: string }[];
+  /** kỳ đã kết thúc → vòng % mới tô màu theo ngưỡng */
+  ended: boolean;
 }) {
   const router = useRouter();
   const [goals, setGoals] = useState(initial);
@@ -82,7 +80,7 @@ export function GoalPanel({
     );
 
   /** Gắn / bỏ gắn thói quen: % thói quen do server tính → lưu xong thì tải lại dữ liệu trang. */
-  async function link(id: string, habitId: string | null, threshold: number | null) {
+  async function link(id: string, habitId: string | null, threshold: number | null): Promise<void> {
     setError(null);
     const res = await updateGoalAction(id, { habitId, threshold });
     if (!res.ok) return setError(res.error);
@@ -112,37 +110,31 @@ export function GoalPanel({
   return (
     <div>
       {error && <ErrorNotice message={error} onDismiss={() => setError(null)} />}
-      <div className="flex items-center gap-5">
-        <ProgressRing pct={counts.progress} empty={counts.total === 0} />
-        <dl className="grid flex-1 grid-cols-3 gap-2">
-          {(
-            [
-              { label: "Xong", value: counts.completed, Icon: CircleCheckIcon, tone: "text-(--good)" },
-              { label: "Đang làm", value: counts.inProgress, Icon: LoaderIcon, tone: "text-primary" },
-              { label: "Tổng", value: counts.total, Icon: ListChecksIcon, tone: "text-muted-foreground" },
-            ] satisfies { label: string; value: number; Icon: LucideIcon; tone: string }[]
-          ).map(({ label, value, Icon, tone }) => (
-            <div key={label} className="flex flex-col items-center gap-1 rounded-lg bg-surface-muted px-2 py-2.5 sm:flex-row sm:gap-3 sm:px-3">
-              <IconTile variant="soft" size="sm" className={tone} aria-hidden="true">
-                <Icon />
-              </IconTile>
-              <div className="text-center sm:text-left">
-                <dt className="text-xs text-muted-foreground">{label}</dt>
-                <dd className="font-serif text-lg leading-tight font-semibold tabular-nums">{value}</dd>
-              </div>
-            </div>
-          ))}
-        </dl>
+      <div className="flex items-center gap-4">
+        <ProgressRing pct={counts.progress} size={56} empty={counts.total === 0} neutral={!ended} />
+        <p className="text-sm text-muted-foreground">
+          {counts.total === 0 ? (
+            "Chưa có mục tiêu nào."
+          ) : (
+            <>
+              <span className="font-serif text-lg font-semibold text-foreground tabular-nums">
+                {counts.completed}/{counts.total}
+              </span>{" "}
+              xong
+              {counts.inProgress > 0 && <> · {counts.inProgress} đang làm</>}
+            </>
+          )}
+        </p>
       </div>
 
       <div className="mt-5 space-y-3">
         {groupGoals(goals).map(({ type, goals: list }) => (
           <section key={type} className="flex flex-col gap-1.5">
             <h3 className="flex items-center gap-2">
-              <Badge variant={type === "Ưu tiên" ? "destructive-light" : "primary-light"} size="sm">
-                {type}
-              </Badge>
-              <span className="text-xs text-muted-foreground tabular-nums">{list.filter((g) => g.title.trim()).length}</span>
+              <Badge variant={type === "Ưu tiên" ? "primary-light" : "outline"}>{type}</Badge>
+              <span aria-hidden="true" className="text-xs text-muted-foreground tabular-nums">
+                {list.filter((g) => g.title.trim()).length}
+              </span>
             </h3>
             <ul className="min-h-12 divide-y divide-dashed divide-line">
               {list.length === 0 && <li className="py-2 text-sm text-muted-foreground">Chưa có mục tiêu {type.toLowerCase()}.</li>}
@@ -192,11 +184,11 @@ function AutoChips({ auto }: { auto: AutoInfo[] }) {
     <span className="flex flex-wrap gap-1.5">
       {auto.map((a) =>
         a.kind === "habit" ? (
-          <Badge key="habit" variant={a.pct !== null && a.pct >= a.threshold ? "success-light" : "outline"} size="sm">
+          <Badge key="habit" variant={a.pct !== null && a.pct >= a.threshold ? "success-light" : "outline"}>
             {a.habit} {a.pct === null ? "chưa bắt đầu" : `${a.pct}%`} / {a.threshold}%
           </Badge>
         ) : (
-          <Badge key="tasks" variant={a.done === a.total ? "success-light" : "outline"} size="sm">
+          <Badge key="tasks" variant={a.done === a.total ? "success-light" : "outline"}>
             {a.done}/{a.total} task
           </Badge>
         ),
@@ -215,7 +207,7 @@ function GoalRow({
   goal: Goal;
   habits: { id: string; name: string }[];
   onPatch: (change: Partial<Pick<Goal, "title" | "type" | "done">>) => void;
-  onLink: (habitId: string | null, threshold: number | null) => void;
+  onLink: (habitId: string | null, threshold: number | null) => Promise<void>;
   onRemove: () => void;
 }) {
   const [linking, setLinking] = useState(false);
@@ -275,7 +267,7 @@ function GoalRow({
             className="flex min-w-0 flex-1 items-baseline gap-2 text-left text-sm"
           >
             <span className={`truncate ${isGoalDone(goal) ? "text-muted-foreground line-through" : ""}`}>{goal.title}</span>
-            {goal.autoDone && !goal.done && <Badge variant="success-light" size="xs" className="shrink-0">tự xong</Badge>}
+            {goal.autoDone && !goal.done && <Badge variant="success-light" className="shrink-0">tự xong</Badge>}
           </button>
         )}
         {!editing && (
@@ -317,9 +309,9 @@ function GoalRow({
           goal={goal}
           habits={habits}
           onCancel={() => setLinking(false)}
-          onSave={(h, t) => {
+          onSave={async (h, t) => {
+            await onLink(h, t);
             setLinking(false);
-            onLink(h, t);
           }}
         />
       )}
@@ -336,11 +328,17 @@ function LinkHabit({
 }: {
   goal: Goal;
   habits: { id: string; name: string }[];
-  onSave: (habitId: string | null, threshold: number | null) => void;
+  onSave: (habitId: string | null, threshold: number | null) => Promise<void>;
   onCancel: () => void;
 }) {
   const [habitId, setHabitId] = useState(goal.habitId ?? habits[0]?.id ?? "");
   const [threshold, setThreshold] = useState(String(goal.threshold ?? DEFAULT_THRESHOLD));
+  const [saving, setSaving] = useState(false);
+  const save = async (h: string | null, t: number | null) => {
+    setSaving(true);
+    await onSave(h, t);
+    setSaving(false);
+  };
   const value = Number(threshold);
   const valid = Boolean(habitId) && Number.isInteger(value) && value >= 1 && value <= 100;
 
@@ -373,11 +371,11 @@ function LinkHabit({
         className={`${fieldClass} w-20 py-1`}
       />
       <span className="text-muted-foreground">%</span>
-      <button type="button" disabled={!valid} onClick={() => onSave(habitId, value)} className={`${primaryButtonClass} py-1`}>
-        Lưu
+      <button type="button" disabled={!valid || saving} onClick={() => save(habitId, value)} className={`${primaryButtonClass} py-1`}>
+        {saving ? "Đang lưu…" : "Lưu"}
       </button>
       {goal.habitId && (
-        <button type="button" onClick={() => onSave(null, null)} className="text-muted-foreground hover:text-foreground">
+        <button type="button" onClick={() => save(null, null)} disabled={saving} className="text-muted-foreground hover:text-foreground">
           Bỏ gắn
         </button>
       )}
