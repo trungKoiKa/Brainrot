@@ -273,6 +273,23 @@ function GoalRow({
   onRemove: () => void;
 }) {
   const [picking, setPicking] = useState(false);
+  // Việc vừa bỏ gắn → dải "Hoàn tác" 5 giây (SPEC-v1.0, Goal đợt 6)
+  const [unlinked, setUnlinked] = useState<LinkedTask | null>(null);
+  const unlinkTimer = useRef<ReturnType<typeof setTimeout>>(undefined);
+  useEffect(() => () => clearTimeout(unlinkTimer.current), []);
+  async function unlink(t: LinkedTask) {
+    clearTimeout(unlinkTimer.current);
+    setUnlinked(t);
+    unlinkTimer.current = setTimeout(() => setUnlinked(null), UNDO_MS);
+    await onLinkTask(t.id, null);
+  }
+  async function relink() {
+    if (!unlinked) return;
+    clearTimeout(unlinkTimer.current);
+    const t = unlinked;
+    setUnlinked(null);
+    await onLinkTask(t.id, goal.id);
+  }
   const [linking, setLinking] = useState(false);
   const [editing, setEditing] = useState(false);
   const [draft, setDraft] = useState(goal.title);
@@ -384,7 +401,7 @@ function GoalRow({
                   type="button"
                   aria-label={`Bỏ gắn “${t.title}” khỏi mục tiêu`}
                   title="Bỏ gắn"
-                  onClick={() => onLinkTask(t.id, null)}
+                  onClick={() => unlink(t)}
                   className="flex size-7 shrink-0 items-center justify-center rounded-md text-muted-foreground outline-none hover:bg-surface-muted hover:text-foreground focus-visible:ring-3 focus-visible:ring-ring/50"
                 >
                   <XIcon aria-hidden="true" className="size-3.5" />
@@ -392,6 +409,14 @@ function GoalRow({
               </li>
             ))}
           </ul>
+        )}
+        {unlinked && (
+          <p role="status" className="flex items-center gap-2 py-0.5 text-xs text-muted-foreground">
+            <span className="min-w-0 truncate">Đã bỏ gắn “{unlinked.title || "(Chưa đặt tên)"}”</span>
+            <button type="button" onClick={relink} className="shrink-0 rounded-md font-medium text-primary underline-offset-4 outline-none hover:underline focus-visible:ring-3 focus-visible:ring-ring/50">
+              Hoàn tác
+            </button>
+          </p>
         )}
         <TaskPicker
           open={picking}
@@ -557,7 +582,8 @@ function CarryOver({
 }) {
   const router = useRouter();
   const [pending, start] = useTransition();
-  const [result, setResult] = useState<string | null>(null);
+  // Kết quả + id các bản sao vừa tạo: "Hoàn tác" = xoá mềm chính các bản sao đó (SPEC-v1.0, Goal đợt 6)
+  const [result, setResult] = useState<{ text: string; ids: string[] } | null>(null);
   return (
     <p className="mt-4 flex flex-wrap items-center gap-x-3 gap-y-1 text-sm">
       <button
@@ -567,7 +593,10 @@ function CarryOver({
           start(async () => {
             const res = await carryOverGoalsAction(level, periodKey);
             if (!res.ok) return onError(res.error);
-            setResult(res.count ? `Đã chuyển ${res.count} mục tiêu sang ${label}.` : `${label} đã có đủ các mục tiêu này.`);
+            setResult({
+              text: res.ids.length ? `Đã chuyển ${res.ids.length} mục tiêu sang ${label}.` : `${label} đã có đủ các mục tiêu này.`,
+              ids: res.ids,
+            });
             router.refresh();
           })
         }
@@ -575,7 +604,29 @@ function CarryOver({
       >
         {pending ? "Đang chuyển…" : `Chuyển ${count} mục tiêu chưa xong sang ${label}`}
       </button>
-      {result && <span role="status" className="text-muted-foreground">{result}</span>}
+      {result && (
+        <span role="status" className="flex items-center gap-2 text-muted-foreground">
+          {result.text}
+          {result.ids.length > 0 && (
+            <button
+              type="button"
+              disabled={pending}
+              onClick={() =>
+                start(async () => {
+                  const results = await Promise.all(result.ids.map((id) => trashGoalAction(id, true)));
+                  const failed = results.find((r) => !r.ok);
+                  if (failed && !failed.ok) return onError(failed.error);
+                  setResult({ text: `Đã hoàn tác, ${label} không còn các mục tiêu vừa chuyển.`, ids: [] });
+                  router.refresh();
+                })
+              }
+              className="rounded-md font-medium text-primary underline-offset-4 outline-none hover:underline focus-visible:ring-3 focus-visible:ring-ring/50"
+            >
+              Hoàn tác
+            </button>
+          )}
+        </span>
+      )}
     </p>
   );
 }

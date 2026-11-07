@@ -202,11 +202,14 @@ describe("goals và nhìn lại", () => {
     await createGoal(db, ME, "week", "2027-03-08", "có sẵn", "Thường");
     await createGoal(db, other, "week", "2027-03-01", "Của bạn", "Thường");
 
-    expect(await carryOverGoals(db, ME, "week", "2027-03-01", "2027-03-08")).toBe(1);
+    const made = await carryOverGoals(db, ME, "week", "2027-03-01", "2027-03-08");
+    expect(made).toHaveLength(1);
     const next = (await listGoals(db, ME)).filter((g) => g.start === "2027-03-08");
     expect(next.map((g) => g.title).sort()).toEqual(["Việc dở", "có sẵn"]);
     expect(next.find((g) => g.title === "Việc dở")?.type).toBe("Ưu tiên");
-    expect(await carryOverGoals(db, ME, "week", "2027-03-01", "2027-03-08")).toBe(0); // chạy lại không nhân đôi
+    expect(await carryOverGoals(db, ME, "week", "2027-03-01", "2027-03-08")).toEqual([]); // chạy lại không nhân đôi
+    await trashGoal(db, ME, made[0], true); // hoàn tác = xoá mềm bản sao
+    expect((await listGoals(db, ME)).some((g) => g.id === made[0])).toBe(false);
   });
 
   it("gắn việc từ dòng mục tiêu: thay liên kết cũ, bỏ gắn, không chạm đồ của người khác", async () => {

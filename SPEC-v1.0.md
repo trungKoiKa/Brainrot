@@ -55,6 +55,10 @@
 > màn hình nghe "Đã gắn: …". Tên mục tiêu chỉ là chữ (sửa bằng nút bút, không còn hai cách). Ô tích việc vùng bấm 24px, dòng
 > việc xuống dòng được ở màn hẹp. Gợi ý "Gắn việc vào mục tiêu để xếp ngày…" hiện **một lần** cho cả khối, không lặp từng mục tiêu.
 >
+> **Goal, đợt 6 (Trung chốt 07/11/2026):** "Chuyển … sang kỳ sau" có **Hoàn tác** (xoá mềm đúng các bản sao vừa tạo; mục
+> tiêu có sẵn ở kỳ sau không bị đụng). Bỏ gắn một việc khỏi mục tiêu hiện "Đã bỏ gắn … · Hoàn tác" ~5 giây (gắn lại đúng mục
+> tiêu đó).
+>
 > **Xóa task (Trung chốt 05/11/2026):** mỗi dòng task (Tasks, cả việc chưa xong lẫn Đã xong) có icon thùng rác; bấm → hỏi
 > xác nhận ngay tại dòng → **xóa hẳn** (không hoàn tác), liên kết với mục tiêu mất theo. Trước đây xóa trong Notion.
 >
