@@ -74,9 +74,11 @@ export function GoalPanel({
   const [goals, setGoals] = useState(initial);
   // Dữ liệu server mới (sau router.refresh) thay danh sách, không dựng lại cả khối → popover / focus / thông báo còn nguyên
   const [seen, setSeen] = useState(initial);
+  // Đang có lưu dở (`saving`) thì giữ bản lạc quan; lưu xong sẽ refresh lại và bản server mới vào sau
+  const [saving, setSaving] = useState(0);
   if (initial !== seen) {
     setSeen(initial);
-    setGoals(initial);
+    if (saving === 0) setGoals(initial);
   }
   const [error, setError] = useState<string | null>(null);
   const [undo, setUndo] = useState<{ goal: Goal; index: number } | null>(null);
@@ -91,11 +93,15 @@ export function GoalPanel({
     const before = goals;
     setGoals(next);
     setError(null);
+    setSaving((n) => n + 1);
     const res = await save();
+    setSaving((n) => n - 1);
     if (!res.ok) {
       setGoals(before);
       setError(res.error ?? "Không lưu được.");
+      return;
     }
+    router.refresh(); // chip tuần, danh sách việc, % tự xong đều do server tính → làm mới sau mỗi lần lưu
   }
 
   const patch = (id: string, change: Partial<Pick<Goal, "title" | "type" | "done">>) =>
@@ -113,11 +119,15 @@ export function GoalPanel({
   }
 
   /** Gắn / bỏ gắn việc: danh sách việc do server tính → xong thì tải lại dữ liệu trang. */
-  async function linkTask(taskId: string, goalId: string | null): Promise<void> {
+  async function linkTask(taskId: string, goalId: string | null): Promise<boolean> {
     setError(null);
     const res = await linkTaskAction(taskId, goalId);
-    if (!res.ok) return setError(res.error);
+    if (!res.ok) {
+      setError(res.error);
+      return false;
+    }
     router.refresh();
+    return true;
   }
 
   /** Tích xong / bỏ tích việc ngay trên dòng mục tiêu: % tự xong do server tính → tải lại. */
@@ -225,7 +235,10 @@ export function GoalPanel({
       <AddGoal
         level={level}
         periodKey={periodKey}
-        onAdded={(goal) => setGoals((list) => [...list, goal])}
+        onAdded={(goal) => {
+          setGoals((list) => [...list, goal]);
+          router.refresh();
+        }}
         onError={setError}
       />
     </div>
@@ -268,7 +281,7 @@ function GoalRow({
   habits: { id: string; name: string }[];
   onPatch: (change: Partial<Pick<Goal, "title" | "type" | "done">>) => void;
   onLink: (habitId: string | null, threshold: number | null) => Promise<void>;
-  onLinkTask: (taskId: string, goalId: string | null) => Promise<void>;
+  onLinkTask: (taskId: string, goalId: string | null) => Promise<boolean>;
   onToggleTask: (task: LinkedTask) => void;
   onRemove: () => void;
 }) {
@@ -279,9 +292,9 @@ function GoalRow({
   useEffect(() => () => clearTimeout(unlinkTimer.current), []);
   async function unlink(t: LinkedTask) {
     clearTimeout(unlinkTimer.current);
+    if (!(await onLinkTask(t.id, null))) return; // lỗi thì không hiện Hoàn tác
     setUnlinked(t);
     unlinkTimer.current = setTimeout(() => setUnlinked(null), UNDO_MS);
-    await onLinkTask(t.id, null);
   }
   async function relink() {
     if (!unlinked) return;
@@ -346,7 +359,7 @@ function GoalRow({
           </div>
         )}
         {!editing && (
-          <span className="flex shrink-0 items-center">
+          <span className="flex shrink-0 items-center gap-0.5">
             <button type="button" className={iconButton} aria-label={`Sửa: ${goal.title}`} onClick={() => setEditing(true)}>
               <PencilIcon aria-hidden="true" className="size-3.5" />
             </button>
@@ -647,7 +660,7 @@ function TaskPicker({
   onOpenChange: (open: boolean) => void;
   goalTitle: string;
   openTasks: { id: string; title: string }[];
-  onPick: (taskId: string) => Promise<void>;
+  onPick: (taskId: string) => Promise<boolean>;
   trigger: React.ReactNode;
 }) {
   const [query, setQuery] = useState("");
@@ -698,8 +711,8 @@ function TaskPicker({
                   disabled={busy !== null}
                   onClick={async () => {
                     setBusy(t.id);
-                    await onPick(t.id);
-                    setLast(t.title || "(Chưa đặt tên)");
+                    const ok = await onPick(t.id);
+                    if (ok) setLast(t.title || "(Chưa đặt tên)"); // lỗi thì không báo "Đã gắn"
                     inputRef.current?.focus(); // dòng vừa bấm đã biến mất → trả focus về ô tìm kiếm
                     setBusy(null);
                   }}
