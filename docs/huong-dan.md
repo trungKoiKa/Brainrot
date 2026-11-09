@@ -148,6 +148,23 @@ database — chỉ tính lúc hiển thị.
 | Hỏi | Đáp |
 |---|---|
 | Không đặt Ngày làm thì task ở đâu? | Ở Tasks; lên Today khi Deadline là hôm nay hoặc khi được gợi ý lúc "Hôm nay làm" trống. |
-| Xóa task thế nào? | Ở Tasks, bấm icon thùng rác cuối dòng → **Xóa** để xác nhận. Xóa hẳn, không hoàn tác. |
+| Xóa task thế nào? | Ở Tasks, bấm icon thùng rác cuối dòng: việc biến mất ngay, có dải **Hoàn tác** 8 giây ở cuối màn hình. Hết 8 giây hoặc tải lại trang thì không hoàn tác được nữa. |
 | Planner đâu rồi? | Bỏ từ v0.5; `/planner` tự chuyển sang Goal → Tuần. Xếp việc theo ngày bằng **Ngày làm**. |
 | Đổi máy / điện thoại có mất dữ liệu không? | Không — mọi dữ liệu nằm trong database (Neon), theo tài khoản. Chỉ lựa chọn giao diện (sáng/tối, Thật/Mẫu, kỳ) lưu theo trình duyệt. |
+
+## 5. Cài đặt và tài khoản (từ bước 5)
+
+- **Cài đặt** (sidebar, bấm tên của bạn): tên hiển thị, hạn cần đếm ngược + tên của hạn, **dự án** của riêng bạn (thêm / đổi tên /
+  xóa khi không còn việc), đổi mật khẩu, xóa tài khoản (xóa **toàn bộ** dữ liệu, không hoàn tác).
+- **Đăng xuất**: nút ở chân sidebar.
+- Sai mật khẩu **5 lần** trong 15 phút thì email đó bị khóa tạm 15 phút.
+
+### Dành cho Trung: tạo tài khoản cho một bạn
+
+```bash
+npm run user:password -- ban@example.com "Tên bạn"
+```
+
+Lệnh hỏi mật khẩu (không hiện khi gõ), tạo người dùng mới kèm dự án "Chung". Gửi email + mật khẩu cho bạn, nhắc đổi mật khẩu ở
+Cài đặt. Quên mật khẩu: chạy lại đúng lệnh đó với email của bạn để đặt mật khẩu mới. Mỗi người chỉ thấy dữ liệu của mình.
+Chống dò mật khẩu cần chạy `npm run db:migrate` một lần (migration `0003`).

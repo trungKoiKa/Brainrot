@@ -11,6 +11,8 @@ import {
   reopenTask,
   restoreTask,
   createProject,
+  deleteUser,
+  getUserEmail,
   deleteProject,
   renameProject,
   getPasswordHash,
@@ -146,6 +148,19 @@ describe("cách ly giữa người dùng", () => {
     await restoreTask(db, ME, { ...snap, goalIds: [foreignGoal] });
     expect((await listTasks(db, ME)).find((x) => x.id === t.id)?.goalIds).toEqual([]); // mục tiêu của người khác bị bỏ qua
     await trashGoal(db, other, foreignGoal, true); // dọn để không ảnh hưởng các bài kiểm tra cách ly sau
+  });
+
+  it("xoá tài khoản: dữ liệu của người đó mất hết, người khác còn nguyên", async () => {
+    const [{ id: temp }] = await db.insert(users).values({ name: "Tạm", email: "tam@example.com" }).returning({ id: users.id });
+    await createTask(db, temp, input("Việc của tài khoản tạm"));
+    await createGoal(db, temp, "week", "2027-06-07", "Mục tiêu tạm", "Thường");
+    expect(await getUserEmail(db, temp)).toBe("tam@example.com");
+    await deleteUser(db, temp);
+    expect(await listTasks(db, temp)).toEqual([]);
+    expect(await listGoals(db, temp)).toEqual([]);
+    expect(await getUserEmail(db, temp)).toBeNull();
+    await expect(deleteUser(db, temp)).rejects.toThrow(); // đã xoá
+    expect((await listTasks(db, ME)).length).toBeGreaterThan(0); // dữ liệu người khác không bị đụng
   });
 
   it("hồ sơ: sửa tên / hạn / nhãn chỉ của chính mình; đổi hash mật khẩu", async () => {

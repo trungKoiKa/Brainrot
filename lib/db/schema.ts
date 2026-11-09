@@ -170,3 +170,17 @@ export const ideas = pgTable(
  */
 export const DEFAULT_USER_ID = "00000000-0000-4000-8000-000000000001";
 
+
+/**
+ * Lần đăng nhập sai (SPEC-v1.0 bước 5C): đếm theo email trong cửa sổ 15 phút để khoá tạm việc dò mật khẩu.
+ * Không gắn khoá ngoại tới `users` (email lạ cũng được ghi, để không lộ email nào có tài khoản).
+ */
+export const loginAttempts = pgTable(
+  "login_attempts",
+  {
+    id: id(),
+    email: text("email").notNull(),
+    createdAt: createdAt(),
+  },
+  (t) => [index("login_attempts_email_idx").on(t.email, t.createdAt)],
+);

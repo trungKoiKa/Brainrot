@@ -323,3 +323,16 @@ export async function deleteProject(db: Db, userId: string, id: string): Promise
   if (Number(used.n) > 0) throw new Error("Dự án còn việc");
   await db.delete(projects).where(and(eq(projects.id, id), eq(projects.userId, userId)));
 }
+
+// ---------- Xoá tài khoản (SPEC-v1.0 bước 5C) ----------
+
+/** Xoá người dùng; mọi bảng dữ liệu có ON DELETE CASCADE nên đi theo. */
+export async function deleteUser(db: Db, userId: string): Promise<void> {
+  const res = await db.delete(users).where(eq(users.id, userId)).returning({ id: users.id });
+  if (!res.length) throw new Error("Không tìm thấy tài khoản");
+}
+
+export async function getUserEmail(db: Db, userId: string): Promise<string | null> {
+  const [row] = await db.select({ email: users.email }).from(users).where(eq(users.id, userId));
+  return row?.email ?? null;
+}

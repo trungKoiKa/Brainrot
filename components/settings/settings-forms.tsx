@@ -4,6 +4,7 @@ import { useActionState, useState, useTransition } from "react";
 import {
   changePasswordAction,
   createProjectAction,
+  deleteAccountAction,
   deleteProjectAction,
   renameProjectAction,
   updateProfileAction,
@@ -163,5 +164,41 @@ export function ProjectManager({ projects }: { projects: { id: string; name: str
         </ul>
       )}
     </div>
+  );
+}
+
+/** Xoá tài khoản + toàn bộ dữ liệu: gõ lại email và nhập mật khẩu; không hoàn tác được (SPEC-v1.0 bước 5C). */
+export function DeleteAccountForm() {
+  const [state, action, pending] = useActionState<AccountState, FormData>(deleteAccountAction, {});
+  return (
+    <details className="group">
+      <summary className="cursor-pointer rounded-md py-2.5 text-sm font-medium text-danger outline-none focus-visible:ring-3 focus-visible:ring-ring/50">
+        Xoá tài khoản…
+      </summary>
+      <form action={action} className="mt-3 grid gap-4 md:grid-cols-2">
+        <p className="text-sm text-muted-foreground md:col-span-2">
+          Xoá vĩnh viễn tài khoản và <strong className="font-medium text-foreground">toàn bộ</strong> việc, mục tiêu, thói quen, nhật ký của bạn.
+          Không hoàn tác được.
+        </p>
+        <label className={label}>
+          <span className="text-muted-foreground">Gõ lại email để xác nhận</span>
+          <input name="email" type="email" required autoComplete="off" placeholder="email của bạn" aria-describedby={undefined} className={fieldClass} />
+        </label>
+        <label className={label}>
+          <span className="text-muted-foreground">Mật khẩu</span>
+          <input name="password" type="password" required autoComplete="current-password" className={fieldClass} />
+        </label>
+        <div className="flex flex-wrap items-center gap-3 md:col-span-2">
+          <Status state={state} />
+          <button
+            type="submit"
+            disabled={pending}
+            className="ml-auto rounded-lg bg-danger px-4 py-2 text-sm font-medium text-white outline-none transition-opacity hover:opacity-90 focus-visible:ring-3 focus-visible:ring-ring/50 disabled:opacity-50"
+          >
+            {pending ? "Đang xoá…" : "Xoá tài khoản vĩnh viễn"}
+          </button>
+        </div>
+      </form>
+    </details>
   );
 }
