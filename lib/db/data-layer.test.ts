@@ -10,6 +10,9 @@ import {
   markTaskDone,
   reopenTask,
   restoreTask,
+  createProject,
+  deleteProject,
+  renameProject,
   getPasswordHash,
   setPasswordHash,
   updateProfile,
@@ -23,7 +26,7 @@ import {
   updateGoal,
   updateTask,
 } from "./mutations";
-import { getProfileRow, listDailyLogsBetween, listGoals, listHabits, listProjectNames, listRecentDailyLogs, listReflections, listTasks } from "./queries";
+import { getProfileRow, listProjectsWithCounts, listDailyLogsBetween, listGoals, listHabits, listProjectNames, listRecentDailyLogs, listReflections, listTasks } from "./queries";
 import { DEFAULT_USER_ID, users } from "./schema";
 import { createTestDb } from "./test-db";
 
@@ -154,6 +157,31 @@ describe("cách ly giữa người dùng", () => {
     expect(await getPasswordHash(db, other)).toBe("scrypt$x$y");
     expect(await getPasswordHash(db, ME)).not.toBe("scrypt$x$y");
     await updateProfile(db, ME, { name: "", targetDate: null, targetLabel: "" }); // trả về như cũ cho các bài sau
+  });
+
+  it("dự án: thêm, đổi tên (việc theo tên mới), trùng tên bị chặn, chỉ xoá khi hết việc, không đụng dự án người khác", async () => {
+    await createProject(db, ME, "Dự án thử");
+    await expect(createProject(db, ME, "Dự án thử")).rejects.toThrow(); // trùng tên
+    await createProject(db, other, "Dự án thử"); // người khác được dùng cùng tên
+    let mine = (await listProjectsWithCounts(db, ME)).find((p) => p.name === "Dự án thử")!;
+
+    await createTask(db, ME, input("Việc trong dự án", { project: "Dự án thử" }));
+    await renameProject(db, ME, mine.id, "Dự án đổi tên");
+    expect((await listTasks(db, ME)).find((x) => x.title === "Việc trong dự án")?.project).toBe("Dự án đổi tên");
+    mine = (await listProjectsWithCounts(db, ME)).find((p) => p.name === "Dự án đổi tên")!;
+    expect(mine.tasks).toBe(1);
+    await expect(deleteProject(db, ME, mine.id)).rejects.toThrow(); // còn việc
+
+    const theirs = (await listProjectsWithCounts(db, other)).find((p) => p.name === "Dự án thử")!;
+    await expect(renameProject(db, ME, theirs.id, "Cướp")).rejects.toThrow();
+    await expect(deleteProject(db, ME, theirs.id)).rejects.toThrow();
+    expect((await listProjectsWithCounts(db, other)).some((p) => p.id === theirs.id)).toBe(true);
+
+    const t = (await listTasks(db, ME)).find((x) => x.title === "Việc trong dự án")!;
+    await deleteTask(db, ME, t.id);
+    await deleteProject(db, ME, mine.id);
+    expect((await listProjectsWithCounts(db, ME)).some((p) => p.id === mine.id)).toBe(false);
+    await deleteProject(db, other, theirs.id); // dọn để không ảnh hưởng bài cách ly sau
   });
 
   it("biết id của người khác cũng không sửa / tích / dời / xóa được", async () => {

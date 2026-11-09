@@ -60,7 +60,8 @@ if (existing) {
   if (claimed) {
     console.log(`Đã gắn ${email} vào tài khoản mặc định (chủ dữ liệu hiện tại) và đặt mật khẩu.`);
   } else {
-    await sql`insert into users (email, name, password_hash) values (${email}, ${name || email}, ${hash})`;
-    console.log(`Đã tạo người dùng mới ${email}.`);
+    const [created] = await sql`insert into users (email, name, password_hash) values (${email}, ${name || email}, ${hash}) returning id`;
+    await sql`insert into projects (user_id, name, sort) values (${created.id}, ${"Chung"}, 0)`; // dự án sẵn có cho người mới (SPEC-v1.0 bước 5)
+    console.log(`Đã tạo người dùng mới ${email} (kèm dự án "Chung").`);
   }
 }

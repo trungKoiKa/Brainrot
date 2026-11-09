@@ -130,6 +130,10 @@
 > người. Riêng user mặc định chưa đặt hạn thì vẫn dùng `THESIS_DEADLINE`. Chưa cần migration mới (cột `users.name`, `target_date`,
 > `target_label` có sẵn từ 0000).
 >
+> **Bước 5B đã làm (10/11/2026):** trang Cài đặt có khối **Dự án** riêng từng người: thêm, đổi tên tại chỗ (việc theo tên mới),
+> xoá **chỉ khi không còn việc** (nút khoá kèm số việc). Tên dự án ≤ 40 ký tự, không trùng trong cùng một người (hai người được
+> trùng tên). Tài khoản tạo bằng `user:password` có sẵn dự án "Chung".
+>
 > **Xóa task (Trung chốt 05/11/2026):** mỗi dòng task (Tasks, cả việc chưa xong lẫn Đã xong) có icon thùng rác; bấm → hỏi
 > xác nhận ngay tại dòng → **xóa hẳn** (không hoàn tác), liên kết với mục tiêu mất theo. Trước đây xóa trong Notion.
 >

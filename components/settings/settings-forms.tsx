@@ -1,7 +1,14 @@
 "use client";
 
-import { useActionState } from "react";
-import { changePasswordAction, updateProfileAction, type AccountState } from "@/app/actions/account";
+import { useActionState, useState, useTransition } from "react";
+import {
+  changePasswordAction,
+  createProjectAction,
+  deleteProjectAction,
+  renameProjectAction,
+  updateProfileAction,
+  type AccountState,
+} from "@/app/actions/account";
 import { Status, fieldClass, primaryButtonClass } from "@/components/form-bits";
 
 // Trùng MIN_PASSWORD_LENGTH ở lib/password.ts (file đó dùng node:crypto nên không import vào bundle trình duyệt)
@@ -66,5 +73,95 @@ export function PasswordForm() {
         </button>
       </div>
     </form>
+  );
+}
+
+/** Quản lý dự án của riêng mình (SPEC-v1.0 bước 5B): thêm, đổi tên tại chỗ, xoá khi không còn việc. */
+export function ProjectManager({ projects }: { projects: { id: string; name: string; tasks: number }[] }) {
+  const [state, action, pending] = useActionState<AccountState, FormData>(createProjectAction, {});
+  const [note, setNote] = useState<AccountState>({});
+  const [editing, setEditing] = useState<string | null>(null);
+  const [draft, setDraft] = useState("");
+  const [busy, startTransition] = useTransition();
+
+  const run = (fn: () => Promise<AccountState>) =>
+    startTransition(async () => {
+      setNote(await fn());
+    });
+
+  return (
+    <div className="space-y-4">
+      <form action={action} className="flex flex-wrap gap-2" key={state.ok ? `ok-${state.message}` : "form"}>
+        <input name="name" aria-label="Tên dự án mới" placeholder="Thêm dự án…" maxLength={40} autoComplete="off" className={`${fieldClass} min-w-48 flex-1`} />
+        <button type="submit" disabled={pending} className={primaryButtonClass}>
+          {pending ? "Đang thêm…" : "Thêm"}
+        </button>
+      </form>
+      <Status state={note.message ? note : state} />
+      {projects.length === 0 ? (
+        <p className="text-sm text-muted-foreground">Chưa có dự án nào. Thêm một dự án để nhóm việc ở Tasks.</p>
+      ) : (
+        <ul className="divide-y divide-line">
+          {projects.map((p) => (
+            <li key={p.id} className="flex flex-wrap items-center gap-x-3 gap-y-1 py-2">
+              {editing === p.id ? (
+                <form
+                  className="flex min-w-0 flex-1 gap-2"
+                  onSubmit={(e) => {
+                    e.preventDefault();
+                    run(async () => {
+                      const res = await renameProjectAction(p.id, draft);
+                      if (res.ok) setEditing(null);
+                      return res;
+                    });
+                  }}
+                >
+                  <input
+                    autoFocus
+                    aria-label={`Đổi tên dự án ${p.name}`}
+                    value={draft}
+                    maxLength={40}
+                    onChange={(e) => setDraft(e.target.value)}
+                    onKeyDown={(e) => e.key === "Escape" && setEditing(null)}
+                    className={`${fieldClass} py-1`}
+                  />
+                  <button type="submit" disabled={busy} className={`${primaryButtonClass} py-1`}>
+                    Lưu
+                  </button>
+                  <button type="button" onClick={() => setEditing(null)} className="text-sm text-muted-foreground hover:text-foreground">
+                    Hủy
+                  </button>
+                </form>
+              ) : (
+                <>
+                  <span className="min-w-0 flex-1 truncate">{p.name}</span>
+                  <span className="text-xs text-muted-foreground tabular-nums">{p.tasks} việc</span>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setEditing(p.id);
+                      setDraft(p.name);
+                      setNote({});
+                    }}
+                    className="min-h-10 rounded-md px-2 text-sm text-muted-foreground outline-none hover:text-foreground focus-visible:ring-3 focus-visible:ring-ring/50 md:min-h-0"
+                  >
+                    Đổi tên
+                  </button>
+                  <button
+                    type="button"
+                    disabled={busy || p.tasks > 0}
+                    title={p.tasks > 0 ? "Còn việc trong dự án này" : undefined}
+                    onClick={() => run(() => deleteProjectAction(p.id))}
+                    className="min-h-10 rounded-md px-2 text-sm text-danger outline-none hover:underline focus-visible:ring-3 focus-visible:ring-ring/50 disabled:cursor-not-allowed disabled:opacity-40 disabled:no-underline md:min-h-0"
+                  >
+                    Xóa
+                  </button>
+                </>
+              )}
+            </li>
+          ))}
+        </ul>
+      )}
+    </div>
   );
 }
