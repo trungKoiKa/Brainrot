@@ -64,6 +64,9 @@
 > dữ liệu server cũ ghi đè. "Đã bỏ gắn … · Hoàn tác" chỉ hiện khi bỏ gắn thành công. Biểu đồ kỳ con chỉ hiện khi **từ hai** kỳ
 > con có mục tiêu; thẻ mục tiêu không bị kéo dãn theo biểu đồ.
 >
+> **Goal, đợt 8 (Trung chốt 07/11/2026):** gợi ý "Gắn việc vào mục tiêu…" chỉ hiện khi **chưa mục tiêu nào** có việc gắn
+> (đã biết cách gắn thì không nhắc nữa). Màn hẹp (< 768px): nút bút / xoá / "⋯", ô tích việc và nút bỏ gắn có vùng bấm 40px.
+>
 > **Xóa task (Trung chốt 05/11/2026):** mỗi dòng task (Tasks, cả việc chưa xong lẫn Đã xong) có icon thùng rác; bấm → hỏi
 > xác nhận ngay tại dòng → **xóa hẳn** (không hoàn tác), liên kết với mục tiêu mất theo. Trước đây xóa trong Notion.
 >
