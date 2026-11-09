@@ -51,13 +51,17 @@ async function TodayContent() {
     goalsLoaded.data.filter((g) => g.level === "week" && g.start === week.start && g.type === "Ưu tiên" && g.title.trim()),
   );
 
+  // Cụm thứ yếu: viền nét đứt, không phải thẻ đầy đủ → "Hôm nay làm" là tiêu điểm duy nhất (critique cuối 10/11/2026)
   const endOfDay = (
-    <Card title="Cuối ngày" className="lg:col-span-2">
-      <div className="space-y-6">
+    <section aria-labelledby="end-of-day" className="rounded-xl border border-dashed border-line px-5 py-4 lg:col-span-2">
+      <h2 id="end-of-day" className="mb-3 font-serif text-base font-semibold">
+        Cuối ngày
+      </h2>
+      <div className="space-y-4">
         <DailyLogCapture todayLog={todayLog} open={evening && !todayLog} showExercise={false} day={today} />
         <TomorrowPicker today={today} tasks={tasks} open={evening} />
       </div>
-    </Card>
+    </section>
   );
 
   return (
@@ -84,9 +88,9 @@ async function TodayContent() {
             today={today}
           />
         </Card>
-        <Card title="Ghi nhanh ý tưởng" className="lg:col-span-2">
+        <section aria-label="Ghi nhanh ý tưởng" className="rounded-xl border border-dashed border-line px-5 py-3 lg:col-span-2">
           <IdeaForm />
-        </Card>
+        </section>
         {!evening && endOfDay}
       </div>
     </>

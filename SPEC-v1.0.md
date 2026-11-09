@@ -95,6 +95,10 @@
 > **Goal, đợt 10 (Trung chốt 10/11/2026):** dải "Hoàn tác" của Goal (xoá mục tiêu, bỏ gắn việc, dời ngày ở Tuần) **tạm dừng
 > đếm khi rê chuột hoặc có focus**, rồi mới tự tắt sau 8 giây — cùng hành vi với Tasks (hook `useAutoDismiss`).
 >
+> **Dọn nốt sau critique cuối (Trung chốt 10/11/2026):** Dashboard — KPI chưa đủ dữ liệu hiện **số mờ, không sparkline** (không
+> trông như hỏng); biểu đồ "Việc theo dự án" thấp hơn (h-48) và danh sách link bên dưới gọn (text-xs). Today — "Ghi nhanh ý
+> tưởng" và "Cuối ngày" là **dải viền nét đứt**, không còn là thẻ đầy đủ, để "Hôm nay làm" là tiêu điểm duy nhất.
+>
 > **Xóa task (Trung chốt 05/11/2026):** mỗi dòng task (Tasks, cả việc chưa xong lẫn Đã xong) có icon thùng rác; bấm → hỏi
 > xác nhận ngay tại dòng → **xóa hẳn** (không hoàn tác), liên kết với mục tiêu mất theo. Trước đây xóa trong Notion.
 >

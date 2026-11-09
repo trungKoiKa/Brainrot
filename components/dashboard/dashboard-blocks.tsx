@@ -105,11 +105,11 @@ function KpiCell({ item: k, first }: { item: KpiItem; first: boolean }) {
       </dt>
       <dd className="mt-2 flex items-end justify-between gap-3">
         <span className="whitespace-nowrap">
-          <span className="font-serif text-2xl font-semibold tabular-nums">{k.value}</span>
+          <span className={`font-serif text-2xl font-semibold tabular-nums ${k.tone === "none" ? "text-muted-foreground" : ""}`}>{k.value}</span>
           {k.unit && <span className="ml-1 text-sm text-muted-foreground">{k.unit}</span>}
         </span>
         {/* Đường phẳng không nói gì → ẩn */}
-        {new Set(k.series).size > 1 && (
+        {k.tone !== "none" && new Set(k.series).size > 1 && (
           <ChartContainer config={sparkConfig} className="aspect-auto h-8 w-20 shrink-0" aria-hidden>
             <LineChart data={k.series.map((v, i) => ({ i, v }))} margin={{ top: 4, bottom: 4, left: 2, right: 2 }}>
               <YAxis hide domain={["dataMin", "dataMax"]} />
@@ -157,7 +157,7 @@ export function ProjectBars({ rows }: { rows: { project: string; doing: number; 
   return (
     <>
       <Legend config={projectConfig} />
-      <ChartContainer config={projectConfig} className="aspect-auto h-64 w-full" role="img" aria-label={`Việc chưa xong theo dự án. ${summary}.`}>
+      <ChartContainer config={projectConfig} className="aspect-auto h-48 w-full" role="img" aria-label={`Việc chưa xong theo dự án. ${summary}.`}>
         <BarChart data={rows} margin={{ left: -12, right: 4 }} barGap={4} maxBarSize={36}>
           <CartesianGrid vertical={false} strokeDasharray="3 3" />
           <XAxis
@@ -175,7 +175,7 @@ export function ProjectBars({ rows }: { rows: { project: string; doing: number; 
         </BarChart>
       </ChartContainer>
       {/* Đường bàn phím / trình đọc màn hình thay cho bấm cột (chỉ chuột) */}
-      <ul className="mt-3 flex flex-wrap gap-x-4 gap-y-1 text-sm" aria-label="Mở Tasks theo dự án">
+      <ul className="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-xs" aria-label="Mở Tasks theo dự án">
         {rows.map((r) => (
           <li key={r.project}>
             <Link href={href(r.project)} className="text-muted-foreground underline-offset-4 hover:text-foreground hover:underline">
