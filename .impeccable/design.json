@@ -126,7 +126,7 @@
       "Don't thêm màu nhấn thứ hai cạnh Xanh chàm.",
       "Don't dùng bóng để tách khung ở trạng thái nghỉ.",
       "Don't lồng Card trong Frame hay Frame trong Card.",
-      "Don't dùng chữ nhỏ hơn 12px cho nội dung đọc. Ngoại lệ đang có: chữ viết tắt thứ trong tiêu đề cột bảng thói quen tháng (10.4px, components/habits/habit-month.tsx)."
+      "Don't dùng chữ nhỏ hơn 12px cho nội dung đọc. Không còn ngoại lệ: chữ viết tắt thứ ở bảng thói quen tháng đã nâng lên 12px (10/11/2026)."
     ]
   }
 }

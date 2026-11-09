@@ -1,6 +1,7 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useRef, useState } from "react";
+import { useAutoDismiss } from "@/components/use-auto-dismiss";
 import { ChevronRightIcon } from "lucide-react";
 import { Card, Empty } from "@/components/card";
 import { compareTasks } from "@/lib/today";
@@ -43,13 +44,8 @@ export function TaskBoard({
   // Việc vừa tích xong → dải "Hoàn tác" ~8 giây (tạm dừng khi rê chuột / có focus) (cũng là thông báo cho trình đọc màn hình)
   const [undo, setUndo] = useState<Task | null>(null);
   const undoRef = useRef<HTMLButtonElement>(null);
-  // Rê chuột / giữ focus trên dải Hoàn tác thì tạm dừng đếm (SPEC-v1.0, Tasks đợt 2)
-  const [undoHold, setUndoHold] = useState(false);
-  useEffect(() => {
-    if (!undo || undoHold) return;
-    const timer = setTimeout(() => setUndo(null), UNDO_MS);
-    return () => clearTimeout(timer);
-  }, [undo, undoHold]);
+  // Rê chuột / giữ focus bàn phím trên dải Hoàn tác thì tạm dừng đếm (SPEC-v1.0, Tasks đợt 2; hook dùng chung với Goal)
+  const undoHold = useAutoDismiss(undo, () => setUndo(null), UNDO_MS);
 
   // Thứ tự nhóm theo danh sách dự án của người dùng (không cứng theo dự án của một người)
   const projectRank = (p: string) => {
@@ -133,7 +129,7 @@ export function TaskBoard({
           </Empty>
         </Card>
       ) : (
-        <div className="grid gap-5 lg:grid-cols-2 lg:items-start">
+        <div className="grid grid-cols-1 gap-5 lg:grid-cols-2 lg:items-start">
           {groups.map((g) => (
             <Card key={g.name} title={g.name} action={<span className="text-xs text-muted-foreground">{g.tasks.length} việc</span>}>
               <ul className="divide-y divide-line">
@@ -180,10 +176,7 @@ export function TaskBoard({
         {undo && (
           <div
             role="status"
-            onMouseEnter={() => setUndoHold(true)}
-            onMouseLeave={() => setUndoHold(false)}
-            onFocus={() => setUndoHold(true)}
-            onBlur={() => setUndoHold(false)}
+            {...undoHold}
             className="pointer-events-auto flex max-w-md items-center gap-4 rounded-xl border border-line bg-surface px-4 py-3 text-sm shadow-lg"
           >
             <span className="min-w-0 truncate">

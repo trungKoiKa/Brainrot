@@ -172,7 +172,7 @@ async function GoalsContent({ searchParams }: Pick<PageProps<"/goals">, "searchP
         </Card>
       )}
 
-        <div className={`grid gap-5 ${showBars ? "lg:grid-cols-5 lg:items-start" : ""}`}>
+        <div className={`grid grid-cols-1 gap-5 ${showBars ? "lg:grid-cols-5 lg:items-start" : ""}`}>
           <Card focal title={`Mục tiêu ${LEVEL_LABEL[level].toLowerCase()}`} className={showBars ? "lg:col-span-3" : ""}>
             {prevFocus && (
               <PrevFocus

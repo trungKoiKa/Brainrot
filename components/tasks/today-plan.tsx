@@ -153,7 +153,7 @@ export function TomorrowPicker({
 
   return (
     <details className="group" open={open}>
-      <summary className="cursor-pointer rounded-md py-2 text-sm font-medium outline-none focus-visible:ring-3 focus-visible:ring-ring/50">
+      <summary className="cursor-pointer rounded-md py-2.5 text-sm font-medium outline-none focus-visible:ring-3 focus-visible:ring-ring/50">
         Ngày mai làm{" "}
         <span className="font-normal text-muted-foreground">
           · {dayLabel(tomorrow)} · đã chọn {list.filter((t) => t.plannedOn === tomorrow).length}
@@ -225,7 +225,7 @@ function TodayAdd({ today }: { today: string }) {
           {pending ? "Đang thêm…" : "Thêm"}
         </button>
       </div>
-      <div role="status" aria-live="polite" className="min-h-4 text-xs text-muted-foreground">
+      <div role="status" aria-live="polite" className="text-xs text-muted-foreground empty:hidden">
         {state.message ? (state.ok ? state.message : <span className="text-(--danger)">{state.message}</span>) : ""}
       </div>
     </form>

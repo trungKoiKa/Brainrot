@@ -81,7 +81,7 @@ export function HabitMonth({
                       data-today={d === today || undefined}
                       className={`px-0.5 pb-2 font-normal tabular-nums ${d === today ? "text-primary" : ""}`}
                     >
-                      <span className="block text-[0.65rem] opacity-70">{weekday(d)}</span>
+                      <span className="block text-xs opacity-70">{weekday(d)}</span>
                       {Number(d.slice(8))}
                     </th>
                   ))}
@@ -129,7 +129,7 @@ export function HabitMonth({
       </Card>
 
       {stats.rows.length > 0 && (
-      <div className="grid gap-5 lg:grid-cols-2">
+      <div className="grid grid-cols-1 gap-5 lg:grid-cols-2">
         <Card title="Tổng kết tháng">
           {stats.rows.length === 0 ? (
             <p className="text-sm text-muted-foreground">Chưa có dữ liệu.</p>
