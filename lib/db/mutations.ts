@@ -285,3 +285,41 @@ export async function setPasswordHash(db: Db, userId: string, hash: string): Pro
   const res = await db.update(users).set({ passwordHash: hash }).where(eq(users.id, userId)).returning({ id: users.id });
   if (!res.length) throw new Error("Không tìm thấy tài khoản");
 }
+
+// ---------- Dự án (Cài đặt, SPEC-v1.0 bước 5B) ----------
+
+export const MAX_PROJECT_NAME = 40;
+
+async function nameTaken(db: Db, userId: string, name: string, exceptId?: string): Promise<boolean> {
+  const rows = await db.select({ id: projects.id }).from(projects).where(and(eq(projects.userId, userId), eq(projects.name, name)));
+  return rows.some((r) => r.id !== exceptId);
+}
+
+export async function createProject(db: Db, userId: string, name: string): Promise<void> {
+  if (await nameTaken(db, userId, name)) throw new Error("Đã có dự án tên này");
+  const [{ next }] = await db
+    .select({ next: sql<number>`coalesce(max(${projects.sort}), -1) + 1` })
+    .from(projects)
+    .where(eq(projects.userId, userId));
+  await db.insert(projects).values({ userId, name, sort: Number(next) });
+}
+
+/** Đổi tên: việc gắn dự án theo id nên tự theo tên mới. */
+export async function renameProject(db: Db, userId: string, id: string, name: string): Promise<void> {
+  if (await nameTaken(db, userId, name, id)) throw new Error("Đã có dự án tên này");
+  const res = await db
+    .update(projects)
+    .set({ name })
+    .where(and(eq(projects.id, id), eq(projects.userId, userId)))
+    .returning({ id: projects.id });
+  if (!res.length) throw new Error("Không tìm thấy dự án");
+}
+
+/** Chỉ xoá khi không còn việc nào gắn (tránh âm thầm đẩy việc về "Không có dự án"). */
+export async function deleteProject(db: Db, userId: string, id: string): Promise<void> {
+  const [own] = await db.select({ id: projects.id }).from(projects).where(and(eq(projects.id, id), eq(projects.userId, userId)));
+  if (!own) throw new Error("Không tìm thấy dự án");
+  const [used] = await db.select({ n: sql<number>`count(*)` }).from(tasks).where(eq(tasks.projectId, id));
+  if (Number(used.n) > 0) throw new Error("Dự án còn việc");
+  await db.delete(projects).where(and(eq(projects.id, id), eq(projects.userId, userId)));
+}

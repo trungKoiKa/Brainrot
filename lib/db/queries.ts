@@ -1,7 +1,7 @@
 // Đọc dữ liệu (thay lib/notion/queries.ts). Mọi hàm nhận `userId` làm tham số và luôn lọc theo nó (SPEC-v1.0 mục 6);
 // trả đúng kiểu mà giao diện đã dùng từ thời Notion nên trang không phải đổi.
 
-import { and, asc, desc, eq, gte, isNull, lte, inArray } from "drizzle-orm";
+import { and, asc, count, desc, eq, gte, isNull, lte, inArray } from "drizzle-orm";
 import type { Db } from "./client";
 import { dailyLogs, goals, goalTasks, habitDays, habits, projects, reflections, tasks, users } from "./schema";
 import type { Goal } from "@/lib/goals";
@@ -139,4 +139,18 @@ export async function getProfileRow(db: Db, userId: string): Promise<Profile | n
     .from(users)
     .where(eq(users.id, userId));
   return row ?? null;
+}
+
+export type ProjectRow = { id: string; name: string; tasks: number };
+
+/** Dự án của người dùng kèm số việc đang gắn (Cài đặt → xoá chỉ khi 0 việc). */
+export async function listProjectsWithCounts(db: Db, userId: string): Promise<ProjectRow[]> {
+  const rows = await db
+    .select({ id: projects.id, name: projects.name, tasks: count(tasks.id) })
+    .from(projects)
+    .leftJoin(tasks, eq(tasks.projectId, projects.id))
+    .where(eq(projects.userId, userId))
+    .groupBy(projects.id, projects.name, projects.sort)
+    .orderBy(asc(projects.sort), asc(projects.name));
+  return rows.map((r) => ({ id: r.id, name: r.name, tasks: Number(r.tasks) }));
 }

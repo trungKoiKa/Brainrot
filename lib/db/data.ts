@@ -9,6 +9,7 @@ import {
   listReflections,
   listTasks,
   getProfileRow,
+  listProjectsWithCounts,
 } from "./queries";
 import { requireUserId } from "@/lib/session";
 import { DEFAULT_USER_ID } from "./schema";
@@ -87,4 +88,10 @@ export async function getProfile() {
     ...p,
     target: { date: p.targetDate ?? fromEnv, label: p.targetLabel.trim() || (p.targetDate === null && fromEnv ? "hạn nộp đồ án" : "hạn chót") },
   };
+}
+
+/** Dự án + số việc gắn (trang Cài đặt). */
+export async function getProjectsWithCounts() {
+  const { db, userId } = await scope();
+  return listProjectsWithCounts(db, userId);
 }

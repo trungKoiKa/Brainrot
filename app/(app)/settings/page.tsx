@@ -2,10 +2,10 @@ import { Suspense } from "react";
 import { connection } from "next/server";
 import { Card } from "@/components/card";
 import { PageHeader } from "@/components/page-header";
-import { PasswordForm, ProfileForm } from "@/components/settings/settings-forms";
-import { getProfile } from "@/lib/db/data";
+import { PasswordForm, ProfileForm, ProjectManager } from "@/components/settings/settings-forms";
+import { getProfile, getProjectsWithCounts } from "@/lib/db/data";
 
-// SPEC-v1.0 bước 5: tên hiển thị, hạn + nhãn thẻ đếm ngược, đổi mật khẩu (dự án, xoá tài khoản thêm ở các đợt sau).
+// SPEC-v1.0 bước 5: tên hiển thị, hạn + nhãn thẻ đếm ngược, dự án, đổi mật khẩu (xoá tài khoản ở bước 5C).
 export default function SettingsPage() {
   return (
     <div className="mx-auto max-w-3xl">
@@ -19,7 +19,7 @@ export default function SettingsPage() {
 
 async function SettingsContent() {
   await connection();
-  const profile = await getProfile();
+  const [profile, projects] = await Promise.all([getProfile(), getProjectsWithCounts()]);
   return (
     <div className="space-y-5">
       <Card title="Hồ sơ">
@@ -29,6 +29,9 @@ async function SettingsContent() {
           targetDate={profile.target.date ?? ""}
           targetLabel={profile.targetLabel || (profile.targetDate === null && profile.target.date ? profile.target.label : "")}
         />
+      </Card>
+      <Card title="Dự án">
+        <ProjectManager projects={projects} />
       </Card>
       <Card title="Đổi mật khẩu">
         <PasswordForm />
