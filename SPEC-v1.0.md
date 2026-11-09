@@ -134,6 +134,12 @@
 > xoá **chỉ khi không còn việc** (nút khoá kèm số việc). Tên dự án ≤ 40 ký tự, không trùng trong cùng một người (hai người được
 > trùng tên). Tài khoản tạo bằng `user:password` có sẵn dự án "Chung".
 >
+> **Bước 5C đã làm (10/11/2026):** **chống dò mật khẩu** — sai **5 lần trong 15 phút** thì email đó bị khoá tạm 15 phút (bảng
+> `login_attempts`, migration `0003`; lỗi bảng/kết nối ở bước kiểm tra thì bỏ qua để không khoá cả ứng dụng; đăng nhập đúng xoá lịch
+> sử sai; email lạ cũng được ghi nên không lộ email nào có tài khoản). **Xoá tài khoản** ở Cài đặt: gõ lại email + nhập mật khẩu,
+> xoá toàn bộ dữ liệu (cascade), không hoàn tác. `docs/huong-dan.md` thêm mục tạo tài khoản cho bạn bè. **Việc Trung cần làm:**
+> chạy `npm run db:migrate` để áp migration `0003` lên Neon.
+>
 > **Xóa task (Trung chốt 05/11/2026):** mỗi dòng task (Tasks, cả việc chưa xong lẫn Đã xong) có icon thùng rác; bấm → hỏi
 > xác nhận ngay tại dòng → **xóa hẳn** (không hoàn tác), liên kết với mục tiêu mất theo. Trước đây xóa trong Notion.
 >

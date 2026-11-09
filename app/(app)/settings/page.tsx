@@ -2,10 +2,10 @@ import { Suspense } from "react";
 import { connection } from "next/server";
 import { Card } from "@/components/card";
 import { PageHeader } from "@/components/page-header";
-import { PasswordForm, ProfileForm, ProjectManager } from "@/components/settings/settings-forms";
+import { DeleteAccountForm, PasswordForm, ProfileForm, ProjectManager } from "@/components/settings/settings-forms";
 import { getProfile, getProjectsWithCounts } from "@/lib/db/data";
 
-// SPEC-v1.0 bước 5: tên hiển thị, hạn + nhãn thẻ đếm ngược, dự án, đổi mật khẩu (xoá tài khoản ở bước 5C).
+// SPEC-v1.0 bước 5: tên hiển thị, hạn + nhãn thẻ đếm ngược, dự án, đổi mật khẩu xoá tài khoản.
 export default function SettingsPage() {
   return (
     <div className="mx-auto max-w-3xl">
@@ -35,6 +35,9 @@ async function SettingsContent() {
       </Card>
       <Card title="Đổi mật khẩu">
         <PasswordForm />
+      </Card>
+      <Card title="Tài khoản">
+        <DeleteAccountForm />
       </Card>
     </div>
   );

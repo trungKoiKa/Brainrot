@@ -8,6 +8,8 @@ import {
   MAX_PROJECT_NAME,
   createProject,
   deleteProject,
+  deleteUser,
+  getUserEmail,
   getPasswordHash,
   renameProject,
   setPasswordHash,
@@ -134,4 +136,30 @@ export async function deleteProjectAction(id: string): Promise<AccountState> {
   }
   refreshData();
   return { ok: true, message: "Đã xoá dự án." };
+}
+
+/**
+ * Xoá tài khoản + toàn bộ dữ liệu (SPEC-v1.0 bước 5C): phải gõ lại đúng email và nhập mật khẩu hiện tại.
+ * Không hoàn tác được. Xong thì xoá cookie, về trang đăng nhập.
+ */
+export async function deleteAccountAction(_prev: AccountState, form: FormData): Promise<AccountState> {
+  if (!(await isSignedIn())) return { ok: false, message: SESSION_EXPIRED };
+  const typed = String(form.get("email") ?? "").trim().toLowerCase();
+  const password = String(form.get("password") ?? "");
+
+  try {
+    const { db, userId } = await dbScope();
+    const email = (await getUserEmail(db, userId))?.toLowerCase() ?? null;
+    if (!email || typed !== email) return { ok: false, message: "Email gõ lại không khớp với tài khoản." };
+    if (!(await verifyPassword(password, await getPasswordHash(db, userId)))) {
+      await new Promise((r) => setTimeout(r, 800));
+      return { ok: false, message: "Mật khẩu không đúng." };
+    }
+    await deleteUser(db, userId);
+  } catch (e) {
+    console.error("deleteAccount failed:", e instanceof Error ? e.message : e);
+    return { ok: false, message: WRITE_FAILED };
+  }
+  (await cookies()).delete(SESSION_COOKIE);
+  redirect("/login");
 }
