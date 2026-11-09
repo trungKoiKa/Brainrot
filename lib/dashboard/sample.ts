@@ -90,6 +90,10 @@ export function sampleDashboard(today: string, thesisDeadline = "2026-12-06"): D
     }
   }
 
+  // Việc cũ chưa xong không giữ hạn đã qua từ lâu: mẫu cho thấy vài việc quá hạn vừa phải, không phải 19 việc "quá hạn 100 ngày"
+  // (không dùng PRNG → số liệu các khối khác không đổi)
+  for (const t of tasks) if (t.status !== "Xong" && t.deadline !== null && t.deadline < addDays(today, -7)) t.deadline = null;
+
   // Tên + Ngày làm (SPEC-v0.5) dùng PRNG riêng → số liệu mẫu các khối có sẵn không đổi
   const rp = rng(SEED + 2);
   tasks.forEach((t, i) => {

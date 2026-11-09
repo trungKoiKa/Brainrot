@@ -81,6 +81,12 @@
 > Esc trong lịch / popover của form sửa chỉ đóng lịch, không đóng cả form (không mất chữ đang sửa). Trạng thái trống chỉ
 > đường lên ô thêm việc.
 >
+> **Dashboard, đợt 4 (Trung chốt 10/11/2026, critique lần 4, 27/40):** tín hiệu tuần chỉ tính **ngày đã qua** (log hôm nay
+> chưa viết không bị coi là bỏ lỡ); mẫu dưới 3 ngày không bao giờ đỏ, tối đa "Cần để ý". Chấm KPI **trung tính** (vòng rỗng)
+> khi chưa đủ dữ liệu để phán xét: Xong = 0 hoặc kỳ trước = 0, Việc theo lịch tuần này chưa xếp việc, Đồ án chưa đặt hạn.
+> Dữ liệu **Mẫu** không còn dồn hàng chục việc "quá hạn 100 ngày" (hạn cũ trên 7 ngày của việc chưa xong được bỏ). Nút chọn
+> Kỳ / Dữ liệu cao 40px trên màn hẹp.
+>
 > **Xóa task (Trung chốt 05/11/2026):** mỗi dòng task (Tasks, cả việc chưa xong lẫn Đã xong) có icon thùng rác; bấm → hỏi
 > xác nhận ngay tại dòng → **xóa hẳn** (không hoàn tác), liên kết với mục tiêu mất theo. Trước đây xóa trong Notion.
 >

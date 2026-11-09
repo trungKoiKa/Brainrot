@@ -11,7 +11,7 @@ import { Badge } from "@/components/reui/badge";
 import { ChartContainer, ChartTooltip, ChartTooltipContent, type ChartConfig } from "@/components/ui/chart";
 import { Progress } from "@/components/ui/progress";
 import { formatDay } from "@/lib/date";
-import { pctTone, type DashTask, type Tone } from "@/lib/dashboard/stats";
+import { pctTone, type DashTask, type KpiTone, type Tone } from "@/lib/dashboard/stats";
 import { deadlineLabel } from "@/lib/today";
 import { goalCounts, isGoalDone, type Goal } from "@/lib/goals";
 
@@ -28,18 +28,18 @@ export function niceMax(max: number): number {
 }
 const Y_DOMAIN: [number, (max: number) => number] = [0, niceMax];
 const TONE_COLOR: Record<Tone, string> = { good: "var(--good)", warn: "var(--warning)", bad: "var(--danger)" };
-const TONE_LABEL: Record<Tone, string> = { good: "Ổn", warn: "Cần để ý", bad: "Cần xử lý" };
+const TONE_LABEL: Record<KpiTone, string> = { good: "Ổn", warn: "Cần để ý", bad: "Cần xử lý", none: "Chưa đủ dữ liệu" };
 /** Thay đổi nhỏ hơn mức này coi như đứng yên: không tô xanh/đỏ */
 const NOISE = 5;
 
-function Dot({ tone }: { tone: Tone }) {
+function Dot({ tone }: { tone: KpiTone }) {
   return (
     <span
       role="img"
       aria-label={TONE_LABEL[tone]}
       title={TONE_LABEL[tone]}
       className="size-2 shrink-0 rounded-full"
-      style={{ background: TONE_COLOR[tone] }}
+      style={tone === "none" ? { border: "1.5px solid var(--muted-foreground)" } : { background: TONE_COLOR[tone] }}
     />
   );
 }
@@ -69,7 +69,7 @@ export function ChangeBadge({
 
 export type KpiItem = {
   title: string;
-  tone: Tone;
+  tone: KpiTone;
   value: string;
   /** Đơn vị in nhỏ cạnh số (vd "ngày"), tách khỏi số để không dính khoảng trắng của chữ số đều */
   unit?: string;
@@ -127,7 +127,7 @@ function KpiCell({ item: k, first }: { item: KpiItem; first: boolean }) {
 }
 
 /** Chấm màu trạng thái có nhãn cho trình đọc màn hình. */
-export function ToneDot({ tone }: { tone: Tone }) {
+export function ToneDot({ tone }: { tone: KpiTone }) {
   return <Dot tone={tone} />;
 }
 
