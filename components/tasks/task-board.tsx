@@ -12,7 +12,7 @@ import { useTaskCompletion } from "./use-task-completion";
 
 const NO_PROJECT = "Không có dự án";
 /** Thời gian hiện nút "Hoàn tác" sau khi tích xong (SPEC-v1.0, 07/11/2026) */
-const UNDO_MS = 5000;
+const UNDO_MS = 8000;
 
 const projectOf = (t: Task) => t.project ?? NO_PROJECT;
 const chipClass = (active: boolean) =>
@@ -43,11 +43,13 @@ export function TaskBoard({
   // Việc vừa tích xong → dải "Hoàn tác" ~5 giây (cũng là thông báo cho trình đọc màn hình)
   const [undo, setUndo] = useState<Task | null>(null);
   const undoRef = useRef<HTMLButtonElement>(null);
+  // Rê chuột / giữ focus trên dải Hoàn tác thì tạm dừng đếm (SPEC-v1.0, Tasks đợt 2)
+  const [undoHold, setUndoHold] = useState(false);
   useEffect(() => {
-    if (!undo) return;
+    if (!undo || undoHold) return;
     const timer = setTimeout(() => setUndo(null), UNDO_MS);
     return () => clearTimeout(timer);
-  }, [undo]);
+  }, [undo, undoHold]);
 
   // Thứ tự nhóm theo danh sách dự án của người dùng (không cứng theo dự án của một người)
   const projectRank = (p: string) => {
@@ -115,7 +117,7 @@ export function TaskBoard({
       {groups.length === 0 ? (
         <Card>
           <Empty>
-            {open.length === 0 ? "Không còn việc nào chưa xong." : "Không có việc nào khớp bộ lọc."}{" "}
+            {open.length === 0 ? "Không còn việc nào chưa xong. Thêm việc mới ở ô phía trên." : "Không có việc nào khớp bộ lọc."}{" "}
             {filtering && (
               <button
                 type="button"
@@ -178,6 +180,10 @@ export function TaskBoard({
         {undo && (
           <div
             role="status"
+            onMouseEnter={() => setUndoHold(true)}
+            onMouseLeave={() => setUndoHold(false)}
+            onFocus={() => setUndoHold(true)}
+            onBlur={() => setUndoHold(false)}
             className="pointer-events-auto flex max-w-md items-center gap-4 rounded-xl border border-line bg-surface px-4 py-3 text-sm shadow-lg"
           >
             <span className="min-w-0 truncate">

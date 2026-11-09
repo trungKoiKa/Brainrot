@@ -76,6 +76,11 @@
 > xếp đủ. Daily Log có gợi ý trong ô nhập và **bản nháp tự lưu** trong trình duyệt theo ngày làm việc (khôi phục khi quay lại,
 > xoá khi lưu thành công). Dòng mở "Daily Log hôm nay" / "Ngày mai làm" cao ≥ 36px và có viền focus.
 >
+> **Tasks, đợt 2 (Trung chốt 09/11/2026, critique lần 2, 28/40):** màn hẹp: nút sửa / xoá cao 40px; hộp "Xóa hẳn?" xuống
+> dòng riêng, không ép tên việc. Dải "Hoàn tác" sau khi tích xong giữ **8 giây** và **tạm dừng khi rê chuột hoặc có focus**.
+> Esc trong lịch / popover của form sửa chỉ đóng lịch, không đóng cả form (không mất chữ đang sửa). Trạng thái trống chỉ
+> đường lên ô thêm việc.
+>
 > **Xóa task (Trung chốt 05/11/2026):** mỗi dòng task (Tasks, cả việc chưa xong lẫn Đã xong) có icon thùng rác; bấm → hỏi
 > xác nhận ngay tại dòng → **xóa hẳn** (không hoàn tác), liên kết với mục tiêu mất theo. Trước đây xóa trong Notion.
 >

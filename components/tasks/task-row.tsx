@@ -17,7 +17,7 @@ const PRIORITY_CLASS: Record<string, string> = {
 };
 
 const iconButton =
-  "grid size-7 shrink-0 place-items-center rounded-md text-muted-foreground transition-colors outline-none focus-visible:ring-3 focus-visible:ring-ring/50";
+  "grid size-10 md:size-7 shrink-0 place-items-center rounded-md text-muted-foreground transition-colors outline-none focus-visible:ring-3 focus-visible:ring-ring/50";
 
 /**
  * Ô tích xong. Có `onReopen` → việc đã xong bỏ tích được (về Chưa làm, SPEC-v1.0 07/11/2026);
@@ -79,7 +79,7 @@ export function TaskRow({
   const overdue = !done && daysLeft !== null && daysLeft < 0;
 
   return (
-    <li className="group flex gap-3 py-2.5 first:pt-0 last:pb-0" data-task-id={task.id}>
+    <li className="group flex flex-wrap gap-x-3 py-2.5 first:pt-0 last:pb-0" data-task-id={task.id}>
       {(onComplete || onReopen) && <TaskCheckbox task={task} onComplete={onComplete} onReopen={onReopen} />}
       <div className="min-w-0 flex-1">
         <MaybeLink
@@ -123,7 +123,7 @@ export function TaskRow({
           <div
             role="group"
             aria-label={`Xác nhận xóa: ${task.title}`}
-            className="flex shrink-0 items-center gap-1 text-xs"
+            className="flex w-full shrink-0 items-center justify-end gap-1 pt-1 text-xs"
             onKeyDown={(e) => e.key === "Escape" && setConfirming(false)}
           >
             <span className="text-muted-foreground">Xóa hẳn?</span>
