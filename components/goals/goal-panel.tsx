@@ -37,13 +37,13 @@ import { ProgressRing } from "./progress-ring";
 
 export type LinkedTask = { id: string; title: string; url: string; plannedOn: string | null; done: boolean };
 
-const UNDO_MS = 5000;
+const UNDO_MS = 8000;
 const iconButton =
   "flex size-10 md:size-7 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-surface-muted hover:text-foreground";
 
 /**
  * Khối mục tiêu của một kỳ (SPEC-v0.4 4.2, 4.4): bộ đếm + vòng tròn %, nhóm Ưu tiên / Thường (Badge),
- * thêm nhanh, sửa tên tại chỗ, tích, đổi loại, xóa mềm (hoàn tác trong 5 giây),
+ * thêm nhanh, sửa tên tại chỗ, tích, đổi loại, xóa mềm (hoàn tác trong 8 giây),
  * gắn thói quen + ngưỡng % để tự xong (SPEC-v0.4 4.3). Cập nhật lạc quan; lỗi thì trả về như trước và báo.
  * `habits`: thói quen có thể gắn (đang theo dõi trong kỳ).
  */
@@ -289,7 +289,7 @@ function GoalRow({
   onRemove: () => void;
 }) {
   const [picking, setPicking] = useState(false);
-  // Việc vừa bỏ gắn → dải "Hoàn tác" 5 giây (SPEC-v1.0, Goal đợt 6)
+  // Việc vừa bỏ gắn → dải "Hoàn tác" 8 giây (SPEC-v1.0, Goal đợt 6)
   const [unlinked, setUnlinked] = useState<LinkedTask | null>(null);
   const unlinkTimer = useRef<ReturnType<typeof setTimeout>>(undefined);
   useEffect(() => () => clearTimeout(unlinkTimer.current), []);
@@ -686,7 +686,7 @@ function TaskPicker({
         render={
           <button
             type="button"
-            className="mt-0.5 rounded-md text-left text-muted-foreground underline-offset-4 outline-none hover:text-foreground hover:underline focus-visible:ring-3 focus-visible:ring-ring/50"
+            className="mt-0.5 inline-flex min-h-10 items-center rounded-md text-left text-muted-foreground underline-offset-4 md:min-h-0 outline-none hover:text-foreground hover:underline focus-visible:ring-3 focus-visible:ring-ring/50"
           />
         }
       >

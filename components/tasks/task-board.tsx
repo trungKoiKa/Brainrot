@@ -16,7 +16,7 @@ const UNDO_MS = 8000;
 
 const projectOf = (t: Task) => t.project ?? NO_PROJECT;
 const chipClass = (active: boolean) =>
-  `rounded-full border px-3 py-1 text-sm transition-colors outline-none focus-visible:ring-3 focus-visible:ring-ring/50 ${
+  `min-h-10 rounded-full border px-3 py-1 text-sm transition-colors md:min-h-0 outline-none focus-visible:ring-3 focus-visible:ring-ring/50 ${
     active ? "border-primary bg-accent-soft text-primary" : "border-line text-muted-foreground hover:text-foreground"
   }`;
 
@@ -40,7 +40,7 @@ export function TaskBoard({
   const [editing, setEditing] = useState<string | null>(null);
   const [project, setProject] = useState<string | null>(initialProject);
   const [priority, setPriority] = useState<Priority | null>(null);
-  // Việc vừa tích xong → dải "Hoàn tác" ~5 giây (cũng là thông báo cho trình đọc màn hình)
+  // Việc vừa tích xong → dải "Hoàn tác" ~8 giây (tạm dừng khi rê chuột / có focus) (cũng là thông báo cho trình đọc màn hình)
   const [undo, setUndo] = useState<Task | null>(null);
   const undoRef = useRef<HTMLButtonElement>(null);
   // Rê chuột / giữ focus trên dải Hoàn tác thì tạm dừng đếm (SPEC-v1.0, Tasks đợt 2)
@@ -217,7 +217,7 @@ function FilterRow<T extends string>({
 }) {
   return (
     <div className="flex flex-wrap items-center gap-2" role="group" aria-label={`Lọc theo ${label}`}>
-      <span className="w-16 text-sm text-muted-foreground">{label}</span>
+      <span className="text-sm text-muted-foreground sm:w-16">{label}</span>
       <button type="button" aria-pressed={value === null} className={chipClass(value === null)} onClick={() => onChange(null)}>
         Tất cả
       </button>

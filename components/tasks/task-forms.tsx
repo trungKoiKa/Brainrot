@@ -134,6 +134,7 @@ export function EditTaskForm({
     if (next.ok) onClose();
     return next;
   }, {});
+  const [initialValues] = useState(() => JSON.stringify(values));
   const set = (key: keyof typeof values) => (v: string) => setValues((s) => ({ ...s, [key]: v }));
 
   return (
@@ -144,6 +145,7 @@ export function EditTaskForm({
         onKeyDown={(e) => {
           // Esc đóng lịch / popover bên trong thì không đóng cả form (sự kiện bàn phím nổi lên qua portal)
           if (e.key !== "Escape" || e.defaultPrevented || (e.target as HTMLElement).closest("[data-slot=popover-content]")) return;
+          if (JSON.stringify(values) !== initialValues) return; // đã sửa dở thì Esc không bỏ: dùng nút Hủy
           onClose();
         }}
       >
@@ -186,7 +188,7 @@ export function EditTaskForm({
         />
         <div className="flex flex-wrap items-center gap-2">
           <Status state={state} />
-          <button type="button" onClick={onClose} className="ml-auto rounded-lg px-3 py-2 text-sm text-muted-foreground hover:text-foreground">
+          <button type="button" onClick={onClose} className="ml-auto rounded-lg px-3 py-2 text-sm text-muted-foreground outline-none hover:text-foreground focus-visible:ring-3 focus-visible:ring-ring/50">
             Hủy
           </button>
           <button type="submit" disabled={pending || !values.title.trim()} className={primaryButtonClass}>

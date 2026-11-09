@@ -87,6 +87,11 @@
 > Dữ liệu **Mẫu** không còn dồn hàng chục việc "quá hạn 100 ngày" (hạn cũ trên 7 ngày của việc chưa xong được bỏ). Nút chọn
 > Kỳ / Dữ liệu cao 40px trên màn hẹp.
 >
+> **Đánh bóng cuối (Trung chốt 10/11/2026, critique lần cuối cả 4 trang: Today 30 · Tasks 29 · Goal 32 · Dashboard 33):**
+> ô tích việc có vùng bấm 32–40px; chip lọc, nút nhỏ ở Today, "Dời sang…", "+ Gắn việc" cao 40px trên màn hẹp; Esc **không** đóng
+> form sửa việc khi đã sửa dở (dùng nút Hủy); hoàn tác của Goal giữ 8 giây như Tasks; trạng thái trống của "Hôm nay làm" chỉ
+> xuống ô thêm việc bên dưới (link sang Tasks chỉ khi việc còn lại đã xếp ngày khác).
+>
 > **Xóa task (Trung chốt 05/11/2026):** mỗi dòng task (Tasks, cả việc chưa xong lẫn Đã xong) có icon thùng rác; bấm → hỏi
 > xác nhận ngay tại dòng → **xóa hẳn** (không hoàn tác), liên kết với mục tiêu mất theo. Trước đây xóa trong Notion.
 >
