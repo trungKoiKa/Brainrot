@@ -8,8 +8,10 @@ import {
   listRecentDailyLogs,
   listReflections,
   listTasks,
+  getProfileRow,
 } from "./queries";
 import { requireUserId } from "@/lib/session";
+import { DEFAULT_USER_ID } from "./schema";
 import type { Goal } from "@/lib/goals";
 import type { Reflection } from "@/lib/reflections";
 import type { DailyLog, Habit, Knowledge, Task } from "@/lib/types";
@@ -70,3 +72,19 @@ export async function getTaskProjects(): Promise<string[]> {
 }
 
 export const anyStale = (...loaded: Loaded<unknown>[]) => loaded.some((l) => l.stale);
+
+export type { Profile } from "./queries";
+
+/**
+ * Hồ sơ + đếm ngược của người đang đăng nhập. Thẻ đếm ngược: hạn trong Cài đặt; riêng user mặc định (Trung) chưa đặt thì
+ * dùng `THESIS_DEADLINE` như trước (SPEC-v1.0 bước 5). Người khác chưa đặt hạn → không hiện thẻ.
+ */
+export async function getProfile() {
+  const { db, userId } = await scope();
+  const p = (await getProfileRow(db, userId)) ?? { name: "", email: null, targetDate: null, targetLabel: "" };
+  const fromEnv = userId === DEFAULT_USER_ID ? (process.env.THESIS_DEADLINE ?? null) : null;
+  return {
+    ...p,
+    target: { date: p.targetDate ?? fromEnv, label: p.targetLabel.trim() || (p.targetDate === null && fromEnv ? "hạn nộp đồ án" : "hạn chót") },
+  };
+}

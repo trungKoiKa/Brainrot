@@ -37,6 +37,8 @@ export type DashInput = {
   tasks: DashTask[];
   logs: DashLog[];
   thesisDeadline: string | null;
+  /** Nhãn thẻ đếm ngược trong Cài đặt (vd. "hạn nộp đồ án"); thiếu → "Hạn chót" */
+  thesisLabel?: string;
   /** Database Habits (SPEC-v0.4); rỗng khi chưa kết nối */
   habits: Habit[];
   /** Mục tiêu tháng này, đã gắn trạng thái tự xong (SPEC-v0.4 mục 7); rỗng khi chưa kết nối / chưa đặt */

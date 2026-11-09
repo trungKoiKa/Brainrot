@@ -3,7 +3,7 @@
 
 import { and, asc, desc, eq, gte, isNull, lte, inArray } from "drizzle-orm";
 import type { Db } from "./client";
-import { dailyLogs, goals, goalTasks, habitDays, habits, projects, reflections, tasks } from "./schema";
+import { dailyLogs, goals, goalTasks, habitDays, habits, projects, reflections, tasks, users } from "./schema";
 import type { Goal } from "@/lib/goals";
 import type { DailyLog, Habit, Task } from "@/lib/types";
 import type { Reflection } from "@/lib/reflections";
@@ -128,4 +128,15 @@ export async function listReflections(db: Db, userId: string): Promise<Reflectio
     nextFocus: r.nextFocus,
     motto: r.motto,
   }));
+}
+
+export type Profile = { name: string; email: string | null; targetDate: string | null; targetLabel: string };
+
+/** Hồ sơ người đang đăng nhập (Cài đặt, lời chào, đếm ngược). */
+export async function getProfileRow(db: Db, userId: string): Promise<Profile | null> {
+  const [row] = await db
+    .select({ name: users.name, email: users.email, targetDate: users.targetDate, targetLabel: users.targetLabel })
+    .from(users)
+    .where(eq(users.id, userId));
+  return row ?? null;
 }

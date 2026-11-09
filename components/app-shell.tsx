@@ -21,7 +21,7 @@ function setOpen(open: boolean) {
   listeners.forEach((l) => l());
 }
 
-export function AppShell({ thesisDeadline, children }: { thesisDeadline?: string; children: React.ReactNode }) {
+export function AppShell({ account, children }: { account?: React.ReactNode; children: React.ReactNode }) {
   const open = useSyncExternalStore(subscribe, readOpen, () => true);
   const pathname = usePathname();
   const current = NAV.find((n) => isActive(n.href, pathname));
@@ -29,12 +29,12 @@ export function AppShell({ thesisDeadline, children }: { thesisDeadline?: string
   return (
     <TooltipProvider>
       <SidebarProvider open={open} onOpenChange={setOpen}>
-        <AppSidebar thesisDeadline={thesisDeadline} />
+        <AppSidebar account={account} />
         <SidebarInset className="min-w-0">
           <header className="sticky top-0 z-20 flex h-12 shrink-0 items-center gap-2 border-b border-line bg-background/85 px-4 backdrop-blur md:px-6">
             <SidebarTrigger aria-label="Thu/mở thanh bên" />
             <Separator orientation="vertical" className="mr-1 data-vertical:h-4 data-vertical:self-center" />
-            <span className="truncate text-sm font-medium">{current?.label ?? "Second Brain"}</span>
+            <span className="truncate text-sm font-medium">{current?.label ?? (pathname.startsWith("/settings") ? "Cài đặt" : "Second Brain")}</span>
           </header>
           <main className="flex-1 px-4 py-6 md:px-10 md:py-10">{children}</main>
         </SidebarInset>

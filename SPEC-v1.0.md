@@ -118,6 +118,18 @@
 > đỏ); đường xu hướng KPI chỉ vẽ khi có ≥ 2 lần đổi giá trị (hết "bậc thang" đơn lẻ); "Việc theo dự án" chỉ có **một nhóm** thì
 > hiện một dòng chữ + link thay cho biểu đồ cột. KPI "Việc theo lịch tuần này" cũng trung tính khi mới có dưới 3 việc xếp lịch.
 >
+> **Bước 5 — mở cho bạn bè (Trung chốt 10/11/2026):** **giữ email + mật khẩu** (không làm Google OAuth / `ALLOWED_EMAILS`); Trung tạo
+> tài khoản từng bạn bằng `npm run user:password -- <email> "Tên"`. Cần làm trước khi mở: (A) **Đăng xuất**, trang **Cài đặt**
+> (tên hiển thị, hạn + nhãn thẻ đếm ngược, đổi mật khẩu); lời chào, sidebar, đếm ngược đọc **theo từng người** thay vì chữ "Trung" /
+> `THESIS_DEADLINE` chung (user mặc định của Trung vẫn dùng biến đó làm mặc định); (B) **quản lý dự án** riêng từng người (thêm /
+> đổi tên / xoá khi không còn việc) — người mới chưa có dự án nào; (C) **chống dò mật khẩu** (khoá tạm sau nhiều lần sai), **xoá
+> tài khoản** (gõ lại email để xác nhận), hướng dẫn tạo tài khoản. Mỗi tài khoản mới được tạo sẵn dự án "Chung".
+>
+> **Bước 5A đã làm (10/11/2026):** nút **Đăng xuất** + tên người dùng + liên kết **Cài đặt** ở chân sidebar; trang `/settings`
+> (tên hiển thị, hạn + tên hạn cho thẻ đếm ngược, đổi mật khẩu); lời chào Today, sidebar, thẻ đếm ngược Dashboard đọc theo từng
+> người. Riêng user mặc định chưa đặt hạn thì vẫn dùng `THESIS_DEADLINE`. Chưa cần migration mới (cột `users.name`, `target_date`,
+> `target_label` có sẵn từ 0000).
+>
 > **Xóa task (Trung chốt 05/11/2026):** mỗi dòng task (Tasks, cả việc chưa xong lẫn Đã xong) có icon thùng rác; bấm → hỏi
 > xác nhận ngay tại dòng → **xóa hẳn** (không hoàn tác), liên kết với mục tiêu mất theo. Trước đây xóa trong Notion.
 >

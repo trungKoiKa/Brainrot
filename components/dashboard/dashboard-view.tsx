@@ -68,6 +68,8 @@ const SPAN = { 1: "", 2: "lg:col-span-2", 3: "lg:col-span-3" } as const;
 /** Một khối có dữ liệu (vẽ trong lưới) hoặc không (một dòng trong khung "Chưa có dữ liệu"). */
 type Block = { key: string; span: 1 | 2 | 3; full: boolean; title: string; node: React.ReactNode; empty: React.ReactNode };
 
+const capitalize = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
+
 export function DashboardView({ real }: { real: DashInput }) {
   const [mode, setModeState] = useState<Mode>(() => readStored<Mode>(MODE_KEY, ["real", "sample"], "real"));
   const [period, setPeriod] = useState<Period>(() => readStored<Period>(PERIOD_KEY, PERIODS, 30));
@@ -83,7 +85,7 @@ export function DashboardView({ real }: { real: DashInput }) {
   // "Thật là thật" (Trung chốt 07/11/2026, thay SPEC-v0.3 mục 5): chế độ Thật không bao giờ lấp bằng mẫu;
   // khối thiếu dữ liệu nói rõ và chỉ chỗ thêm. Dữ liệu mẫu chỉ hiện khi bật "Mẫu".
   const all = mode === "sample";
-  const src: DashInput = all ? { ...sample, thesisDeadline: real.thesisDeadline } : real;
+  const src: DashInput = all ? { ...sample, thesisDeadline: real.thesisDeadline, thesisLabel: real.thesisLabel } : real;
 
   const summary = weekSummary(src);
   const backlog = backlogKpi(src, period);
@@ -357,7 +359,7 @@ export function DashboardView({ real }: { real: DashInput }) {
             note: week.tally.total === 0 ? "chưa xếp lịch việc nào" : `${week.tally.done}/${week.tally.total} việc`,
           },
           {
-            title: "Đồ án",
+            title: capitalize(real.thesisLabel ?? "hạn chót"),
             tone: thesis.tone,
             value: thesis.left === null ? "—" : thesis.left > 0 ? String(thesis.left) : thesis.left === 0 ? "Hôm nay" : "Đã qua hạn",
             unit: thesis.left !== null && thesis.left > 0 ? "ngày" : undefined,
