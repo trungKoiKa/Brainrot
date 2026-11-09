@@ -71,6 +71,11 @@
 > khi lưu xong (không bỏ sót). Dải hoàn tác (xoá mục tiêu, bỏ gắn việc) nằm trong vùng thông báo `aria-live` cố định để trình
 > đọc màn hình luôn đọc. Màn hẹp: ô tích thói quen 32px, nút quản lý thói quen 40px.
 >
+> **Today, đợt 3 (Trung chốt 09/11/2026, critique lần 3, 27/40):** "Hôm nay làm" luôn có ô **"Thêm việc cho hôm nay…"**
+> (chỉ tên; Ngày làm = ngày làm việc hiện tại; dự án / ưu tiên / deadline đặt ở Tasks) — không còn ngõ cụt khi trống hay khi đã
+> xếp đủ. Daily Log có gợi ý trong ô nhập và **bản nháp tự lưu** trong trình duyệt theo ngày làm việc (khôi phục khi quay lại,
+> xoá khi lưu thành công). Dòng mở "Daily Log hôm nay" / "Ngày mai làm" cao ≥ 36px và có viền focus.
+>
 > **Xóa task (Trung chốt 05/11/2026):** mỗi dòng task (Tasks, cả việc chưa xong lẫn Đã xong) có icon thùng rác; bấm → hỏi
 > xác nhận ngay tại dòng → **xóa hẳn** (không hoàn tác), liên kết với mục tiêu mất theo. Trước đây xóa trong Notion.
 >
