@@ -260,3 +260,17 @@ describe("critique Dashboard vòng 4: không báo động từ mẫu quá ít, c
     expect(thesisKpi(input({ thesisDeadline: null }), 7).tone).toBe("none");
   });
 });
+
+describe("đầu tuần không phán xét bằng màu", () => {
+  const log = (date: string) => ({ date, doneCount: 0, exercised: false, dropped: false, habits: [] as string[] });
+  it("thứ Hai–thứ Ba: tone trung tính, câu mở đầu 'Tuần mới'", () => {
+    const s = weekSummary(input({ today: "2026-10-27", logs: [log("2026-10-20")] }));
+    expect(s.tone).toBe("none");
+    expect(s.headline).toBe("Tuần mới: mới ghi log 0/1 ngày.");
+    expect(s.action?.href).toBe("/today");
+  });
+  it("quá hạn vẫn đỏ kể cả đầu tuần", () => {
+    const s = weekSummary(input({ today: "2026-10-27", tasks: [t({ deadline: "2026-10-20" })], logs: [log("2026-10-20")] }));
+    expect(s.tone).toBe("bad");
+  });
+});

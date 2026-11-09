@@ -124,7 +124,8 @@ export function weekKpi({ today, tasks }: DashInput) {
     // tuần chưa xếp gì vẽ 0 cho liền nét
     series: weeks.map(pct),
     change: value === null || last.total === 0 ? null : value - pct(last),
-    tone: (value === null ? "none" : pctTone(value)) as KpiTone,
+    // Dưới 3 việc đã xếp lịch thì chưa đủ để phán xét bằng màu
+    tone: (value === null || now.total < 3 ? "none" : pctTone(value)) as KpiTone,
     tally: now,
   };
 }
@@ -369,5 +370,7 @@ export function weekSummary(input: DashInput): WeekSummary {
   }
   const fine = signals.filter((s) => s.tone === "good").map((s) => s.name);
   const tail = fine.length > 0 ? ` (${fine.join(", ")} vẫn ổn)` : "";
+  // Đầu tuần (chưa tới ngày thứ 3) mẫu quá nhỏ: không phán xét bằng màu, chỉ nêu điều đang thiếu
+  if (daysThisWeek(today) < 3) return { ...base, tone: "none", headline: `Tuần mới: ${worst.weak}${tail}.`, action: ACTION[worst.key] };
   return { ...base, tone: worst.tone, headline: `${LEAD[worst.tone]}: ${worst.weak}${tail}.`, action: ACTION[worst.key] };
 }
