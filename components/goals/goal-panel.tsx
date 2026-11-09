@@ -76,9 +76,10 @@ export function GoalPanel({
   const [seen, setSeen] = useState(initial);
   // Đang có lưu dở (`saving`) thì giữ bản lạc quan; lưu xong sẽ refresh lại và bản server mới vào sau
   const [saving, setSaving] = useState(0);
-  if (initial !== seen) {
+  // Chỉ nhận dữ liệu server mới khi không còn lưu dở; lưu xong `saving` về 0 thì lần render kế tiếp áp bản mới nhất
+  if (initial !== seen && saving === 0) {
     setSeen(initial);
-    if (saving === 0) setGoals(initial);
+    setGoals(initial);
   }
   const [error, setError] = useState<string | null>(null);
   const [undo, setUndo] = useState<{ goal: Goal; index: number } | null>(null);
@@ -219,14 +220,16 @@ export function GoalPanel({
         </p>
       )}
 
-      {undo && (
-        <div role="status" className="mt-3 flex items-center gap-3 rounded-lg bg-surface-muted px-3 py-2 text-sm">
-          <span className="min-w-0 flex-1 truncate">Đã xóa “{undo.goal.title}”</span>
-          <button type="button" onClick={restore} className="font-medium text-primary hover:underline">
-            Hoàn tác
-          </button>
-        </div>
-      )}
+      <div aria-live="polite">
+        {undo && (
+          <div className="mt-3 flex items-center gap-3 rounded-lg bg-surface-muted px-3 py-2 text-sm">
+            <span className="min-w-0 flex-1 truncate">Đã xóa “{undo.goal.title}”</span>
+            <button type="button" onClick={restore} className="font-medium text-primary hover:underline">
+              Hoàn tác
+            </button>
+          </div>
+        )}
+      </div>
 
       {carry && counts.total > counts.completed && (
         <CarryOver level={level} periodKey={periodKey} count={counts.total - counts.completed} label={carry.label} onError={setError} />
@@ -423,14 +426,16 @@ function GoalRow({
             ))}
           </ul>
         )}
-        {unlinked && (
-          <p role="status" className="flex items-center gap-2 py-0.5 text-xs text-muted-foreground">
+        <div aria-live="polite">
+          {unlinked && (
+            <p className="flex items-center gap-2 py-0.5 text-xs text-muted-foreground">
             <span className="min-w-0 truncate">Đã bỏ gắn “{unlinked.title || "(Chưa đặt tên)"}”</span>
             <button type="button" onClick={relink} className="shrink-0 rounded-md font-medium text-primary underline-offset-4 outline-none hover:underline focus-visible:ring-3 focus-visible:ring-ring/50">
               Hoàn tác
             </button>
-          </p>
-        )}
+            </p>
+          )}
+        </div>
         <TaskPicker
           open={picking}
           onOpenChange={setPicking}

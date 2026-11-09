@@ -108,7 +108,7 @@ export function HabitMonth({
                             aria-pressed={on}
                             aria-label={`${r.habit.name} ngày ${Number(d.slice(8))}`}
                             onClick={() => toggle(d, r.habit.name, !on)}
-                            className={`flex size-6 items-center justify-center rounded border transition-colors ${
+                            className={`flex size-8 md:size-6 items-center justify-center rounded border transition-colors ${
                               on ? "border-primary bg-primary text-primary-foreground" : "border-line hover:border-primary"
                             } disabled:cursor-default disabled:opacity-30 disabled:hover:border-line`}
                           >
