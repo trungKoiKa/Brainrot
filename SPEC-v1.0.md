@@ -67,6 +67,10 @@
 > **Goal, đợt 8 (Trung chốt 07/11/2026):** gợi ý "Gắn việc vào mục tiêu…" chỉ hiện khi **chưa mục tiêu nào** có việc gắn
 > (đã biết cách gắn thì không nhắc nữa). Màn hẹp (< 768px): nút bút / xoá / "⋯", ô tích việc và nút bỏ gắn có vùng bấm 40px.
 >
+> **Goal, đợt 9 (Trung chốt 07/11/2026, critique lần 6, 30/40):** dữ liệu server tới lúc đang lưu dở được giữ lại và áp ngay
+> khi lưu xong (không bỏ sót). Dải hoàn tác (xoá mục tiêu, bỏ gắn việc) nằm trong vùng thông báo `aria-live` cố định để trình
+> đọc màn hình luôn đọc. Màn hẹp: ô tích thói quen 32px, nút quản lý thói quen 40px.
+>
 > **Xóa task (Trung chốt 05/11/2026):** mỗi dòng task (Tasks, cả việc chưa xong lẫn Đã xong) có icon thùng rác; bấm → hỏi
 > xác nhận ngay tại dòng → **xóa hẳn** (không hoàn tác), liên kết với mục tiêu mất theo. Trước đây xóa trong Notion.
 >
