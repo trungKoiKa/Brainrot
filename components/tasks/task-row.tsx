@@ -1,6 +1,5 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
 import { MaybeLink } from "@/components/tasks/maybe-link";
 import { CircleAlertIcon, PencilIcon, Trash2Icon, XIcon } from "lucide-react";
 import { Alert, AlertAction, AlertDescription, AlertTitle } from "@/components/reui/alert";
@@ -63,18 +62,10 @@ export function TaskRow({
   /** Việc đã xong: bỏ tích → về Chưa làm */
   onReopen?: (t: Task) => void;
   onEdit?: () => void;
-  /** Có → hiện icon thùng rác; bấm hỏi xác nhận ngay tại dòng rồi mới gọi (xóa hẳn, SPEC-v1.0). */
+  /** Có → hiện icon thùng rác; bấm xoá ngay, dải "Hoàn tác" 8 giây ở cuối màn hình (SPEC-v1.0, Tasks đợt 3). */
   onDelete?: (t: Task) => void;
   showProject?: boolean;
 }) {
-  const [confirming, setConfirming] = useState(false);
-  const trashRef = useRef<HTMLButtonElement>(null);
-  const wasConfirming = useRef(false);
-  // Huỷ xác nhận → trả con trỏ về nút thùng rác (không rơi về đầu trang)
-  useEffect(() => {
-    if (wasConfirming.current && !confirming) trashRef.current?.focus();
-    wasConfirming.current = confirming;
-  }, [confirming]);
 
   const done = task.status === "Xong";
   const daysLeft = task.deadline ? daysBetween(today, task.deadline) : null;
@@ -120,43 +111,17 @@ export function TaskRow({
           <PencilIcon className="size-4" aria-hidden="true" />
         </button>
       )}
-      {onDelete &&
-        (confirming ? (
-          <div
-            role="group"
-            aria-label={`Xác nhận xóa: ${task.title}`}
-            className="flex w-full shrink-0 items-center justify-end gap-1 pt-1 text-xs"
-            onKeyDown={(e) => e.key === "Escape" && setConfirming(false)}
-          >
-            <span className="text-muted-foreground">Xóa hẳn?</span>
-            <button
-              type="button"
-              onClick={() => onDelete(task)}
-              className="rounded-md px-2 py-1 font-medium text-danger transition-colors outline-none hover:bg-danger-soft focus-visible:ring-3 focus-visible:ring-ring/50"
-            >
-              Xóa
-            </button>
-            <button
-              type="button"
-              autoFocus
-              onClick={() => setConfirming(false)}
-              className="rounded-md px-2 py-1 text-muted-foreground transition-colors outline-none hover:bg-surface-muted hover:text-foreground focus-visible:ring-3 focus-visible:ring-ring/50"
-            >
-              Hủy
-            </button>
-          </div>
-        ) : (
-          <button
-            ref={trashRef}
-            type="button"
-            onClick={() => setConfirming(true)}
-            aria-label={`Xóa: ${task.title}`}
-            title="Xóa"
-            className={`${iconButton} hover:bg-danger-soft hover:text-danger`}
-          >
-            <Trash2Icon className="size-4" aria-hidden="true" />
-          </button>
-        ))}
+      {onDelete && (
+        <button
+          type="button"
+          onClick={() => onDelete(task)}
+          aria-label={`Xóa: ${task.title}`}
+          title="Xóa"
+          className={`${iconButton} hover:bg-danger-soft hover:text-danger`}
+        >
+          <Trash2Icon className="size-4" aria-hidden="true" />
+        </button>
+      )}
     </li>
   );
 }

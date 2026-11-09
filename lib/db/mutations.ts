@@ -220,3 +220,44 @@ export async function setTaskGoal(db: Db, userId: string, taskId: string, goalId
   await db.delete(goalTasks).where(eq(goalTasks.taskId, taskId));
   if (goalId) await db.insert(goalTasks).values({ goalId, taskId });
 }
+
+/** Ảnh chụp một task để hoàn tác xoá (SPEC-v1.0, Tasks đợt 3): chèn lại **đúng id**, giữ cả liên kết mục tiêu. */
+export type TaskSnapshot = {
+  id: string;
+  title: string;
+  project: string | null;
+  status: "Chưa làm" | "Đang làm" | "Xong" | null;
+  priority: "Cao" | "Vừa" | "Thấp" | null;
+  deadline: string | null;
+  plannedOn: string | null;
+  doneOn: string | null;
+  note: string;
+  createdTime: string;
+  goalIds: string[];
+};
+
+/** Hoàn tác xoá: chèn lại task với id cũ. Không ghi đè nếu id đang tồn tại; mục tiêu không còn / của người khác thì bỏ qua. */
+export async function restoreTask(db: Db, userId: string, s: TaskSnapshot): Promise<void> {
+  const [exists] = await db.select({ id: tasks.id }).from(tasks).where(eq(tasks.id, s.id));
+  if (exists) throw new Error("Task đã tồn tại");
+  await db.insert(tasks).values({
+    id: s.id,
+    userId,
+    title: s.title,
+    projectId: await projectId(db, userId, s.project),
+    status: s.status ?? "Chưa làm",
+    priority: s.priority,
+    deadline: s.deadline,
+    plannedOn: s.plannedOn,
+    doneOn: s.doneOn,
+    note: s.note,
+    createdAt: new Date(s.createdTime),
+  });
+  if (s.goalIds.length) {
+    const mine = await db
+      .select({ id: goals.id })
+      .from(goals)
+      .where(and(eq(goals.userId, userId), isNull(goals.deletedAt), inArray(goals.id, s.goalIds)));
+    if (mine.length) await db.insert(goalTasks).values(mine.map((g) => ({ goalId: g.id, taskId: s.id })));
+  }
+}

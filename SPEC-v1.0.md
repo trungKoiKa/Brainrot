@@ -108,6 +108,12 @@
 > không ngắt dòng và đẩy cả trang rộng ra. Các lưới `lg:grid-cols-*` nay có nền `grid-cols-1` (cột `minmax(0,1fr)`) ở màn hẹp.
 > Chữ viết tắt thứ ở bảng thói quen tháng nâng lên 12px (hết ngoại lệ 10.4px trong DESIGN.md).
 >
+> **Tasks, đợt 3 — xoá có hoàn tác (Trung chốt 10/11/2026):** bấm thùng rác **xoá ngay** (bỏ bước hỏi "Xóa hẳn?"), dải
+> "Đã xóa “…” · **Hoàn tác**" hiện 8 giây ở cuối màn hình (tạm dừng khi rê chuột / focus bàn phím). Hoàn tác **chèn lại đúng id**
+> với đủ trường (dự án, ưu tiên, deadline, Ngày làm, ghi chú, ngày tạo) và liên kết mục tiêu còn tồn tại; không ghi đè nếu id đã
+> có. Không đổi schema (xoá vẫn là xoá thật; hoàn tác chỉ khả dụng trong phiên đang mở, hết 8 giây hoặc tải lại trang thì mất).
+> Thay cho quy tắc "xóa hẳn, không hoàn tác" ngày 05/11/2026.
+>
 > **Xóa task (Trung chốt 05/11/2026):** mỗi dòng task (Tasks, cả việc chưa xong lẫn Đã xong) có icon thùng rác; bấm → hỏi
 > xác nhận ngay tại dòng → **xóa hẳn** (không hoàn tác), liên kết với mục tiêu mất theo. Trước đây xóa trong Notion.
 >

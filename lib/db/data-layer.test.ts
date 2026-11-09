@@ -9,6 +9,7 @@ import {
   deleteTask,
   markTaskDone,
   reopenTask,
+  restoreTask,
   saveDailyLog,
   saveReflection,
   setDayHabits,
@@ -118,6 +119,27 @@ describe("cách ly giữa người dùng", () => {
     expect((await listRecentDailyLogs(db, ME, 50)).some((l) => l.done === "bí mật")).toBe(false);
     expect((await listReflections(db, ME)).some((r) => r.wentWell === "bí mật")).toBe(false);
     expect((await listTasks(db, other)).map((t) => t.title)).toEqual(["Việc riêng của bạn"]);
+  });
+
+  it("hoàn tác xoá: chèn lại đúng id, giữ liên kết mục tiêu, không ghi đè", async () => {
+    await createTask(db, ME, input("Sắp xoá", { priority: "Cao", deadline: "2027-05-01", plannedOn: "2027-04-30" }));
+    const t = (await listTasks(db, ME)).find((x) => x.title === "Sắp xoá")!;
+    const g = await createGoal(db, ME, "week", "2027-04-26", "Mục tiêu giữ", "Thường");
+    await updateTask(db, ME, t.id, update("Sắp xoá", { goalId: g, priority: "Cao", deadline: "2027-05-01", plannedOn: "2027-04-30" }));
+    const snap = (await listTasks(db, ME)).find((x) => x.id === t.id)!;
+
+    await deleteTask(db, ME, t.id);
+    expect((await listTasks(db, ME)).some((x) => x.id === t.id)).toBe(false);
+    await restoreTask(db, ME, snap);
+    const back = (await listTasks(db, ME)).find((x) => x.id === t.id)!;
+    expect(back).toMatchObject({ title: "Sắp xoá", priority: "Cao", deadline: "2027-05-01", plannedOn: "2027-04-30", goalIds: [g], createdTime: snap.createdTime });
+
+    await expect(restoreTask(db, ME, snap)).rejects.toThrow(); // đã tồn tại → không ghi đè
+    const foreignGoal = await createGoal(db, other, "week", "2027-04-26", "Của bạn", "Thường");
+    await deleteTask(db, ME, t.id);
+    await restoreTask(db, ME, { ...snap, goalIds: [foreignGoal] });
+    expect((await listTasks(db, ME)).find((x) => x.id === t.id)?.goalIds).toEqual([]); // mục tiêu của người khác bị bỏ qua
+    await trashGoal(db, other, foreignGoal, true); // dọn để không ảnh hưởng các bài kiểm tra cách ly sau
   });
 
   it("biết id của người khác cũng không sửa / tích / dời / xóa được", async () => {
