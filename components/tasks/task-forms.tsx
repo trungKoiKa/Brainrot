@@ -141,7 +141,11 @@ export function EditTaskForm({
       <form
         action={action}
         className="space-y-2 rounded-lg border border-primary p-3"
-        onKeyDown={(e) => e.key === "Escape" && onClose()}
+        onKeyDown={(e) => {
+          // Esc đóng lịch / popover bên trong thì không đóng cả form (sự kiện bàn phím nổi lên qua portal)
+          if (e.key !== "Escape" || e.defaultPrevented || (e.target as HTMLElement).closest("[data-slot=popover-content]")) return;
+          onClose();
+        }}
       >
         <input type="hidden" name="id" value={task.id} />
         <input
