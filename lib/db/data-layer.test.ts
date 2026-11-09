@@ -10,6 +10,9 @@ import {
   markTaskDone,
   reopenTask,
   restoreTask,
+  getPasswordHash,
+  setPasswordHash,
+  updateProfile,
   saveDailyLog,
   saveReflection,
   setDayHabits,
@@ -20,7 +23,7 @@ import {
   updateGoal,
   updateTask,
 } from "./mutations";
-import { listDailyLogsBetween, listGoals, listHabits, listProjectNames, listRecentDailyLogs, listReflections, listTasks } from "./queries";
+import { getProfileRow, listDailyLogsBetween, listGoals, listHabits, listProjectNames, listRecentDailyLogs, listReflections, listTasks } from "./queries";
 import { DEFAULT_USER_ID, users } from "./schema";
 import { createTestDb } from "./test-db";
 
@@ -140,6 +143,17 @@ describe("cách ly giữa người dùng", () => {
     await restoreTask(db, ME, { ...snap, goalIds: [foreignGoal] });
     expect((await listTasks(db, ME)).find((x) => x.id === t.id)?.goalIds).toEqual([]); // mục tiêu của người khác bị bỏ qua
     await trashGoal(db, other, foreignGoal, true); // dọn để không ảnh hưởng các bài kiểm tra cách ly sau
+  });
+
+  it("hồ sơ: sửa tên / hạn / nhãn chỉ của chính mình; đổi hash mật khẩu", async () => {
+    await updateProfile(db, ME, { name: "Anh Trung", targetDate: "2026-12-06", targetLabel: "nộp đồ án" });
+    expect(await getProfileRow(db, ME)).toMatchObject({ name: "Anh Trung", targetDate: "2026-12-06", targetLabel: "nộp đồ án" });
+    expect((await getProfileRow(db, other))?.name).not.toBe("Anh Trung"); // người khác không bị đổi
+
+    await setPasswordHash(db, other, "scrypt$x$y");
+    expect(await getPasswordHash(db, other)).toBe("scrypt$x$y");
+    expect(await getPasswordHash(db, ME)).not.toBe("scrypt$x$y");
+    await updateProfile(db, ME, { name: "", targetDate: null, targetLabel: "" }); // trả về như cũ cho các bài sau
   });
 
   it("biết id của người khác cũng không sửa / tích / dời / xóa được", async () => {

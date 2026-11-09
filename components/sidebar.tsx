@@ -1,6 +1,4 @@
 "use client";
-
-import { useSyncExternalStore } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
@@ -24,7 +22,7 @@ import {
   SidebarMenuItem,
   SidebarRail,
 } from "@/components/ui/sidebar";
-import { daysBetween, longDateVN, todayVN } from "@/lib/date";
+
 import { ThemeToggle } from "./theme-toggle";
 
 // Dashboard đứng đầu (Trung chốt 26/10/2026); Brain tạm ẩn ở v1.0 (SPEC-v1.0 mục 7), `/` chuyển sang Today
@@ -37,30 +35,8 @@ export const NAV: readonly { href: string; label: string; icon: LucideIcon }[] =
 
 export const isActive = (href: string, pathname: string) => (href === "/" ? pathname === "/" : pathname.startsWith(href));
 
-// Ngày lấy ở trình duyệt (layout có thể được prerender từ lúc build → ngày trên server sẽ cũ).
-// Server trả null → chân sidebar chỉ hiện sau khi hydrate, không lệch HTML.
-const noSubscribe = () => () => {};
-const useToday = () => useSyncExternalStore(noSubscribe, () => todayVN(), () => null);
-
-function TodayInfo({ thesisDeadline }: { thesisDeadline?: string }) {
-  const today = useToday();
-  if (!today) return null;
-  const left = thesisDeadline ? daysBetween(today, thesisDeadline) : null;
-  return (
-    <div className="space-y-0.5 px-2 pb-1 text-xs text-muted-foreground group-data-[collapsible=icon]:hidden">
-      <p className="font-medium text-foreground">{longDateVN()}</p>
-      {left !== null && left > 0 && (
-        <p>
-          Đồ án: còn <span className="font-medium text-primary">{left} ngày</span>
-        </p>
-      )}
-      {left === 0 && <p className="font-medium text-primary">Hôm nay nộp đồ án</p>}
-    </div>
-  );
-}
-
 /** Thanh bên theo mẫu ReUI c-sidebar-2 (Icon Rail): thu gọn còn cột icon, mobile mở dạng ngăn kéo. */
-export function AppSidebar({ thesisDeadline }: { thesisDeadline?: string }) {
+export function AppSidebar({ account }: { account?: React.ReactNode }) {
   const pathname = usePathname();
 
   return (
@@ -77,7 +53,7 @@ export function AppSidebar({ thesisDeadline }: { thesisDeadline?: string }) {
               </span>
               <span className="grid min-w-0 flex-1 text-left leading-tight group-data-[collapsible=icon]:sr-only">
                 <span className="truncate font-serif text-base font-semibold">Second Brain</span>
-                <span className="truncate text-xs text-sidebar-foreground/70">Anh Trung</span>
+
               </span>
             </SidebarMenuButton>
           </SidebarMenuItem>
@@ -110,8 +86,8 @@ export function AppSidebar({ thesisDeadline }: { thesisDeadline?: string }) {
       </SidebarContent>
 
       <SidebarFooter>
-        {/* Today đã có ngày + đếm ngược ở dòng phụ dưới lời chào (và đổi ngày lúc 4:00) → không lặp ở đây */}
-        {!isActive("/today", pathname) && <TodayInfo thesisDeadline={thesisDeadline} />}
+
+        {account}
         <SidebarMenu>
           <SidebarMenuItem>
             <ThemeToggle />

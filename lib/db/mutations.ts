@@ -3,7 +3,7 @@
 
 import { and, eq, inArray, isNull, sql } from "drizzle-orm";
 import type { Db } from "./client";
-import { dailyLogs, goals, goalTasks, habitDays, habits, ideas, projects, reflections, tasks } from "./schema";
+import { dailyLogs, goals, goalTasks, habitDays, habits, ideas, projects, reflections, tasks, users } from "./schema";
 import type { GoalType } from "@/lib/goals";
 import { LEGACY_EXERCISE } from "@/lib/habits";
 import type { Level } from "@/lib/period";
@@ -260,4 +260,28 @@ export async function restoreTask(db: Db, userId: string, s: TaskSnapshot): Prom
       .where(and(eq(goals.userId, userId), isNull(goals.deletedAt), inArray(goals.id, s.goalIds)));
     if (mine.length) await db.insert(goalTasks).values(mine.map((g) => ({ goalId: g.id, taskId: s.id })));
   }
+}
+
+// ---------- Hồ sơ (Cài đặt, SPEC-v1.0 bước 5) ----------
+
+export type ProfilePatch = { name: string; targetDate: string | null; targetLabel: string };
+
+export async function updateProfile(db: Db, userId: string, p: ProfilePatch): Promise<void> {
+  const res = await db
+    .update(users)
+    .set({ name: p.name, targetDate: p.targetDate, targetLabel: p.targetLabel })
+    .where(eq(users.id, userId))
+    .returning({ id: users.id });
+  if (!res.length) throw new Error("Không tìm thấy tài khoản");
+}
+
+/** Mật khẩu hiện tại của user (hash), để kiểm tra trước khi đổi. */
+export async function getPasswordHash(db: Db, userId: string): Promise<string | null> {
+  const [row] = await db.select({ h: users.passwordHash }).from(users).where(eq(users.id, userId));
+  return row?.h ?? null;
+}
+
+export async function setPasswordHash(db: Db, userId: string, hash: string): Promise<void> {
+  const res = await db.update(users).set({ passwordHash: hash }).where(eq(users.id, userId)).returning({ id: users.id });
+  if (!res.length) throw new Error("Không tìm thấy tài khoản");
 }

@@ -5,7 +5,7 @@ import { StaleBanner } from "@/components/stale-banner";
 import { DashboardClient } from "@/components/dashboard/dashboard-client";
 import { toVNDate, todayVN } from "@/lib/date";
 import type { DashInput } from "@/lib/dashboard/stats";
-import { anyStale, getDailyLogs90, getGoals, getHabits, getReflections, getTasks } from "@/lib/db/data";
+import { anyStale, getDailyLogs90, getGoals, getHabits, getProfile, getReflections, getTasks } from "@/lib/db/data";
 import { resolveGoals } from "@/lib/db/goal-status";
 import { periodOf } from "@/lib/period";
 import { reflectionOf } from "@/lib/reflections";
@@ -27,7 +27,8 @@ export default function DashboardPage() {
 async function DashboardContent() {
   await connection(); // số liệu tính theo ngày hôm nay
   const today = todayVN();
-  const [tasks, logs, habits, goals, reflections] = await Promise.all([
+  const [profile, tasks, logs, habits, goals, reflections] = await Promise.all([
+    getProfile(),
     getTasks(),
     getDailyLogs90(),
     getHabits(),
@@ -41,7 +42,8 @@ async function DashboardContent() {
 
   const real: DashInput = {
     today,
-    thesisDeadline: process.env.THESIS_DEADLINE ?? null,
+    thesisDeadline: profile.target.date,
+    thesisLabel: profile.target.label,
     tasks: tasks.data.map((t) => ({
       title: t.title,
       url: t.url,

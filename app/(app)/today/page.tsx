@@ -11,7 +11,7 @@ import { HabitToday } from "@/components/habits/habit-today";
 import { doneHabits, habitsForMonth } from "@/lib/habits";
 import { monthOf, periodOf } from "@/lib/period";
 import { daysBetween, formatDay, greetingVN, isEveningVN, longDateVN, workdayClock, workdayVN } from "@/lib/date";
-import { anyStale, getGoals, getHabits, getRecentDailyLogs, getTasks } from "@/lib/db/data";
+import { anyStale, getGoals, getHabits, getProfile, getRecentDailyLogs, getTasks } from "@/lib/db/data";
 import { resolveGoals } from "@/lib/db/goal-status";
 import { isGoalDone, type Goal } from "@/lib/goals";
 import { StaleBanner } from "@/components/stale-banner";
@@ -35,7 +35,8 @@ async function TodayContent() {
   // Today đổi ngày lúc 4:00 (Trung chốt 06/11/2026): 0:00–3:59 vẫn là tối hôm trước
   const today = workdayVN(now);
   // Next up (Calendar) và Kiến thức mới ẩn ở v1.0 (SPEC-v1.0 mục 3), về lại ở v1.1
-  const [habitsLoaded, goalsLoaded, ...loaded] = await Promise.all([
+  const [profile, habitsLoaded, goalsLoaded, ...loaded] = await Promise.all([
+    getProfile(),
     getHabits(),
     getGoals(),
     getTasks(),
@@ -67,11 +68,11 @@ async function TodayContent() {
   return (
     <>
       <PageHeader
-        title={`${greetingVN(now)}, Trung`}
+        title={`${greetingVN(now)}, ${givenName(profile.name)}`}
         subtitle={
           <>
             {longDateVN(workdayClock(now))}
-            <ThesisCountdown today={today} />
+            <TargetCountdown today={today} target={profile.target} />
           </>
         }
       />
@@ -100,24 +101,26 @@ async function TodayContent() {
   );
 }
 
-/** Đếm ngược đồ án, nằm ở dòng phụ dưới lời chào. Chưa đặt hạn thì không hiện gì. */
-function ThesisCountdown({ today }: { today: string }) {
-  const deadline = process.env.THESIS_DEADLINE;
-  if (!deadline) return null;
-  const days = daysBetween(today, deadline);
-  const date = formatDay(deadline, true);
+/** Tên gọi trong lời chào: từ cuối của tên hiển thị ("Anh Trung" → "Trung"); chưa đặt tên → "bạn". */
+const givenName = (name: string) => name.trim().split(/\s+/).at(-1) || "bạn";
+
+/** Đếm ngược theo hạn + nhãn của từng người (Cài đặt), ở dòng phụ dưới lời chào. Chưa đặt hạn thì không hiện gì. */
+function TargetCountdown({ today, target }: { today: string; target: { date: string | null; label: string } }) {
+  if (!target.date) return null;
+  const days = daysBetween(today, target.date);
+  const date = formatDay(target.date, true);
   return (
     <>
       {" · "}
       {days > 0 ? (
         <>
-          còn <span className="font-medium text-primary tabular-nums">{days} ngày</span> đến hạn nộp đồ án ({date})
+          còn <span className="font-medium text-primary tabular-nums">{days} ngày</span> đến {target.label} ({date})
         </>
       ) : days === 0 ? (
-        <span className="font-medium text-danger">hôm nay là hạn nộp đồ án ({date})</span>
+        <span className="font-medium text-danger">hôm nay là {target.label} ({date})</span>
       ) : (
         <>
-          đã qua hạn nộp đồ án {-days} ngày ({date})
+          đã qua {target.label} {-days} ngày ({date})
         </>
       )}
     </>
