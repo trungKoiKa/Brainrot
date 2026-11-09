@@ -1,10 +1,10 @@
 "use client";
 
 import { useOptimistic, useState, useTransition } from "react";
-import { completeTask, deleteTaskAction, reopenTaskAction } from "@/app/actions/tasks";
+import { completeTask, deleteTaskAction, reopenTaskAction, restoreTaskAction } from "@/app/actions/tasks";
 import type { Task } from "@/lib/types";
 
-type Change = { type: "done" | "reopen" | "delete"; id: string };
+type Change = { type: "done" | "reopen" | "delete"; id: string } | { type: "restore"; task: Task };
 
 /**
  * Tích "xong" / bỏ tích / xóa task: đổi UI ngay (optimistic), gọi Server Action, rồi Next tải lại dữ liệu mới.
@@ -14,6 +14,7 @@ export function useTaskCompletion(tasks: Task[]) {
   const [error, setError] = useState<string | null>(null);
   const [, startTransition] = useTransition();
   const [optimisticTasks, apply] = useOptimistic(tasks, (state, change: Change) =>
+    change.type === "restore" ? [...state, change.task] :
     change.type === "delete"
       ? state.filter((t) => t.id !== change.id)
       : state.map((t) =>
@@ -54,5 +55,27 @@ export function useTaskCompletion(tasks: Task[]) {
     });
   }
 
-  return { tasks: optimisticTasks, complete, reopen, remove, error, dismissError: () => setError(null) };
+  /** Hoàn tác xoá (SPEC-v1.0, Tasks đợt 3): chèn lại đúng id từ ảnh chụp task. */
+  function restore(task: Task) {
+    setError(null);
+    startTransition(async () => {
+      apply({ type: "restore", task });
+      const res = await restoreTaskAction({
+        id: task.id,
+        title: task.title,
+        project: task.project,
+        status: task.status,
+        priority: task.priority,
+        deadline: task.deadline,
+        plannedOn: task.plannedOn,
+        doneOn: task.doneOn,
+        note: task.note,
+        createdTime: task.createdTime,
+        goalIds: task.goalIds,
+      });
+      if (!res.ok) setError(`Chưa hoàn tác được việc “${task.title}”. ${res.error}`);
+    });
+  }
+
+  return { tasks: optimisticTasks, complete, reopen, remove, restore, error, dismissError: () => setError(null) };
 }

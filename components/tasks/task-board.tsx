@@ -37,12 +37,12 @@ export function TaskBoard({
   initialProject?: string | null;
   goals?: GoalOption[] | null;
 }) {
-  const { tasks, complete, reopen, remove, error, dismissError } = useTaskCompletion(initial);
+  const { tasks, complete, reopen, remove, restore, error, dismissError } = useTaskCompletion(initial);
   const [editing, setEditing] = useState<string | null>(null);
   const [project, setProject] = useState<string | null>(initialProject);
   const [priority, setPriority] = useState<Priority | null>(null);
   // Việc vừa tích xong → dải "Hoàn tác" ~8 giây (tạm dừng khi rê chuột / có focus) (cũng là thông báo cho trình đọc màn hình)
-  const [undo, setUndo] = useState<Task | null>(null);
+  const [undo, setUndo] = useState<{ kind: "done" | "deleted"; task: Task } | null>(null);
   const undoRef = useRef<HTMLButtonElement>(null);
   // Rê chuột / giữ focus bàn phím trên dải Hoàn tác thì tạm dừng đếm (SPEC-v1.0, Tasks đợt 2; hook dùng chung với Goal)
   const undoHold = useAutoDismiss(undo, () => setUndo(null), UNDO_MS);
@@ -69,24 +69,28 @@ export function TaskBoard({
 
   function onComplete(t: Task) {
     complete(t);
-    setUndo(t);
+    setUndo({ kind: "done", task: t });
     // Dòng vừa tích biến mất → con trỏ sang nút Hoàn tác thay vì rơi về đầu trang
     requestAnimationFrame(() => undoRef.current?.focus());
   }
 
   function onUndo() {
     if (!undo) return;
-    reopen(undo);
-    focusSoon(`[data-task-id="${undo.id}"] input[type=checkbox]`);
+    if (undo.kind === "done") {
+      reopen(undo.task);
+      focusSoon(`[data-task-id="${undo.task.id}"] input[type=checkbox]`);
+    } else {
+      restore(undo.task);
+      focusSoon(`[data-task-id="${undo.task.id}"] button[aria-label^="Sửa"], [data-task-id="${undo.task.id}"] input`);
+    }
     setUndo(null);
   }
 
   function onDelete(t: Task) {
-    // Con trỏ sang dòng kế bên (hoặc ô thêm việc) sau khi dòng bị xoá
-    const li = document.querySelector(`[data-task-id="${t.id}"]`);
-    const next = (li?.nextElementSibling ?? li?.previousElementSibling)?.getAttribute("data-task-id");
     remove(t);
-    focusSoon(next ? `[data-task-id="${next}"] input, [data-task-id="${next}"] button` : 'input[name="title"]');
+    setUndo({ kind: "deleted", task: t });
+    // Dòng vừa xoá biến mất → con trỏ sang nút Hoàn tác (người dùng bàn phím không rơi về đầu trang)
+    requestAnimationFrame(() => undoRef.current?.focus());
   }
 
   function closeEdit(id: string) {
@@ -180,7 +184,7 @@ export function TaskBoard({
             className="pointer-events-auto flex max-w-md items-center gap-4 rounded-xl border border-line bg-surface px-4 py-3 text-sm shadow-lg"
           >
             <span className="min-w-0 truncate">
-              Đã xong “{undo.title || "(Chưa đặt tên)"}”
+              {undo.kind === "done" ? "Đã xong" : "Đã xóa"} “{undo.task.title || "(Chưa đặt tên)"}”
             </span>
             <button
               ref={undoRef}

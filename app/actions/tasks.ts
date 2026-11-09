@@ -2,7 +2,8 @@
 
 import { getGoals, getTaskProjects } from "@/lib/db/data";
 import { dbScope } from "@/lib/db/actions-db";
-import { createTask, deleteTask, markTaskDone, reopenTask, setTaskPlannedOn, updateTask } from "@/lib/db/mutations";
+import { createTask, deleteTask, markTaskDone, reopenTask, restoreTask, setTaskPlannedOn, updateTask, type TaskSnapshot } from "@/lib/db/mutations";
+import { MAX_TEXT } from "@/lib/quick-capture";
 import { refreshData } from "@/lib/db/revalidate";
 import { SESSION_EXPIRED, isSignedIn } from "@/lib/session";
 import { parseTaskInput, parseTaskUpdate } from "@/lib/task-form";
@@ -115,6 +116,46 @@ export async function planTaskAction(pageId: string, day: string | null): Promis
     return { ok: false, error: WRITE_FAILED };
   }
 
+  refreshData();
+  return { ok: true };
+}
+
+const STATUS_SET = ["Chưa làm", "Đang làm", "Xong"];
+const PRIORITY_SET = ["Cao", "Vừa", "Thấp"];
+const dayOrNull = (v: unknown) => v === null || (typeof v === "string" && DAY.test(v));
+
+/** Hoàn tác xoá task (SPEC-v1.0, Tasks đợt 3): chèn lại đúng id từ ảnh chụp mà giao diện giữ. */
+export async function restoreTaskAction(snapshot: TaskSnapshot): Promise<CompleteTaskResult> {
+  if (!(await isSignedIn())) return { ok: false, error: SESSION_EXPIRED };
+  const s = snapshot as Partial<TaskSnapshot> | null;
+  const valid =
+    s !== null &&
+    typeof s === "object" &&
+    typeof s.id === "string" &&
+    PAGE_ID.test(s.id) &&
+    typeof s.title === "string" &&
+    s.title.length <= MAX_TEXT &&
+    typeof s.note === "string" &&
+    s.note.length <= MAX_TEXT &&
+    (s.project === null || typeof s.project === "string") &&
+    (s.status === null || (typeof s.status === "string" && STATUS_SET.includes(s.status))) &&
+    (s.priority === null || (typeof s.priority === "string" && PRIORITY_SET.includes(s.priority))) &&
+    dayOrNull(s.deadline) &&
+    dayOrNull(s.plannedOn) &&
+    dayOrNull(s.doneOn) &&
+    typeof s.createdTime === "string" &&
+    !Number.isNaN(Date.parse(s.createdTime)) &&
+    Array.isArray(s.goalIds) &&
+    s.goalIds.every((g) => typeof g === "string" && PAGE_ID.test(g));
+  if (!valid) return { ok: false, error: "Yêu cầu không hợp lệ." };
+
+  try {
+    const { db, userId } = await dbScope();
+    await restoreTask(db, userId, snapshot);
+  } catch (e) {
+    console.error("restoreTask failed:", e instanceof Error ? e.message : e);
+    return { ok: false, error: WRITE_FAILED };
+  }
   refreshData();
   return { ok: true };
 }
