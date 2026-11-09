@@ -108,7 +108,7 @@ function DailyLogForm({ todayLog, open, showExercise, day }: { todayLog: DailyLo
 
   return (
     <details className="group" open={open}>
-      <summary className="cursor-pointer rounded-md py-2 text-sm font-medium outline-none focus-visible:ring-3 focus-visible:ring-ring/50">
+      <summary className="cursor-pointer rounded-md py-2.5 text-sm font-medium outline-none focus-visible:ring-3 focus-visible:ring-ring/50">
         Daily Log hôm nay{" "}
         <span className="font-normal text-muted-foreground">{todayLog ? "· đã ghi, bấm để sửa" : "· chưa ghi"}</span>
       </summary>

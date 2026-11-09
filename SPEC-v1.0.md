@@ -99,6 +99,15 @@
 > trông như hỏng); biểu đồ "Việc theo dự án" thấp hơn (h-48) và danh sách link bên dưới gọn (text-xs). Today — "Ghi nhanh ý
 > tưởng" và "Cuối ngày" là **dải viền nét đứt**, không còn là thẻ đầy đủ, để "Hôm nay làm" là tiêu điểm duy nhất.
 >
+> **Sửa lỗi hoàn tác kẹt (Trung chốt 10/11/2026, chấm lại sau sửa cuối):** hook `useAutoDismiss` (nay ở `components/`, dùng cho Goal
+> và Tasks) chỉ giữ khi **rê chuột hoặc có focus bàn phím** trên đúng dải đang hiện — focus do code chuyển vào nút Hoàn tác sau
+> cú bấm chuột, hoặc dải cũ biến mất lúc chuột còn nằm trên nó, không còn làm dải sau bị kẹt không tự tắt. Today: "Ghi nhanh ý
+> tưởng" có nhãn nhìn thấy; dòng mở "Daily Log" / "Ngày mai làm" cao 40px; buổi tối "Cuối ngày" viền liền (nổi hơn ban ngày).
+>
+> **Sửa tràn ngang 375px trang Goal (10/11/2026):** khi một mục tiêu có tiêu đề dài, cột lưới mặc định của `grid` co theo nội dung
+> không ngắt dòng và đẩy cả trang rộng ra. Các lưới `lg:grid-cols-*` nay có nền `grid-cols-1` (cột `minmax(0,1fr)`) ở màn hẹp.
+> Chữ viết tắt thứ ở bảng thói quen tháng nâng lên 12px (hết ngoại lệ 10.4px trong DESIGN.md).
+>
 > **Xóa task (Trung chốt 05/11/2026):** mỗi dòng task (Tasks, cả việc chưa xong lẫn Đã xong) có icon thùng rác; bấm → hỏi
 > xác nhận ngay tại dòng → **xóa hẳn** (không hoàn tác), liên kết với mục tiêu mất theo. Trước đây xóa trong Notion.
 >

@@ -16,7 +16,7 @@ import { completeTask, reopenTaskAction } from "@/app/actions/tasks";
 import { MaybeLink } from "@/components/tasks/maybe-link";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
-import { useAutoDismiss } from "./use-auto-dismiss";
+import { useAutoDismiss } from "@/components/use-auto-dismiss";
 import { carryOverGoalsAction, createGoalAction, linkTaskAction, trashGoalAction, updateGoalAction } from "@/app/actions/goals";
 import { formatDay } from "@/lib/date";
 import { fieldClass, primaryButtonClass } from "@/components/form-bits";

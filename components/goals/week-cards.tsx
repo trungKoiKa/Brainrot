@@ -1,7 +1,7 @@
 "use client";
 
 import { MaybeLink } from "@/components/tasks/maybe-link";
-import { useAutoDismiss } from "./use-auto-dismiss";
+import { useAutoDismiss } from "@/components/use-auto-dismiss";
 import { useRef, useState } from "react";
 import { CalendarDaysIcon, ChevronDownIcon } from "lucide-react";
 import { Empty } from "@/components/card";

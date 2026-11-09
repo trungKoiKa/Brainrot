@@ -53,7 +53,7 @@ async function TodayContent() {
 
   // Cụm thứ yếu: viền nét đứt, không phải thẻ đầy đủ → "Hôm nay làm" là tiêu điểm duy nhất (critique cuối 10/11/2026)
   const endOfDay = (
-    <section aria-labelledby="end-of-day" className="rounded-xl border border-dashed border-line px-5 py-4 lg:col-span-2">
+    <section aria-labelledby="end-of-day" className={`rounded-xl border border-line px-5 py-4 lg:col-span-2 ${evening ? "bg-surface" : "border-dashed"}`}>
       <h2 id="end-of-day" className="mb-3 font-serif text-base font-semibold">
         Cuối ngày
       </h2>
@@ -77,7 +77,7 @@ async function TodayContent() {
       />
       <StaleBanner show={anyStale(habitsLoaded, goalsLoaded, ...weekGoals.loaded, ...loaded)} />
       {/* "Hôm nay làm" là tiêu điểm: rộng hết hàng, đứng đầu; buổi tối "Cuối ngày" lên ngay sau (critique 06/11/2026) */}
-      <div className="grid gap-5 lg:grid-cols-2">
+      <div className="grid grid-cols-1 gap-5 lg:grid-cols-2">
         <TodayPlanCard today={today} tasks={tasks} weekGoals={weekGoals.goals} />
         {evening && endOfDay}
         <DeadlinesCard items={upcomingDeadlines(today, tasks)} />
@@ -88,7 +88,10 @@ async function TodayContent() {
             today={today}
           />
         </Card>
-        <section aria-label="Ghi nhanh ý tưởng" className="rounded-xl border border-dashed border-line px-5 py-3 lg:col-span-2">
+        <section aria-labelledby="idea-title" className="rounded-xl border border-dashed border-line px-5 py-3 lg:col-span-2">
+          <h2 id="idea-title" className="mb-2 text-xs font-medium text-muted-foreground">
+            Ghi nhanh ý tưởng
+          </h2>
           <IdeaForm />
         </section>
         {!evening && endOfDay}
@@ -210,7 +213,7 @@ function TodaySkeleton() {
     <>
       <PageHeader title="Hôm nay" subtitle="Đang tải…" />
       {/* Cùng khung với trang thật: Hôm nay làm (rộng) · Deadline + Thói quen · Ghi nhanh · Cuối ngày */}
-      <div className="grid gap-5 lg:grid-cols-2">
+      <div className="grid grid-cols-1 gap-5 lg:grid-cols-2">
         {["h-48 lg:col-span-2", "h-36", "h-36", "h-28 lg:col-span-2", "h-28 lg:col-span-2"].map((size, i) => (
           <div key={i} className={`animate-pulse rounded-xl border border-line bg-surface ${size}`} />
         ))}
