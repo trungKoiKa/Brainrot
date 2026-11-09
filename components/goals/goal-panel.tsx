@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState, useTransition } from "react";
+import { useRef, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import {
   ArrowDownUpIcon,
@@ -16,6 +16,7 @@ import { completeTask, reopenTaskAction } from "@/app/actions/tasks";
 import { MaybeLink } from "@/components/tasks/maybe-link";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { useAutoDismiss } from "./use-auto-dismiss";
 import { carryOverGoalsAction, createGoalAction, linkTaskAction, trashGoalAction, updateGoalAction } from "@/app/actions/goals";
 import { formatDay } from "@/lib/date";
 import { fieldClass, primaryButtonClass } from "@/components/form-bits";
@@ -83,8 +84,7 @@ export function GoalPanel({
   }
   const [error, setError] = useState<string | null>(null);
   const [undo, setUndo] = useState<{ goal: Goal; index: number } | null>(null);
-  const undoTimer = useRef<ReturnType<typeof setTimeout>>(undefined);
-  useEffect(() => () => clearTimeout(undoTimer.current), []);
+  const undoHold = useAutoDismiss(undo, () => setUndo(null), UNDO_MS);
 
   const counts = goalCounts(goals);
   const priorityCount = goals.filter((g) => g.type === "Ưu tiên").length;
@@ -141,9 +141,7 @@ export function GoalPanel({
 
   function remove(goal: Goal) {
     const index = goals.findIndex((g) => g.id === goal.id);
-    clearTimeout(undoTimer.current);
     setUndo({ goal, index });
-    undoTimer.current = setTimeout(() => setUndo(null), UNDO_MS);
     optimistic(
       goals.filter((g) => g.id !== goal.id),
       () => trashGoalAction(goal.id, true),
@@ -152,7 +150,6 @@ export function GoalPanel({
 
   function restore() {
     if (!undo) return;
-    clearTimeout(undoTimer.current);
     const next = [...goals];
     next.splice(undo.index, 0, undo.goal);
     setUndo(null);
@@ -222,7 +219,7 @@ export function GoalPanel({
 
       <div aria-live="polite">
         {undo && (
-          <div className="mt-3 flex items-center gap-3 rounded-lg bg-surface-muted px-3 py-2 text-sm">
+          <div {...undoHold} className="mt-3 flex items-center gap-3 rounded-lg bg-surface-muted px-3 py-2 text-sm">
             <span className="min-w-0 flex-1 truncate">Đã xóa “{undo.goal.title}”</span>
             <button type="button" onClick={restore} className="font-medium text-primary hover:underline">
               Hoàn tác
@@ -291,17 +288,13 @@ function GoalRow({
   const [picking, setPicking] = useState(false);
   // Việc vừa bỏ gắn → dải "Hoàn tác" 8 giây (SPEC-v1.0, Goal đợt 6)
   const [unlinked, setUnlinked] = useState<LinkedTask | null>(null);
-  const unlinkTimer = useRef<ReturnType<typeof setTimeout>>(undefined);
-  useEffect(() => () => clearTimeout(unlinkTimer.current), []);
+  const unlinkHold = useAutoDismiss(unlinked, () => setUnlinked(null), UNDO_MS);
   async function unlink(t: LinkedTask) {
-    clearTimeout(unlinkTimer.current);
     if (!(await onLinkTask(t.id, null))) return; // lỗi thì không hiện Hoàn tác
     setUnlinked(t);
-    unlinkTimer.current = setTimeout(() => setUnlinked(null), UNDO_MS);
   }
   async function relink() {
     if (!unlinked) return;
-    clearTimeout(unlinkTimer.current);
     const t = unlinked;
     setUnlinked(null);
     await onLinkTask(t.id, goal.id);
@@ -428,7 +421,7 @@ function GoalRow({
         )}
         <div aria-live="polite">
           {unlinked && (
-            <p className="flex items-center gap-2 py-0.5 text-xs text-muted-foreground">
+            <p {...unlinkHold} className="flex items-center gap-2 py-0.5 text-xs text-muted-foreground">
             <span className="min-w-0 truncate">Đã bỏ gắn “{unlinked.title || "(Chưa đặt tên)"}”</span>
             <button type="button" onClick={relink} className="shrink-0 rounded-md font-medium text-primary underline-offset-4 outline-none hover:underline focus-visible:ring-3 focus-visible:ring-ring/50">
               Hoàn tác
