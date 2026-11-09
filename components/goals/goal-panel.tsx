@@ -39,7 +39,7 @@ export type LinkedTask = { id: string; title: string; url: string; plannedOn: st
 
 const UNDO_MS = 5000;
 const iconButton =
-  "flex size-7 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-surface-muted hover:text-foreground";
+  "flex size-10 md:size-7 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-surface-muted hover:text-foreground";
 
 /**
  * Khối mục tiêu của một kỳ (SPEC-v0.4 4.2, 4.4): bộ đếm + vòng tròn %, nhóm Ưu tiên / Thường (Badge),
@@ -209,7 +209,7 @@ export function GoalPanel({
         ))}
       </div>
 
-      {counts.total > 0 && goals.some((g) => g.title.trim() && (linked[g.id] ?? []).length === 0) && (
+      {counts.total > 0 && goals.every((g) => (linked[g.id] ?? []).length === 0) && (
         <p className="mt-3 text-xs text-muted-foreground">Gắn việc vào mục tiêu để xếp ngày trong tuần và theo dõi tiến độ.</p>
       )}
 
@@ -395,7 +395,7 @@ function GoalRow({
           <ul className="space-y-0.5" aria-label={`Việc của mục tiêu: ${goal.title}`}>
             {tasks.map((t) => (
               <li key={t.id} className="flex flex-wrap items-center gap-x-2">
-                <label className="flex size-6 shrink-0 cursor-pointer items-center justify-center">
+                <label className="flex size-10 md:size-6 shrink-0 cursor-pointer items-center justify-center">
                 <input
                   type="checkbox"
                   checked={t.done}
@@ -415,7 +415,7 @@ function GoalRow({
                   aria-label={`Bỏ gắn “${t.title}” khỏi mục tiêu`}
                   title="Bỏ gắn"
                   onClick={() => unlink(t)}
-                  className="flex size-7 shrink-0 items-center justify-center rounded-md text-muted-foreground outline-none hover:bg-surface-muted hover:text-foreground focus-visible:ring-3 focus-visible:ring-ring/50"
+                  className="flex size-10 md:size-7 shrink-0 items-center justify-center rounded-md text-muted-foreground outline-none hover:bg-surface-muted hover:text-foreground focus-visible:ring-3 focus-visible:ring-ring/50"
                 >
                   <XIcon aria-hidden="true" className="size-3.5" />
                 </button>
