@@ -35,11 +35,11 @@ function Row({ task, onComplete, children }: { task: Task; onComplete: (t: Task)
 }
 
 const smallButton =
-  "shrink-0 rounded-md border border-line px-2 py-1 text-xs text-muted-foreground transition-colors hover:border-primary hover:text-foreground focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-ring/50";
+  "inline-flex min-h-10 shrink-0 items-center rounded-md border border-line px-2 py-1 text-xs text-muted-foreground md:min-h-0 transition-colors hover:border-primary hover:text-foreground focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-ring/50";
 
 const EMPTY_TEXT: Record<TodayEmptyKind, { text: string; link: string }> = {
-  "no-tasks": { text: "Chưa có việc nào.", link: "Tạo việc đầu tiên ở Tasks" },
-  "all-done": { text: "Xong hết rồi, không còn việc nào.", link: "Thêm việc mới ở Tasks" },
+  "no-tasks": { text: "Chưa có việc nào. Thêm việc đầu tiên ở ô bên dưới.", link: "" },
+  "all-done": { text: "Xong hết rồi, không còn việc nào. Thêm việc mới ở ô bên dưới.", link: "" },
   "scheduled-later": { text: "Hôm nay chưa xếp việc nào; các việc còn lại đã có lịch ngày khác.", link: "Xem ở Tasks" },
 };
 
@@ -49,9 +49,11 @@ function EmptyPlan({ kind }: { kind: TodayEmptyKind }) {
   return (
     <p className="text-sm text-pretty text-muted-foreground">
       {text}{" "}
-      <Link href="/tasks" className="font-medium text-primary underline-offset-4 hover:underline">
-        {link}
-      </Link>
+      {link && (
+        <Link href="/tasks" className="font-medium text-primary underline-offset-4 hover:underline">
+          {link}
+        </Link>
+      )}
     </p>
   );
 }
@@ -184,7 +186,7 @@ export function TomorrowPicker({
             })}
           </ul>
         )}
-        <p className="text-xs text-muted-foreground">Việc đã chọn sẽ hiện ở “Hôm nay làm” sáng mai.</p>
+        {list.length > 0 && <p className="text-xs text-muted-foreground">Việc đã chọn sẽ hiện ở “Hôm nay làm” sáng mai.</p>}
       </div>
     </details>
   );

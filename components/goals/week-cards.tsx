@@ -14,7 +14,7 @@ import { weekDayCards } from "@/lib/week-days";
 const WEEKDAY = ["Thứ Hai", "Thứ Ba", "Thứ Tư", "Thứ Năm", "Thứ Sáu", "Thứ Bảy", "Chủ nhật"];
 const SHORT = ["T2", "T3", "T4", "T5", "T6", "T7", "CN"];
 /** Thời gian hiện "Hoàn tác" sau khi dời ngày (SPEC-v1.0, Goal đợt 1) */
-const UNDO_MS = 5000;
+const UNDO_MS = 8000;
 
 type Moved = { task: Task; from: string | null; to: string | null };
 
@@ -104,7 +104,7 @@ export function WeekCards({
               aria-expanded={moving === t.id}
               aria-label={`Dời “${t.title}” sang ngày khác`}
               onClick={() => setMoving((m) => (m === t.id ? null : t.id))}
-              className="inline-flex items-center gap-1 rounded-md border border-line px-1.5 py-0.5 text-xs text-muted-foreground outline-none hover:border-primary hover:text-foreground focus-visible:ring-3 focus-visible:ring-ring/50"
+              className="inline-flex min-h-10 items-center gap-1 rounded-md border border-line px-2 py-0.5 text-xs text-muted-foreground md:min-h-0 md:px-1.5 outline-none hover:border-primary hover:text-foreground focus-visible:ring-3 focus-visible:ring-ring/50"
             >
               <CalendarDaysIcon aria-hidden="true" className="size-3" />
               Dời sang…
@@ -117,7 +117,7 @@ export function WeekCards({
                       key={d}
                       type="button"
                       onClick={() => move(t, d)}
-                      className="rounded-md border border-line px-1.5 py-0.5 text-xs tabular-nums outline-none hover:border-primary focus-visible:ring-3 focus-visible:ring-ring/50"
+                      className="inline-flex min-h-10 items-center rounded-md border border-line px-2 py-0.5 text-xs tabular-nums md:min-h-0 md:px-1.5 outline-none hover:border-primary focus-visible:ring-3 focus-visible:ring-ring/50"
                     >
                       {SHORT[k]} {formatDay(d, true)}
                     </button>
@@ -127,7 +127,7 @@ export function WeekCards({
                   <button
                     type="button"
                     onClick={() => move(t, null)}
-                    className="rounded-md px-1.5 py-0.5 text-xs text-muted-foreground outline-none hover:text-foreground focus-visible:ring-3 focus-visible:ring-ring/50"
+                    className="inline-flex min-h-10 items-center rounded-md px-1.5 py-0.5 text-xs text-muted-foreground outline-none hover:text-foreground md:min-h-0 focus-visible:ring-3 focus-visible:ring-ring/50"
                   >
                     Bỏ lịch
                   </button>
@@ -193,7 +193,7 @@ export function WeekCards({
                   onClick={() => setOpen((o) => ({ ...o, [c.date]: !expanded }))}
                   aria-expanded={expanded}
                   aria-label={`${expanded ? "Thu gọn" : "Mở"} ${WEEKDAY[i]}`}
-                  className="flex size-7 shrink-0 items-center justify-center rounded-md text-muted-foreground outline-none hover:bg-surface-muted focus-visible:ring-3 focus-visible:ring-ring/50 md:hidden"
+                  className="flex size-10 shrink-0 items-center justify-center rounded-md text-muted-foreground outline-none hover:bg-surface-muted focus-visible:ring-3 focus-visible:ring-ring/50 md:hidden"
                 >
                   <ChevronDownIcon aria-hidden="true" className={`size-4 transition-transform ${expanded ? "rotate-180" : ""}`} />
                 </button>

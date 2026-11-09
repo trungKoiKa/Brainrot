@@ -35,14 +35,16 @@ export function TaskCheckbox({
   const done = task.status === "Xong";
   const locked = done ? !onReopen : !onComplete;
   return (
+    <label className="-m-3 shrink-0 cursor-pointer p-3 md:-m-2 md:p-2">
     <input
       type="checkbox"
       checked={done}
       disabled={locked}
       onChange={() => (done ? onReopen?.(task) : onComplete?.(task))}
       aria-label={done ? (onReopen ? `Bỏ đánh dấu xong: ${task.title}` : `${task.title} đã xong`) : `Đánh dấu xong: ${task.title}`}
-      className="mt-1 size-4 shrink-0 cursor-pointer accent-[var(--primary)] disabled:cursor-default"
+      className="mt-1 block size-4 cursor-pointer accent-[var(--primary)] disabled:cursor-default"
     />
+    </label>
   );
 }
 
