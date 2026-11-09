@@ -1,7 +1,8 @@
 "use client";
 
 import { MaybeLink } from "@/components/tasks/maybe-link";
-import { useEffect, useRef, useState } from "react";
+import { useAutoDismiss } from "./use-auto-dismiss";
+import { useRef, useState } from "react";
 import { CalendarDaysIcon, ChevronDownIcon } from "lucide-react";
 import { Empty } from "@/components/card";
 import { Badge } from "@/components/reui/badge";
@@ -43,12 +44,8 @@ export function WeekCards({
   const [open, setOpen] = useState<Record<string, boolean>>({});
   const [moving, setMoving] = useState<string | null>(null); // id task đang mở hàng chọn ngày
   const [moved, setMoved] = useState<Moved | null>(null);
+  const movedHold = useAutoDismiss(moved, () => setMoved(null), UNDO_MS);
   const undoRef = useRef<HTMLButtonElement>(null);
-  useEffect(() => {
-    if (!moved) return;
-    const timer = setTimeout(() => setMoved(null), UNDO_MS);
-    return () => clearTimeout(timer);
-  }, [moved]);
 
   const cards = weekDayCards(weekStart, tasks, logs);
   const empty = cards.every((c) => c.total === 0 && !c.log);
@@ -230,6 +227,7 @@ export function WeekCards({
         {moved && (
           <div
             role="status"
+            {...movedHold}
             className="pointer-events-auto flex max-w-md items-center gap-4 rounded-xl border border-line bg-surface px-4 py-3 text-sm shadow-lg"
           >
             <span className="min-w-0 truncate">
