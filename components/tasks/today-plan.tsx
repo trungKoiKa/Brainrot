@@ -1,6 +1,9 @@
 "use client";
 
 import Link from "next/link";
+import { useActionState, useRef, useState } from "react";
+import { createTaskAction, type TaskFormState } from "@/app/actions/tasks";
+import { fieldClass, primaryButtonClass } from "@/components/form-bits";
 import { MaybeLink } from "@/components/tasks/maybe-link";
 import { Empty } from "@/components/card";
 import { Badge } from "@/components/reui/badge";
@@ -124,6 +127,8 @@ export function TodayPlan({ today, tasks: initial }: { today: string; tasks: Tas
             </ul>
           </section>
         ))}
+
+      <TodayAdd today={today} />
     </div>
   );
 }
@@ -146,7 +151,7 @@ export function TomorrowPicker({
 
   return (
     <details className="group" open={open}>
-      <summary className="cursor-pointer text-sm font-medium">
+      <summary className="cursor-pointer rounded-md py-2 text-sm font-medium outline-none focus-visible:ring-3 focus-visible:ring-ring/50">
         Ngày mai làm{" "}
         <span className="font-normal text-muted-foreground">
           · {dayLabel(tomorrow)} · đã chọn {list.filter((t) => t.plannedOn === tomorrow).length}
@@ -182,5 +187,45 @@ export function TomorrowPicker({
         <p className="text-xs text-muted-foreground">Việc đã chọn sẽ hiện ở “Hôm nay làm” sáng mai.</p>
       </div>
     </details>
+  );
+}
+
+/**
+ * Thêm việc thẳng vào hôm nay (SPEC-v1.0, Today đợt 3): chỉ cần tên, Ngày làm = ngày làm việc hiện tại.
+ * Dự án, ưu tiên, deadline vẫn đặt ở Tasks.
+ */
+function TodayAdd({ today }: { today: string }) {
+  const [title, setTitle] = useState("");
+  const inputRef = useRef<HTMLInputElement>(null);
+  const [state, action, pending] = useActionState(async (prev: TaskFormState, form: FormData) => {
+    const next = await createTaskAction(prev, form);
+    if (next.ok) {
+      setTitle("");
+      requestAnimationFrame(() => inputRef.current?.focus());
+    }
+    return next;
+  }, {});
+  return (
+    <form action={action} className="space-y-1.5 pt-1">
+      <input type="hidden" name="plannedOn" value={today} />
+      <div className="flex gap-2">
+        <input
+          ref={inputRef}
+          name="title"
+          aria-label="Thêm việc cho hôm nay"
+          value={title}
+          onChange={(e) => setTitle(e.target.value)}
+          placeholder="Thêm việc cho hôm nay…"
+          autoComplete="off"
+          className={`${fieldClass} min-w-0 flex-1`}
+        />
+        <button type="submit" disabled={pending || !title.trim()} className={primaryButtonClass}>
+          {pending ? "Đang thêm…" : "Thêm"}
+        </button>
+      </div>
+      <div role="status" aria-live="polite" className="min-h-4 text-xs text-muted-foreground">
+        {state.message ? (state.ok ? state.message : <span className="text-(--danger)">{state.message}</span>) : ""}
+      </div>
+    </form>
   );
 }

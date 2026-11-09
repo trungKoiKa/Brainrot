@@ -54,7 +54,7 @@ async function TodayContent() {
   const endOfDay = (
     <Card title="Cuối ngày" className="lg:col-span-2">
       <div className="space-y-6">
-        <DailyLogCapture todayLog={todayLog} open={evening && !todayLog} showExercise={false} />
+        <DailyLogCapture todayLog={todayLog} open={evening && !todayLog} showExercise={false} day={today} />
         <TomorrowPicker today={today} tasks={tasks} open={evening} />
       </div>
     </Card>
