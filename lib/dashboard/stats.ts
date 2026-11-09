@@ -44,6 +44,8 @@ export type DashInput = {
 };
 
 export type Tone = "good" | "warn" | "bad";
+/** Chấm của KPI: thêm "none" = chưa đủ dữ liệu để phán xét (chấm trung tính) */
+export type KpiTone = Tone | "none";
 
 // Thứ tự như select "Dự án" trong Notion (giống trang Tasks)
 export const PROJECT_ORDER = ["Đồ án", "Học AI", "Sản phẩm", "Sức khỏe", "Thực tập", "Khác"];
@@ -78,7 +80,7 @@ export type Kpi = {
   value: number;
   series: number[];
   change: number | null;
-  tone: Tone;
+  tone: KpiTone;
 };
 
 export function backlogKpi({ today, tasks }: DashInput, period: Period) {
@@ -99,7 +101,7 @@ export function doneKpi({ today, tasks }: DashInput, period: Period) {
   const series = lastDays(today, period).map(countOn);
   const prev = lastDays(addDays(today, -period), period).reduce((s, d) => s + countOn(d), 0);
   const value = series.reduce((s, n) => s + n, 0);
-  const kpi: Kpi = { value, series, change: change(value, prev), tone: value >= prev ? "good" : "warn" };
+  const kpi: Kpi = { value, series, change: change(value, prev), tone: (prev === 0 || value === 0 ? "none" : value >= prev ? "good" : "warn") as KpiTone };
   return { ...kpi, perDay: Math.round((value / period) * 10) / 10 };
 }
 
@@ -122,7 +124,7 @@ export function weekKpi({ today, tasks }: DashInput) {
     // tuần chưa xếp gì vẽ 0 cho liền nét
     series: weeks.map(pct),
     change: value === null || last.total === 0 ? null : value - pct(last),
-    tone: value === null ? ("warn" as Tone) : pctTone(value),
+    tone: (value === null ? "none" : pctTone(value)) as KpiTone,
     tally: now,
   };
 }
@@ -137,7 +139,7 @@ export function thesisKpi({ today, logs, thesisDeadline }: DashInput, period: Pe
     left,
     series,
     logged: days.filter((d) => logged.has(d)).length,
-    tone: (left === null ? "good" : left <= 14 ? "bad" : left <= 30 ? "warn" : "good") as Tone,
+    tone: (left === null ? "none" : left <= 14 ? "bad" : left <= 30 ? "warn" : "good") as KpiTone,
   };
 }
 
@@ -284,6 +286,9 @@ const ACTION: Record<WeekSignal["key"] | "overdue" | "review", SummaryAction> = 
 /** Số ngày từ thứ Hai tới hôm nay (1–7): mẫu số của thói quen và ghi log "tuần này". */
 export const daysThisWeek = (today: string) => daysBetween(mondayOf(today), today) + 1;
 
+/** Mẫu quá ít (< 3 ngày) thì chưa đủ để báo "chậm" đỏ: hạ xuống "cần để ý". */
+const earlyCap = (tone: Tone, days: number): Tone => (days < 3 && tone === "bad" ? "warn" : tone);
+
 /**
  * Ba tín hiệu (SPEC-v1.0, critique lần 2–3): việc theo lịch tuần này · thói quen từ thứ Hai · ghi log x/n ngày từ thứ Hai.
  * Mỗi cái chỉ tính khi đo được. Có việc quá hạn → nói quá hạn trước; còn lại nói tín hiệu yếu nhất.
@@ -303,17 +308,23 @@ export function weekSignals(input: DashInput): WeekSignal[] {
   }
   const habits = habitKpis(input, n).average;
   if (habits !== null) {
-    out.push({ key: "habits", tone: pctTone(habits), weak: `thói quen mới đạt ${habits}%`, ok: `thói quen đạt ${habits}%`, name: "thói quen" });
+    out.push({ key: "habits", tone: earlyCap(pctTone(habits), n), weak: `thói quen mới đạt ${habits}%`, ok: `thói quen đạt ${habits}%`, name: "thói quen" });
   }
   if (input.logs.length > 0) {
-    const logged = dailyRhythm(input, n).logged;
-    out.push({
-      key: "log",
-      tone: pctTone(Math.round((logged / n) * 100)),
-      weak: `mới ghi log ${logged}/${n} ngày`,
-      ok: `ghi log ${logged}/${n} ngày`,
-      name: "ghi log",
-    });
+    // Chỉ tính ngày đã qua: log hôm nay thường viết buổi tối, chưa viết thì chưa phải "bỏ lỡ"
+    const dailyDone = dailyRhythm(input, n);
+    const todayLogged = input.logs.some((l) => l.date === input.today);
+    const elapsed = n - (todayLogged ? 0 : 1);
+    if (elapsed >= 1) {
+      const logged = dailyDone.logged;
+      out.push({
+        key: "log",
+        tone: earlyCap(pctTone(Math.round((logged / elapsed) * 100)), elapsed),
+        weak: `mới ghi log ${logged}/${elapsed} ngày`,
+        ok: `ghi log ${logged}/${elapsed} ngày`,
+        name: "ghi log",
+      });
+    }
   }
   return out;
 }

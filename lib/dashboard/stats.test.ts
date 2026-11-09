@@ -238,3 +238,25 @@ describe("tóm tắt tuần (thẻ tiêu điểm, 3 tín hiệu từ thứ Hai)"
     expect(s.action?.href).toBe("/goals?level=week");
   });
 });
+
+describe("critique Dashboard vòng 4: không báo động từ mẫu quá ít, chấm trung tính khi thiếu dữ liệu", () => {
+  const tue = "2026-10-27"; // thứ Ba: mới trôi qua 1 ngày trọn
+  const log = (date: string) => ({ date, doneCount: 0, exercised: false, dropped: false, habits: [] as string[] });
+  it("hôm nay chưa ghi log thì không tính là bỏ lỡ; mẫu < 3 ngày không đỏ", () => {
+    const s = weekSummary(input({ today: tue, logs: [log("2026-10-26")] }));
+    expect(s.signals.find((x) => x.key === "log")).toMatchObject({ tone: "good", ok: "ghi log 1/1 ngày" });
+    const none = weekSummary(input({ today: tue, logs: [log("2026-10-20")] }));
+    expect(none.signals.find((x) => x.key === "log")).toMatchObject({ tone: "warn", weak: "mới ghi log 0/1 ngày" }); // 0/1 ngày: mẫu quá nhỏ → không đỏ
+  });
+  it("mẫu nhỏ bỏ lỡ hết chỉ ở mức cần để ý", () => {
+    const s = weekSummary(input({ today: tue, logs: [log("2026-10-20"), log(tue)] }));
+    expect(s.signals.find((x) => x.key === "log")?.tone).toBe("warn"); // 1/2 ngày = 50% → warn, không đỏ
+    const zero = weekSummary(input({ today: "2026-10-28", logs: [log("2026-10-20"), log("2026-10-28")] }));
+    expect(zero.signals.find((x) => x.key === "log")?.tone).toBe("bad"); // 1/3 = 33% và đã đủ 3 ngày → đỏ được phép
+  });
+  it("KPI không có mốc so sánh thì chấm trung tính", () => {
+    expect(doneKpi(input(), 7).tone).toBe("none");
+    expect(weekKpi(input()).tone).toBe("none");
+    expect(thesisKpi(input({ thesisDeadline: null }), 7).tone).toBe("none");
+  });
+});
