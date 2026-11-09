@@ -114,6 +114,10 @@
 > có. Không đổi schema (xoá vẫn là xoá thật; hoàn tác chỉ khả dụng trong phiên đang mở, hết 8 giây hoặc tải lại trang thì mất).
 > Thay cho quy tắc "xóa hẳn, không hoàn tác" ngày 05/11/2026.
 >
+> **Dashboard, đợt 5 (Trung chốt 10/11/2026):** đầu tuần (thứ Hai–thứ Ba) kết luận **không tô màu**: "Tuần mới: …" (việc quá hạn vẫn
+> đỏ); đường xu hướng KPI chỉ vẽ khi có ≥ 2 lần đổi giá trị (hết "bậc thang" đơn lẻ); "Việc theo dự án" chỉ có **một nhóm** thì
+> hiện một dòng chữ + link thay cho biểu đồ cột. KPI "Việc theo lịch tuần này" cũng trung tính khi mới có dưới 3 việc xếp lịch.
+>
 > **Xóa task (Trung chốt 05/11/2026):** mỗi dòng task (Tasks, cả việc chưa xong lẫn Đã xong) có icon thùng rác; bấm → hỏi
 > xác nhận ngay tại dòng → **xóa hẳn** (không hoàn tác), liên kết với mục tiêu mất theo. Trước đây xóa trong Notion.
 >

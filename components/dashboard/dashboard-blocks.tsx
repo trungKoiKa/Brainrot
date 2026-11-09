@@ -93,6 +93,9 @@ export function KpiStrip({ items }: { items: KpiItem[] }) {
   );
 }
 
+/** Đường xu hướng chỉ vẽ khi có ít nhất 2 lần đổi giá trị (một bậc thang đơn lẻ trông như lỗi hiển thị). */
+const hasTrend = (series: number[]) => series.filter((v, i) => i > 0 && v !== series[i - 1]).length >= 2;
+
 const sparkConfig = { v: { label: "Xu hướng", color: "var(--muted-foreground)" } } satisfies ChartConfig;
 
 function KpiCell({ item: k, first }: { item: KpiItem; first: boolean }) {
@@ -109,7 +112,7 @@ function KpiCell({ item: k, first }: { item: KpiItem; first: boolean }) {
           {k.unit && <span className="ml-1 text-sm text-muted-foreground">{k.unit}</span>}
         </span>
         {/* Đường phẳng không nói gì → ẩn */}
-        {k.tone !== "none" && new Set(k.series).size > 1 && (
+        {k.tone !== "none" && hasTrend(k.series) && (
           <ChartContainer config={sparkConfig} className="aspect-auto h-8 w-20 shrink-0" aria-hidden>
             <LineChart data={k.series.map((v, i) => ({ i, v }))} margin={{ top: 4, bottom: 4, left: 2, right: 2 }}>
               <YAxis hide domain={["dataMin", "dataMax"]} />
@@ -154,6 +157,30 @@ export function ProjectBars({ rows }: { rows: { project: string; doing: number; 
   const href = (project: string) => `/tasks?project=${encodeURIComponent(project)}`;
   const open = (index: number) => router.push(href(rows[index].project));
   const summary = rows.map((r) => `${r.project}: ${r.doing} đang làm, ${r.todo} chưa làm`).join("; ");
+  // Đường bàn phím / trình đọc màn hình thay cho bấm cột (chỉ chuột)
+  const links = (
+    <ul className="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-xs" aria-label="Mở Tasks theo dự án">
+      {rows.map((r) => (
+        <li key={r.project}>
+          <Link href={href(r.project)} className="text-muted-foreground underline-offset-4 hover:text-foreground hover:underline">
+            {r.project} <span className="tabular-nums">({r.doing + r.todo})</span>
+          </Link>
+        </li>
+      ))}
+    </ul>
+  );
+  // Chỉ một nhóm: biểu đồ cột không so sánh được gì → một dòng chữ + link
+  if (rows.length === 1) {
+    const only = rows[0];
+    return (
+      <>
+        <p className="text-sm text-muted-foreground">
+          {only.project}: {only.doing} đang làm, {only.todo} chưa làm.
+        </p>
+        {links}
+      </>
+    );
+  }
   return (
     <>
       <Legend config={projectConfig} />
@@ -174,16 +201,7 @@ export function ProjectBars({ rows }: { rows: { project: string; doing: number; 
           <Bar dataKey="todo" fill="var(--color-todo)" radius={4} className="cursor-pointer" onClick={(_, i) => open(i)} />
         </BarChart>
       </ChartContainer>
-      {/* Đường bàn phím / trình đọc màn hình thay cho bấm cột (chỉ chuột) */}
-      <ul className="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-xs" aria-label="Mở Tasks theo dự án">
-        {rows.map((r) => (
-          <li key={r.project}>
-            <Link href={href(r.project)} className="text-muted-foreground underline-offset-4 hover:text-foreground hover:underline">
-              {r.project} <span className="tabular-nums">({r.doing + r.todo})</span>
-            </Link>
-          </li>
-        ))}
-      </ul>
+      {links}
     </>
   );
 }
