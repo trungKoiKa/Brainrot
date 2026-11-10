@@ -9,41 +9,132 @@ const css = `
 --p1:#7aa7ff;--p2:#f08bbd;--p3:#79c98a;--p4:#f2b84b;--p0:#9ea69a}
 .vc .mono{font-family:var(--font-plex-mono);font-feature-settings:"tnum"}`;
 
-function Cell({ label, value, note, accent = false }: { label: string; value: React.ReactNode; note?: string; accent?: boolean }) {
+function Cell({
+  label,
+  value,
+  note,
+  accent = false,
+}: {
+  label: string;
+  value: React.ReactNode;
+  note?: string;
+  accent?: boolean;
+}) {
   return (
     <div className="border-r border-b border-[var(--ln)] px-4 py-3">
       <p className="mono text-xs text-[var(--mu)]">{label}</p>
-      <p className={`mono mt-1 text-2xl ${accent ? "text-[var(--ac)]" : ""}`}>{value}</p>
+      <p className={`mono mt-1 text-2xl ${accent ? "text-[var(--ac)]" : ""}`}>
+        {value}
+      </p>
       {note && <p className="mt-0.5 text-xs text-[var(--mu)]">{note}</p>}
     </div>
   );
 }
 
-function Row({ t, d, n, state }: { t: Task; d: TodayData; n: number; state: "late" | "due" | "plan" | "done" }) {
-  const slot = d.projectSlot(t.project);
-  const late = state === "late" ? (t as Task & { lateDays: number }).lateDays : 0;
+/** Nhãn bo tròn lấy từ phương án A (Trung chọn 10/11/2026): chấm màu + chữ cùng màu trên nền nhạt của chính màu đó. */
+function Pill({
+  color,
+  dot = false,
+  children,
+}: {
+  color: string;
+  dot?: boolean;
+  children: React.ReactNode;
+}) {
   return (
-    <tr className={`border-b border-[var(--ln)] align-top ${state === "done" ? "text-[var(--mu)]" : ""} ${state === "late" ? "bg-[var(--was)]" : ""}`}>
-      <td className="mono w-10 py-2.5 pl-4 text-xs text-[var(--mu)]">{String(n).padStart(2, "0")}</td>
+    <span
+      className="inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-xs font-medium whitespace-nowrap"
+      style={{
+        color,
+        background: `color-mix(in srgb, ${color} 13%, transparent)`,
+      }}
+    >
+      {dot && (
+        <span className="size-1.5 rounded-full" style={{ background: color }} />
+      )}
+      {children}
+    </span>
+  );
+}
+
+function Row({
+  t,
+  d,
+  n,
+  state,
+}: {
+  t: Task;
+  d: TodayData;
+  n: number;
+  state: "late" | "due" | "plan" | "done";
+}) {
+  const tags = <Tags t={t} d={d} state={state} />;
+  return (
+    <tr
+      className={`border-b border-[var(--ln)] align-middle ${state === "done" ? "text-[var(--mu)]" : ""}`}
+    >
+      <td className="mono w-10 py-2.5 pl-4 text-xs text-[var(--mu)]">
+        {String(n).padStart(2, "0")}
+      </td>
       <td className="w-8 py-2.5">
-        <span aria-hidden className={`mt-0.5 block size-4 border ${state === "done" ? "border-[var(--ok)] bg-[var(--ok)]" : "border-[var(--in)] bg-[var(--sf)]"}`} />
+        <span
+          aria-hidden
+          className={`block size-4 border ${state === "done" ? "border-[var(--ok)] bg-[var(--ok)]" : "border-[var(--in)] bg-[var(--sf)]"}`}
+        />
       </td>
-      <td className={`py-2.5 pr-3 text-sm ${state === "done" ? "line-through" : ""}`}>{t.title}</td>
-      <td className="hidden py-2.5 pr-3 text-xs sm:table-cell">
-        {t.project && (
-          <span className="flex items-center gap-1.5 whitespace-nowrap">
-            <span className="h-3 w-1" style={{ background: `var(--p${slot})` }} />
-            {t.project}
-          </span>
-        )}
+      <td className="py-2.5 pr-3 text-sm">
+        <span className={state === "done" ? "line-through" : ""}>
+          {t.title}
+        </span>
+        {/* Màn hẹp: nhãn xuống dòng dưới tên, tên việc không bị bóp (P0 rà soát 11/2026) */}
+        <span className="mt-1.5 flex flex-wrap items-center gap-1.5 md:hidden">
+          {tags}
+        </span>
       </td>
-      <td className="mono py-2.5 pr-4 text-right text-xs whitespace-nowrap">
-        {state === "late" && <span className="font-medium text-[var(--wa)]">TRỄ +{late}N</span>}
-        {state === "due" && <span className="font-medium text-[var(--dg)]">HẠN 00N</span>}
-        {state === "plan" && (t.deadline ? <span className="text-[var(--mu)]">hạn {d.fmt(t.deadline)}</span> : <span className="text-[var(--mu)]">—</span>)}
-        {state === "done" && <span className="text-[var(--ok)]">XONG</span>}
+      <td className="hidden py-2 pr-4 md:table-cell">
+        <span className="flex flex-wrap items-center justify-end gap-1.5">
+          {tags}
+        </span>
       </td>
     </tr>
+  );
+}
+
+function Tags({
+  t,
+  d,
+  state,
+}: {
+  t: Task;
+  d: TodayData;
+  state: "late" | "due" | "plan" | "done";
+}) {
+  const slot = d.projectSlot(t.project);
+  const late =
+    state === "late" ? (t as Task & { lateDays: number }).lateDays : 0;
+  return (
+    <>
+      {t.project && (
+        <Pill color={`var(--p${slot})`} dot>
+          {t.project}
+        </Pill>
+      )}
+      {state === "late" && (
+        <>
+          <Pill color="var(--wa)">trễ {late} ngày</Pill>
+          <span className="rounded-full border border-[var(--ln)] bg-[var(--sf)] px-3 py-0.5 text-xs font-medium whitespace-nowrap">
+            Làm hôm nay
+          </span>
+        </>
+      )}
+      {state === "due" && <Pill color="var(--dg)">hạn hôm nay</Pill>}
+      {state === "plan" && t.deadline && (
+        <span className="mono text-xs whitespace-nowrap text-[var(--mu)]">
+          hạn {d.fmt(t.deadline)}
+        </span>
+      )}
+      {state === "done" && <Pill color="var(--ok)">xong</Pill>}
+    </>
   );
 }
 
@@ -61,43 +152,88 @@ export function VariantC({ d }: { d: TodayData }) {
       className="vc min-h-screen bg-[var(--bg)] text-[var(--fg)]"
       style={{
         fontFamily: "var(--font-plex-sans)",
-        backgroundImage: "linear-gradient(var(--grid) 1px,transparent 1px),linear-gradient(90deg,var(--grid) 1px,transparent 1px)",
+        backgroundImage:
+          "linear-gradient(var(--grid) 1px,transparent 1px),linear-gradient(90deg,var(--grid) 1px,transparent 1px)",
         backgroundSize: "24px 24px",
       }}
     >
       <style>{css}</style>
       <div className="flex">
-        <nav className="hidden w-48 shrink-0 flex-col border-r border-[var(--ln)] bg-[var(--sf)] lg:flex" aria-label="Điều hướng">
-          <p className="mono border-b border-[var(--ln)] px-4 py-4 text-sm font-semibold">BRAINROT/v1</p>
-          {["Hôm nay", "Việc", "Mục tiêu", "Tổng quan", "Cài đặt"].map((n, i) => (
-            <span key={n} className={`flex items-center gap-2 border-b border-[var(--ln)] px-4 py-2.5 text-sm ${i === 0 ? "font-semibold" : "text-[var(--mu)]"}`}>
-              <span className="mono w-5 text-xs text-[var(--mu)]">0{i + 1}</span>
-              {n}
-              {i === 0 && <span className="ml-auto size-1.5 bg-[var(--ac)]" />}
-            </span>
-          ))}
+        <nav
+          className="hidden w-48 shrink-0 flex-col border-r border-[var(--ln)] bg-[var(--sf)] lg:flex"
+          aria-label="Điều hướng"
+        >
+          <p className="mono border-b border-[var(--ln)] px-4 py-4 text-sm font-semibold">
+            BRAINROT/v1
+          </p>
+          {["Hôm nay", "Việc", "Mục tiêu", "Tổng quan", "Cài đặt"].map(
+            (n, i) => (
+              <span
+                key={n}
+                className={`flex items-center gap-2 border-b border-[var(--ln)] px-4 py-2.5 text-sm ${i === 0 ? "font-semibold" : "text-[var(--mu)]"}`}
+              >
+                <span className="mono w-5 text-xs text-[var(--mu)]">
+                  0{i + 1}
+                </span>
+                {n}
+                {i === 0 && (
+                  <span className="ml-auto size-1.5 bg-[var(--ac)]" />
+                )}
+              </span>
+            ),
+          )}
         </nav>
 
         <main className="min-w-0 flex-1 p-4 md:p-8">
           <header className="mb-6 flex flex-wrap items-end justify-between gap-3">
             <div>
-              <p className="mono text-xs text-[var(--mu)]">NHẬT KÝ · {d.today}</p>
-              <h1 className="mt-1 text-3xl font-semibold tracking-tight">{d.greeting}</h1>
+              <p className="mono text-xs text-[var(--mu)]">
+                NHẬT KÝ · {d.today}
+              </p>
+              <h1 className="mt-1 text-3xl font-semibold tracking-tight">
+                {d.greeting}
+              </h1>
             </div>
             <p className="text-sm text-[var(--mu)]">{d.dateLong}</p>
           </header>
 
           <div className="mb-6 grid grid-cols-2 border-t border-l border-[var(--ln)] bg-[var(--sf)] md:grid-cols-4">
-            <Cell label="VIỆC HÔM NAY" value={d.progress ? `${d.progress.done}/${d.progress.total}` : "0/0"} note="đã xong / tổng" />
-            <Cell label="TRỄ LỊCH" value={String(plan.late.length).padStart(2, "0")} note="việc có Ngày làm đã qua" />
-            <Cell label="THÓI QUEN" value={`${habitsDone}/${d.habits.length}`} note="tích hôm nay" />
-            {d.target ? <Cell label="ĐẾM NGƯỢC" value={`D-${d.target.days}`} note={`${d.target.label} · ${d.target.date}`} accent /> : <Cell label="ĐẾM NGƯỢC" value="—" />}
+            <Cell
+              label="VIỆC HÔM NAY"
+              value={
+                d.progress ? `${d.progress.done}/${d.progress.total}` : "0/0"
+              }
+              note="đã xong / tổng"
+            />
+            <Cell
+              label="TRỄ LỊCH"
+              value={String(plan.late.length).padStart(2, "0")}
+              note="việc có Ngày làm đã qua"
+            />
+            <Cell
+              label="THÓI QUEN"
+              value={`${habitsDone}/${d.habits.length}`}
+              note="tích hôm nay"
+            />
+            {d.target ? (
+              <Cell
+                label="ĐẾM NGƯỢC"
+                value={`D-${d.target.days}`}
+                note={`${d.target.label} · ${d.target.date}`}
+                accent
+              />
+            ) : (
+              <Cell label="ĐẾM NGƯỢC" value="—" />
+            )}
           </div>
 
           <div className="grid grid-cols-1 gap-6 xl:grid-cols-[minmax(0,1fr)_360px]">
             <section className="border border-[var(--ln)] bg-[var(--sf)]">
               <h2 className="flex items-center justify-between border-b border-[var(--ln)] px-4 py-2.5 text-sm font-semibold">
-                Hôm nay làm <span className="mono text-xs font-normal text-[var(--mu)]">{rows.length} dòng</span>
+                Hôm nay làm{" "}
+                <span className="mono text-xs font-normal text-[var(--mu)]">
+                  {rows.length} dòng
+                </span>
               </h2>
               <table className="w-full border-collapse">
                 <tbody>
@@ -106,12 +242,16 @@ export function VariantC({ d }: { d: TodayData }) {
                   ))}
                 </tbody>
               </table>
-              <p className="mono px-4 py-3 text-xs text-[var(--mu)]">+ thêm việc ▸</p>
+              <p className="mono px-4 py-3 text-xs text-[var(--mu)]">
+                + thêm việc ▸
+              </p>
             </section>
 
             <aside className="flex flex-col gap-6">
               <section className="border border-[var(--ln)] bg-[var(--sf)]">
-                <h2 className="border-b border-[var(--ln)] px-4 py-2.5 text-sm font-semibold">Thói quen · 7 ngày</h2>
+                <h2 className="border-b border-[var(--ln)] px-4 py-2.5 text-sm font-semibold">
+                  Thói quen · 7 ngày
+                </h2>
                 <div className="px-4 py-3">
                   <div className="mono mb-1 grid grid-cols-[1fr_repeat(7,20px)] gap-1 text-xs text-[var(--mu)]">
                     <span />
@@ -122,25 +262,42 @@ export function VariantC({ d }: { d: TodayData }) {
                     ))}
                   </div>
                   {d.habits.map((h) => (
-                    <div key={h.name} className="grid grid-cols-[1fr_repeat(7,20px)] items-center gap-1 py-1">
+                    <div
+                      key={h.name}
+                      className="grid grid-cols-[1fr_repeat(7,20px)] items-center gap-1 py-1"
+                    >
                       <span className="truncate text-sm">{h.name}</span>
                       {h.week.map((x) => (
-                        <span key={x.day} className={`mx-auto size-3.5 border ${x.done ? "border-[var(--ac)] bg-[var(--ac)]" : "border-[var(--ln)]"}`} />
+                        <span
+                          key={x.day}
+                          className={`mx-auto size-3.5 border ${x.done ? "border-[var(--ac)] bg-[var(--ac)]" : "border-[var(--ln)]"}`}
+                        />
                       ))}
                     </div>
                   ))}
                 </div>
               </section>
               <section className="border border-[var(--ln)] bg-[var(--sf)]">
-                <h2 className="border-b border-[var(--ln)] px-4 py-2.5 text-sm font-semibold">Hạn · 14 ngày</h2>
+                <h2 className="border-b border-[var(--ln)] px-4 py-2.5 text-sm font-semibold">
+                  Hạn · 14 ngày
+                </h2>
                 <ul>
                   {d.deadlines.map((t) => (
-                    <li key={t.id} className="flex items-baseline gap-3 border-b border-[var(--ln)] px-4 py-2 text-sm last:border-b-0">
-                      <span className={`mono w-14 shrink-0 text-xs ${t.daysLeft < 0 ? "text-[var(--dg)]" : t.daysLeft <= 1 ? "text-[var(--wa)]" : "text-[var(--mu)]"}`}>
-                        {t.daysLeft < 0 ? `T+${-t.daysLeft}` : `T-${String(t.daysLeft).padStart(2, "0")}`}
+                    <li
+                      key={t.id}
+                      className="flex items-baseline gap-3 border-b border-[var(--ln)] px-4 py-2 text-sm last:border-b-0"
+                    >
+                      <span
+                        className={`mono w-14 shrink-0 text-xs ${t.daysLeft < 0 ? "text-[var(--dg)]" : t.daysLeft <= 1 ? "text-[var(--wa)]" : "text-[var(--mu)]"}`}
+                      >
+                        {t.daysLeft < 0
+                          ? `T+${-t.daysLeft}`
+                          : `T-${String(t.daysLeft).padStart(2, "0")}`}
                       </span>
                       <span className="min-w-0 flex-1 truncate">{t.title}</span>
-                      <span className="mono text-xs text-[var(--mu)]">{d.fmt(t.deadline)}</span>
+                      <span className="mono text-xs text-[var(--mu)]">
+                        {d.fmt(t.deadline)}
+                      </span>
                     </li>
                   ))}
                 </ul>
