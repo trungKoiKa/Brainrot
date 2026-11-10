@@ -311,7 +311,7 @@ export function weekSignals(input: DashInput): WeekSignal[] {
   }
   const habits = habitKpis(input, n).average;
   if (habits !== null) {
-    out.push({ key: "habits", tone: earlyCap(pctTone(habits), n), weak: `thói quen mới đạt ${habits}%`, ok: `thói quen đạt ${habits}%`, name: "thói quen" });
+    out.push({ key: "habits", tone: earlyCap(pctTone(habits), n), weak: `thói quen tuần này mới đạt ${habits}%`, ok: `thói quen tuần này đạt ${habits}%`, name: "thói quen" });
   }
   if (input.logs.length > 0) {
     // Chỉ tính ngày đã qua: log hôm nay thường viết buổi tối, chưa viết thì chưa phải "bỏ lỡ"

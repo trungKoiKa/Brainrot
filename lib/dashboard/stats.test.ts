@@ -234,7 +234,7 @@ describe("tóm tắt tuần (thẻ tiêu điểm, 3 tín hiệu từ thứ Hai)"
       habits: [habit("Đọc sách")],
     }));
     expect(s.tone).toBe("good");
-    expect(s.headline).toBe("Đang ổn: xong 100% việc đã xếp lịch, thói quen đạt 100%, ghi log 3/3 ngày.");
+    expect(s.headline).toBe("Đang ổn: xong 100% việc đã xếp lịch, thói quen tuần này đạt 100%, ghi log 3/3 ngày.");
     expect(s.action?.href).toBe("/goals?level=week");
   });
 });

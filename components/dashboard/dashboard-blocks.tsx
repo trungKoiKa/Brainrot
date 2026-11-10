@@ -56,11 +56,14 @@ export function ChangeBadge({
 }) {
   if (change === null || change === undefined) return null;
   const variant = Math.abs(change) < NOISE ? "outline" : (change >= 0) === upIsGood ? "success-light" : "destructive-light";
+  // Tăng ≥ 100% trên nền nhỏ ("+1700%") dễ hiểu sai → nói "gấp N lần" (rà soát A1/A2, P1)
+  const text =
+    unit === "%" && change >= 100
+      ? `gấp ${Math.round(((100 + change) / 100) * 10) / 10} lần`
+      : `${change > 0 ? "+" : ""}${change}${unit === "%" ? "%" : " điểm"}`;
   return (
     <Badge variant={variant} radius="full">
-      {change > 0 ? "+" : ""}
-      {change}
-      {unit === "%" ? "%" : " điểm"}
+      {text}
     </Badge>
   );
 }
@@ -108,13 +111,13 @@ function KpiCell({ item: k, first }: { item: KpiItem; first: boolean }) {
       </dt>
       <dd className="mt-2 flex items-end justify-between gap-3">
         <span className="whitespace-nowrap">
-          <span className={`font-serif text-2xl font-semibold tabular-nums ${k.tone === "none" ? "text-muted-foreground" : ""}`}>{k.value}</span>
+          <span className={`font-mono text-2xl tabular-nums ${k.tone === "none" ? "text-muted-foreground" : ""}`}>{k.value}</span>
           {k.unit && <span className="ml-1 text-sm text-muted-foreground">{k.unit}</span>}
         </span>
         {/* Đường phẳng không nói gì → ẩn */}
         {k.tone !== "none" && hasTrend(k.series) && (
           <ChartContainer config={sparkConfig} className="aspect-auto h-8 w-20 shrink-0" aria-hidden>
-            <LineChart data={k.series.map((v, i) => ({ i, v }))} margin={{ top: 4, bottom: 4, left: 2, right: 2 }}>
+            <LineChart accessibilityLayer={false} data={k.series.map((v, i) => ({ i, v }))} margin={{ top: 4, bottom: 4, left: 2, right: 2 }}>
               <YAxis hide domain={["dataMin", "dataMax"]} />
               <Line dataKey="v" type="monotone" stroke="var(--color-v)" strokeWidth={1.5} dot={false} isAnimationActive={false} />
             </LineChart>
@@ -185,7 +188,7 @@ export function ProjectBars({ rows }: { rows: { project: string; doing: number; 
     <>
       <Legend config={projectConfig} />
       <ChartContainer config={projectConfig} className="aspect-auto h-48 w-full" role="img" aria-label={`Việc chưa xong theo dự án. ${summary}.`}>
-        <BarChart data={rows} margin={{ left: -12, right: 4 }} barGap={4} maxBarSize={36}>
+        <BarChart accessibilityLayer={false} data={rows} margin={{ left: -12, right: 4 }} barGap={4} maxBarSize={36}>
           <CartesianGrid vertical={false} strokeDasharray="3 3" />
           <XAxis
             dataKey="project"
@@ -236,7 +239,7 @@ export function WeeklyArea({ rows }: { rows: { week: string; done: number }[] })
         role="img"
         aria-label={`12 tuần: tổng ${total} việc xong, tuần này ${thisWeek}.`}
       >
-        <AreaChart data={rows} margin={{ left: -12, right: 8 }}>
+        <AreaChart accessibilityLayer={false} data={rows} margin={{ left: -12, right: 8 }}>
           <defs>
             {Object.keys(weeklyConfig).map((k) => (
               <linearGradient key={k} id={`fill-${k}`} x1="0" y1="0" x2="0" y2="1">
@@ -284,7 +287,7 @@ export function DailyBars({ days }: { days: Day[] }) {
         role="img"
         aria-label={`${days.length} ngày: ${days.filter((d) => d.hasLog).length} ngày có log, tổng ${days.reduce((s, d) => s + d.done, 0)} việc xong.`}
       >
-        <BarChart data={data} margin={{ left: -12, right: 4 }} barCategoryGap={days.length > 40 ? 1 : 3}>
+        <BarChart accessibilityLayer={false} data={data} margin={{ left: -12, right: 4 }} barCategoryGap={days.length > 40 ? 1 : 3}>
           <CartesianGrid vertical={false} strokeDasharray="3 3" />
           <XAxis dataKey="date" tickLine={false} axisLine={false} tickMargin={8} minTickGap={24} tickFormatter={(d: string) => formatDay(d, true)} />
           <YAxis allowDecimals={false} tickLine={false} axisLine={false} width={40} domain={Y_DOMAIN} />
