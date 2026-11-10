@@ -9,7 +9,7 @@ export function Card({
   flush = false,
   children,
 }: {
-  title?: string;
+  title?: React.ReactNode;
   action?: React.ReactNode;
   className?: string;
   /** Khung tiêu điểm của trang (vd. "Hôm nay làm"): tiêu đề lớn hơn một bậc. */
