@@ -6,6 +6,17 @@ import { ArrowDownIcon, ArrowUpIcon, CircleStopIcon } from "lucide-react";
 import { addHabitAction, moveHabitAction, stopHabitAction, type HabitResult } from "@/app/actions/habits";
 import { fieldClass, primaryButtonClass } from "@/components/form-bits";
 import { ErrorNotice } from "@/components/tasks/task-row";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 import { MAX_HABIT_NAME } from "@/lib/habits";
 import type { Habit } from "@/lib/types";
 import { monthLabel, monthOf, shiftMonth } from "@/lib/period";
@@ -78,20 +89,34 @@ export function HabitManager({ month, habits }: { month: string; habits: Habit[]
               >
                 <ArrowDownIcon aria-hidden="true" className="size-4" />
               </button>
-              <button
-                type="button"
-                className={iconButton}
-                disabled={pending || ending}
-                aria-label={`Ngừng theo dõi ${h.name} từ tháng sau`}
-                title="Ngừng theo dõi từ tháng sau (lịch sử giữ nguyên)"
-                onClick={() => {
-                  if (confirm(`Ngừng theo dõi “${h.name}” từ ${monthLabel(shiftMonth(month, 1))}? Lịch sử vẫn giữ nguyên.`)) {
-                    run(() => stopHabitAction(month, h.id));
+              {/* Hộp xác nhận của thư viện thay confirm() của trình duyệt (rà soát 11/2026) */}
+              <AlertDialog>
+                <AlertDialogTrigger
+                  render={
+                    <button
+                      type="button"
+                      className={iconButton}
+                      disabled={pending || ending}
+                      aria-label={`Ngừng theo dõi ${h.name} từ tháng sau`}
+                      title="Ngừng theo dõi từ tháng sau (lịch sử giữ nguyên)"
+                    />
                   }
-                }}
-              >
-                <CircleStopIcon aria-hidden="true" className="size-4" />
-              </button>
+                >
+                  <CircleStopIcon aria-hidden="true" className="size-4" />
+                </AlertDialogTrigger>
+                <AlertDialogContent>
+                  <AlertDialogHeader>
+                    <AlertDialogTitle>Ngừng theo dõi “{h.name}”?</AlertDialogTitle>
+                    <AlertDialogDescription>
+                      Thói quen không còn ở {monthLabel(shiftMonth(month, 1))} trở đi. Lịch sử các tháng trước vẫn giữ nguyên.
+                    </AlertDialogDescription>
+                  </AlertDialogHeader>
+                  <AlertDialogFooter>
+                    <AlertDialogCancel>Giữ lại</AlertDialogCancel>
+                    <AlertDialogAction onClick={() => run(() => stopHabitAction(month, h.id))}>Ngừng theo dõi</AlertDialogAction>
+                  </AlertDialogFooter>
+                </AlertDialogContent>
+              </AlertDialog>
             </li>
           );
         })}
