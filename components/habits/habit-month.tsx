@@ -50,7 +50,7 @@ export function HabitMonth({
             <HabitManager month={month} habits={[]} />
           </div>
         ) : (
-          <div ref={scroller} className="-mx-5 overflow-x-auto px-5 md:-mx-6 md:px-6">
+          <div ref={scroller} className="-mx-4 overflow-x-auto px-4">
             <table className="w-full border-separate border-spacing-0 text-sm">
               <thead>
                 <tr>
@@ -81,7 +81,7 @@ export function HabitMonth({
                       data-today={d === today || undefined}
                       className={`px-0.5 pb-2 font-normal tabular-nums ${d === today ? "text-primary" : ""}`}
                     >
-                      <span className="block text-xs opacity-70">{weekday(d)}</span>
+                      <span className={`block text-xs ${d === today ? "" : "text-muted-foreground"}`}>{weekday(d)}</span>
                       {Number(d.slice(8))}
                     </th>
                   ))}
@@ -109,8 +109,8 @@ export function HabitMonth({
                             aria-label={`${r.habit.name} ngày ${Number(d.slice(8))}`}
                             onClick={() => toggle(d, r.habit.name, !on)}
                             className={`flex size-8 md:size-6 items-center justify-center rounded border transition-colors ${
-                              on ? "border-primary bg-primary text-primary-foreground" : "border-line hover:border-primary"
-                            } disabled:cursor-default disabled:opacity-30 disabled:hover:border-line`}
+                              on ? "border-primary bg-primary text-primary-foreground" : "border-input hover:border-primary"
+                            } disabled:cursor-default disabled:opacity-30 disabled:hover:border-input`}
                           >
                             {on && <CheckIcon aria-hidden="true" className="size-3.5" strokeWidth={3} />}
                           </button>

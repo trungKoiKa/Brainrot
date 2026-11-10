@@ -291,6 +291,15 @@ describe("goals và nhìn lại", () => {
     expect((await listGoals(db, ME)).some((g) => g.id === made[0])).toBe(false);
   });
 
+  it("chuyển kỳ chỉ đúng các mục tiêu được chọn (mục tiêu tự xong không bị chuyển)", async () => {
+    const keep = await createGoal(db, ME, "month", "2027-05-01", "Chưa xong thật", "Thường");
+    await createGoal(db, ME, "month", "2027-05-01", "Tự xong theo thói quen", "Thường");
+    const made = await carryOverGoals(db, ME, "month", "2027-05-01", "2027-06-01", [keep]);
+    expect(made).toHaveLength(1);
+    const next = (await listGoals(db, ME)).filter((g) => g.start === "2027-06-01").map((g) => g.title);
+    expect(next).toEqual(["Chưa xong thật"]);
+  });
+
   it("gắn việc từ dòng mục tiêu: thay liên kết cũ, bỏ gắn, không chạm đồ của người khác", async () => {
     await createTask(db, ME, input("Việc gắn từ mục tiêu"));
     const t = (await listTasks(db, ME)).find((x) => x.title === "Việc gắn từ mục tiêu")!;

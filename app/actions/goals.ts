@@ -107,14 +107,16 @@ export async function trashGoalAction(id: string, trashed: boolean): Promise<Goa
 export type CarryResult = { ok: true; ids: string[] } | { ok: false; error: string };
 
 /** Chuyển mục tiêu chưa xong của kỳ `key` sang kỳ kế tiếp (SPEC-v1.0, Goal đợt 2). */
-export async function carryOverGoalsAction(level: Level, key: string): Promise<CarryResult> {
+export async function carryOverGoalsAction(level: Level, key: string, goalIds: string[]): Promise<CarryResult> {
   const denied = await guard();
   if (denied) return denied;
   const period = LEVELS.includes(level) ? parsePeriod(level, key) : null;
-  if (!period) return { ok: false, error: "Yêu cầu không hợp lệ." };
+  if (!period || !Array.isArray(goalIds) || goalIds.length > 200 || !goalIds.every((id) => typeof id === "string" && PAGE_ID.test(id))) {
+    return { ok: false, error: "Yêu cầu không hợp lệ." };
+  }
   try {
     const { db, userId } = await dbScope();
-    const ids = await carryOverGoals(db, userId, period.level, period.start, shiftPeriod(period, 1).start);
+    const ids = await carryOverGoals(db, userId, period.level, period.start, shiftPeriod(period, 1).start, goalIds);
     refreshData();
     return { ok: true, ids };
   } catch (e) {
