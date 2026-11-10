@@ -47,7 +47,7 @@ export function PrevFocus({ text, level, periodKey, existing }: { text: string; 
                 disabled={busy !== null}
                 onClick={() => add(l)}
                 aria-label={`Thêm làm mục tiêu: ${l}`}
-                className="inline-flex shrink-0 items-center gap-1 rounded-md px-1.5 py-0.5 text-xs font-medium text-primary outline-none hover:bg-accent-soft focus-visible:ring-3 focus-visible:ring-ring/50 disabled:opacity-50"
+                className="inline-flex shrink-0 items-center gap-1 rounded-md px-1.5 py-0.5 text-xs font-medium text-primary outline-none hover:bg-accent-soft focus-visible:ring-3 focus-visible:ring-ring disabled:opacity-50"
               >
                 <PlusIcon aria-hidden="true" className="size-3" />
                 {busy === l ? "Đang thêm…" : "Thêm làm mục tiêu"}

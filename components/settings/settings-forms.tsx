@@ -144,7 +144,7 @@ export function ProjectManager({ projects }: { projects: { id: string; name: str
                       setDraft(p.name);
                       setNote({});
                     }}
-                    className="min-h-10 rounded-md px-2 text-sm text-muted-foreground outline-none hover:text-foreground focus-visible:ring-3 focus-visible:ring-ring/50 md:min-h-0"
+                    className="min-h-10 rounded-md px-2 text-sm text-muted-foreground outline-none hover:text-foreground focus-visible:ring-3 focus-visible:ring-ring md:min-h-0"
                   >
                     Đổi tên
                   </button>
@@ -153,7 +153,7 @@ export function ProjectManager({ projects }: { projects: { id: string; name: str
                     disabled={busy || p.tasks > 0}
                     title={p.tasks > 0 ? "Còn việc trong dự án này" : undefined}
                     onClick={() => run(() => deleteProjectAction(p.id))}
-                    className="min-h-10 rounded-md px-2 text-sm text-danger outline-none hover:underline focus-visible:ring-3 focus-visible:ring-ring/50 disabled:cursor-not-allowed disabled:opacity-40 disabled:no-underline md:min-h-0"
+                    className="min-h-10 rounded-md px-2 text-sm text-danger outline-none hover:underline focus-visible:ring-3 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-40 disabled:no-underline md:min-h-0"
                   >
                     Xóa
                   </button>
@@ -172,7 +172,7 @@ export function DeleteAccountForm() {
   const [state, action, pending] = useActionState<AccountState, FormData>(deleteAccountAction, {});
   return (
     <details className="group">
-      <summary className="cursor-pointer rounded-md py-2.5 text-sm font-medium text-danger outline-none focus-visible:ring-3 focus-visible:ring-ring/50">
+      <summary className="cursor-pointer rounded-md py-2.5 text-sm font-medium text-danger outline-none focus-visible:ring-3 focus-visible:ring-ring">
         Xoá tài khoản…
       </summary>
       <form action={action} className="mt-3 grid gap-4 md:grid-cols-2">
@@ -193,7 +193,7 @@ export function DeleteAccountForm() {
           <button
             type="submit"
             disabled={pending}
-            className="ml-auto rounded-lg bg-danger px-4 py-2 text-sm font-medium text-white outline-none transition-opacity hover:opacity-90 focus-visible:ring-3 focus-visible:ring-ring/50 disabled:opacity-50"
+            className="ml-auto rounded-lg bg-danger px-4 py-2 text-sm font-medium text-white outline-none transition-opacity hover:opacity-90 focus-visible:ring-3 focus-visible:ring-ring disabled:opacity-50"
           >
             {pending ? "Đang xoá…" : "Xoá tài khoản vĩnh viễn"}
           </button>

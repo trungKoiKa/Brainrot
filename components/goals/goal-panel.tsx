@@ -411,7 +411,7 @@ function GoalRow({
                   aria-label={`Bỏ gắn “${t.title}” khỏi mục tiêu`}
                   title="Bỏ gắn"
                   onClick={() => unlink(t)}
-                  className="flex size-10 md:size-7 shrink-0 items-center justify-center rounded-md text-muted-foreground outline-none hover:bg-surface-muted hover:text-foreground focus-visible:ring-3 focus-visible:ring-ring/50"
+                  className="flex size-10 md:size-7 shrink-0 items-center justify-center rounded-md text-muted-foreground outline-none hover:bg-surface-muted hover:text-foreground focus-visible:ring-3 focus-visible:ring-ring"
                 >
                   <XIcon aria-hidden="true" className="size-3.5" />
                 </button>
@@ -423,7 +423,7 @@ function GoalRow({
           {unlinked && (
             <p {...unlinkHold} className="flex items-center gap-2 py-0.5 text-xs text-muted-foreground">
             <span className="min-w-0 truncate">Đã bỏ gắn “{unlinked.title || "(Chưa đặt tên)"}”</span>
-            <button type="button" onClick={relink} className="shrink-0 rounded-md font-medium text-primary underline-offset-4 outline-none hover:underline focus-visible:ring-3 focus-visible:ring-ring/50">
+            <button type="button" onClick={relink} className="shrink-0 rounded-md font-medium text-primary underline-offset-4 outline-none hover:underline focus-visible:ring-3 focus-visible:ring-ring">
               Hoàn tác
             </button>
             </p>
@@ -611,7 +611,7 @@ function CarryOver({
             router.refresh();
           })
         }
-        className="rounded-md border border-line px-3 py-1.5 font-medium outline-none hover:border-primary focus-visible:ring-3 focus-visible:ring-ring/50 disabled:opacity-50"
+        className="rounded-md border border-line px-3 py-1.5 font-medium outline-none hover:border-primary focus-visible:ring-3 focus-visible:ring-ring disabled:opacity-50"
       >
         {pending ? "Đang chuyển…" : `Chuyển ${count} mục tiêu chưa xong sang ${label}`}
       </button>
@@ -631,7 +631,7 @@ function CarryOver({
                   router.refresh();
                 })
               }
-              className="rounded-md font-medium text-primary underline-offset-4 outline-none hover:underline focus-visible:ring-3 focus-visible:ring-ring/50"
+              className="rounded-md font-medium text-primary underline-offset-4 outline-none hover:underline focus-visible:ring-3 focus-visible:ring-ring"
             >
               Hoàn tác
             </button>
@@ -679,7 +679,7 @@ function TaskPicker({
         render={
           <button
             type="button"
-            className="mt-0.5 inline-flex min-h-10 items-center rounded-md text-left text-muted-foreground underline-offset-4 md:min-h-0 outline-none hover:text-foreground hover:underline focus-visible:ring-3 focus-visible:ring-ring/50"
+            className="mt-0.5 inline-flex min-h-10 items-center rounded-md text-left text-muted-foreground underline-offset-4 md:min-h-0 outline-none hover:text-foreground hover:underline focus-visible:ring-3 focus-visible:ring-ring"
           />
         }
       >
@@ -714,7 +714,7 @@ function TaskPicker({
                     inputRef.current?.focus(); // dòng vừa bấm đã biến mất → trả focus về ô tìm kiếm
                     setBusy(null);
                   }}
-                  className="flex w-full items-center justify-between gap-2 rounded-md px-2 py-1.5 text-left text-sm break-words outline-none hover:bg-surface-muted focus-visible:ring-3 focus-visible:ring-ring/50 disabled:opacity-60"
+                  className="flex w-full items-center justify-between gap-2 rounded-md px-2 py-1.5 text-left text-sm break-words outline-none hover:bg-surface-muted focus-visible:ring-3 focus-visible:ring-ring disabled:opacity-60"
                 >
                   <span className="min-w-0">{t.title || "(Chưa đặt tên)"}</span>
                   {busy === t.id && <span className="shrink-0 text-xs text-muted-foreground">Đang gắn…</span>}
