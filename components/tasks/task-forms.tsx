@@ -188,7 +188,7 @@ export function EditTaskForm({
         />
         <div className="flex flex-wrap items-center gap-2">
           <Status state={state} />
-          <button type="button" onClick={onClose} className="ml-auto rounded-lg px-3 py-2 text-sm text-muted-foreground outline-none hover:text-foreground focus-visible:ring-3 focus-visible:ring-ring/50">
+          <button type="button" onClick={onClose} className="ml-auto rounded-lg px-3 py-2 text-sm text-muted-foreground outline-none hover:text-foreground focus-visible:ring-3 focus-visible:ring-ring">
             Hủy
           </button>
           <button type="submit" disabled={pending || !values.title.trim()} className={primaryButtonClass}>

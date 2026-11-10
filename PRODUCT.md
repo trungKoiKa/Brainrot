@@ -47,7 +47,7 @@ nối các mảnh này; Brainrot nối sẵn. Lý do và phương án đã cân 
 - Dữ liệu ở Postgres (Neon), mỗi người dùng chỉ thấy dữ liệu của mình. Đăng nhập tạm bằng email + mật khẩu.
 - Chi phí 0 đồng: chỉ gói miễn phí (Neon, Vercel Hobby), không dùng API LLM trả phí.
 - Ngày giờ theo múi Asia/Ho_Chi_Minh.
-- Xoá task là xoá hẳn, có xác nhận ngay tại dòng, không hoàn tác.
+- Xoá task là xoá mềm, có nút Hoàn tác (SPEC-v1.0, Tasks đợt 3).
 - Đang ẩn ở v1.0, để v1.1: Knowledge, Brain 3D, thẻ Next up (Google Calendar).
 - Không tự thêm tính năng ngoài SPEC; yêu cầu mới ghi vào Follow-ups của plan đang chạy.
 
@@ -56,7 +56,10 @@ nối các mảnh này; Brainrot nối sẵn. Lý do và phương án đã cân 
 - Tên: **Brainrot** (Second Brain Web).
 - Giao diện tiếng Việt; giữ tên màn Today / Tasks / Goal / Dashboard.
 - Có cả theme sáng và tối, mặc định theo hệ điều hành, ghi nhớ lựa chọn.
-- Mỗi Lĩnh vực / Dự án có một màu cố định dùng chung giữa các màn (`docs/decisions/0003-field-colors.md`).
+- Mỗi Dự án có một màu cố định dùng chung giữa các màn, gán theo **thứ tự dự án của từng người** (4 màu đầu, còn lại xám),
+  vẽ bằng pill bo tròn (redesign 11/2026, `DESIGN.md`).
+- Hướng nhìn **Nhật ký kỹ thuật** (Trung chốt 10/11/2026): giấy kẻ ô, khung vuông, số liệu chữ mono IBM Plex, một màu cam
+  tín hiệu. Thay hướng giấy kem / Lora / xanh chàm cũ.
 - Giọng chữ: ngắn, thẳng, đời thường; không văn quảng cáo.
 
 ## Evidence on Hand

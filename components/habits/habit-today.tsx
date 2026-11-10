@@ -34,7 +34,7 @@ export function HabitToday({ habits, done, today }: { habits: string[]; done: st
                 type="button"
                 aria-pressed={on}
                 onClick={() => toggle(today, name, !on)}
-                className={`flex items-center gap-2 rounded-full border px-3 py-1.5 text-sm transition-colors outline-none focus-visible:ring-3 focus-visible:ring-ring/50 ${
+                className={`flex items-center gap-2 rounded-full border px-3 py-1.5 text-sm transition-colors outline-none focus-visible:ring-3 focus-visible:ring-ring ${
                   on
                     ? "border-primary bg-accent-soft font-medium text-primary"
                     : "border-line text-muted-foreground hover:border-primary hover:text-foreground"

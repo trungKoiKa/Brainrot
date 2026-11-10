@@ -16,7 +16,7 @@ const PRIORITY_CLASS: Record<string, string> = {
 };
 
 const iconButton =
-  "grid size-10 md:size-7 shrink-0 place-items-center rounded-md text-muted-foreground transition-colors outline-none focus-visible:ring-3 focus-visible:ring-ring/50";
+  "grid size-10 md:size-7 shrink-0 place-items-center rounded-md text-muted-foreground transition-colors outline-none focus-visible:ring-3 focus-visible:ring-ring";
 
 /**
  * Ô tích xong. Có `onReopen` → việc đã xong bỏ tích được (về Chưa làm, SPEC-v1.0 07/11/2026);

@@ -35,7 +35,7 @@ function Row({ task, onComplete, children }: { task: Task; onComplete: (t: Task)
 }
 
 const smallButton =
-  "inline-flex min-h-10 shrink-0 items-center rounded-md border border-line px-2 py-1 text-xs text-muted-foreground md:min-h-0 transition-colors hover:border-primary hover:text-foreground focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-ring/50";
+  "inline-flex min-h-10 shrink-0 items-center rounded-md border border-line px-2 py-1 text-xs text-muted-foreground md:min-h-0 transition-colors hover:border-primary hover:text-foreground focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-ring";
 
 const EMPTY_TEXT: Record<TodayEmptyKind, { text: string; link: string }> = {
   "no-tasks": { text: "Chưa có việc nào. Thêm việc đầu tiên ở ô bên dưới.", link: "" },
@@ -153,7 +153,7 @@ export function TomorrowPicker({
 
   return (
     <details className="group" open={open}>
-      <summary className="cursor-pointer rounded-md py-2.5 text-sm font-medium outline-none focus-visible:ring-3 focus-visible:ring-ring/50">
+      <summary className="cursor-pointer rounded-md py-2.5 text-sm font-medium outline-none focus-visible:ring-3 focus-visible:ring-ring">
         Ngày mai làm{" "}
         <span className="font-normal text-muted-foreground">
           · {dayLabel(tomorrow)} · đã chọn {list.filter((t) => t.plannedOn === tomorrow).length}

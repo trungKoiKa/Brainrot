@@ -29,3 +29,12 @@ export function fieldColorVar(field: string | null): string {
 export function projectColorVar(project: string | null): string {
   return toVar(project ? PROJECT_SLOTS[project] : undefined);
 }
+
+/**
+ * Màu dự án theo THỨ TỰ dự án của từng người (Cài đặt), dùng cho redesign 11/2026: 4 dự án đầu có 4 màu, còn lại xám.
+ * Thay cho bảng tên cứng ở trên (chỉ đúng với dự án của Trung). Không có dự án / không tìm thấy → xám.
+ */
+export function projectColorByOrder(project: string | null, projects: readonly string[]): string {
+  const i = project ? projects.indexOf(project) : -1;
+  return toVar(i >= 0 && i < 4 ? ((i + 1) as Slot) : undefined);
+}

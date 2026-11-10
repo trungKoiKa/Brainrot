@@ -153,7 +153,7 @@ async function GoalsContent({ searchParams }: Pick<PageProps<"/goals">, "searchP
                   <a
                     key={g.id}
                     href={`#goal-${g.id}`}
-                    className={`inline-flex max-w-full items-center gap-2 rounded-full border border-line px-3 py-1 outline-none hover:border-primary focus-visible:ring-3 focus-visible:ring-ring/50 ${
+                    className={`inline-flex max-w-full items-center gap-2 rounded-full border border-line px-3 py-1 outline-none hover:border-primary focus-visible:ring-3 focus-visible:ring-ring ${
                       isGoalDone(g) ? "text-muted-foreground line-through" : ""
                     }`}
                   >

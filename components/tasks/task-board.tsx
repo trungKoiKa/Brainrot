@@ -17,7 +17,7 @@ const UNDO_MS = 8000;
 
 const projectOf = (t: Task) => t.project ?? NO_PROJECT;
 const chipClass = (active: boolean) =>
-  `min-h-10 rounded-full border px-3 py-1 text-sm transition-colors md:min-h-0 outline-none focus-visible:ring-3 focus-visible:ring-ring/50 ${
+  `min-h-10 rounded-full border px-3 py-1 text-sm transition-colors md:min-h-0 outline-none focus-visible:ring-3 focus-visible:ring-ring ${
     active ? "border-primary bg-accent-soft text-primary" : "border-line text-muted-foreground hover:text-foreground"
   }`;
 
@@ -160,7 +160,7 @@ export function TaskBoard({
       {done.length > 0 && (
         <Card>
           <details className="group/done">
-            <summary className="flex cursor-pointer list-none items-center gap-2 rounded-md outline-none focus-visible:ring-3 focus-visible:ring-ring/50 [&::-webkit-details-marker]:hidden">
+            <summary className="flex cursor-pointer list-none items-center gap-2 rounded-md outline-none focus-visible:ring-3 focus-visible:ring-ring [&::-webkit-details-marker]:hidden">
               <ChevronRightIcon aria-hidden="true" className="size-4 text-muted-foreground transition-transform group-open/done:rotate-90" />
               <h2 className="font-serif text-lg font-semibold">
                 Đã xong <span className="font-sans text-sm font-normal text-muted-foreground">({done.length})</span>
@@ -190,7 +190,7 @@ export function TaskBoard({
               ref={undoRef}
               type="button"
               onClick={onUndo}
-              className="shrink-0 rounded-md font-medium text-primary underline-offset-4 outline-none hover:underline focus-visible:ring-3 focus-visible:ring-ring/50"
+              className="shrink-0 rounded-md font-medium text-primary underline-offset-4 outline-none hover:underline focus-visible:ring-3 focus-visible:ring-ring"
             >
               Hoàn tác
             </button>
