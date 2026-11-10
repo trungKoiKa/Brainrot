@@ -48,7 +48,8 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
 > **v0.5 (Một kho việc, bỏ Planner)**: `SPEC-v0.5.md` đã duyệt, code xong 5 bước (26/10/2026,
 > tag `v0.5.0`), plan `docs/plans/active/v0.5.md` chờ Trung test. Planner đã gỡ; Notion Tasks là kho việc duy nhất.
 > **v1.0 (Postgres, bỏ Notion)**: `SPEC-v1.0.md` đã duyệt 27/10/2026, **lên production 05/11/2026** (tag `v1.0.0`),
-> đăng nhập email + mật khẩu. Plan `docs/plans/active/v1.0.md`; còn bước 5 (Google, bạn bè) khi Trung mở cho người khác.
+> đăng nhập email + mật khẩu. Plan `docs/plans/active/v1.0.md`. **Bước 5 xong 10/11/2026** (giữ email + mật khẩu, không Google): đăng xuất, Cài đặt
+> (tên, hạn đếm ngược, dự án riêng, đổi mật khẩu, xoá tài khoản), chống dò mật khẩu; Trung tạo tài khoản bạn bằng `npm run user:password`.
 > Yêu cầu mới → ghi vào "Follow-ups" của plan đang chạy, chốt SPEC trước khi code.
 
 ## Thứ tự ưu tiên khi hướng dẫn mâu thuẫn
