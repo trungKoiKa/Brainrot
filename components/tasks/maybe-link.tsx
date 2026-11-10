@@ -1,8 +1,11 @@
-/** Link mở trang ngoài nếu có `href`; task trong database không có trang riêng (href rỗng) → chữ thường. */
-export function MaybeLink({ href, className, children }: { href: string; className?: string; children: React.ReactNode }) {
-  if (!href) return <span className={className}>{children}</span>;
+/**
+ * Link mở trang ngoài nếu có `href`; task trong database không có trang riêng (href rỗng) → chữ thường.
+ * `title`: chữ đầy đủ khi tên bị cắt (rà soát A3, tên dài bị truncate).
+ */
+export function MaybeLink({ href, className, title, children }: { href: string; className?: string; title?: string; children: React.ReactNode }) {
+  if (!href) return <span className={className} title={title}>{children}</span>;
   return (
-    <a href={href} target="_blank" rel="noopener noreferrer" className={className}>
+    <a href={href} target="_blank" rel="noopener noreferrer" className={className} title={title}>
       {children}
     </a>
   );

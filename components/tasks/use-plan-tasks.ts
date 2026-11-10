@@ -1,10 +1,10 @@
 "use client";
 
 import { useOptimistic, useState, useTransition } from "react";
-import { completeTask, planTaskAction } from "@/app/actions/tasks";
+import { completeTask, planTaskAction, reopenTaskAction } from "@/app/actions/tasks";
 import type { Task } from "@/lib/types";
 
-type Patch = { id: string; status?: "Xong"; plannedOn?: string | null };
+type Patch = { id: string; status?: "Xong" | "Chưa làm"; plannedOn?: string | null };
 
 /**
  * Tích xong + đặt Ngày làm, đổi UI ngay (optimistic). Lỗi → useOptimistic tự quay về dữ liệu server, chỉ cần báo lỗi.
@@ -31,6 +31,8 @@ export function usePlanTasks(initial: Task[]) {
     error,
     dismissError: () => setError(null),
     complete: (t: Task) => run({ id: t.id, status: "Xong" }, () => completeTask(t.id), `Chưa đánh dấu xong “${t.title}”.`),
+    /** Bỏ tích / Hoàn tác trên Today (rà soát 11/2026, P0): về Chưa làm. */
+    reopen: (t: Task) => run({ id: t.id, status: "Chưa làm" }, () => reopenTaskAction(t.id), `Chưa mở lại được “${t.title}”.`),
     plan: (t: Task, day: string | null) =>
       run({ id: t.id, plannedOn: day }, () => planTaskAction(t.id, day), `Chưa đổi Ngày làm của “${t.title}”.`),
   };
