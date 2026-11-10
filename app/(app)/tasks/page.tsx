@@ -1,8 +1,10 @@
 import { Suspense } from "react";
 import { connection } from "next/server";
 import { PageHeader } from "@/components/page-header";
+import { Readouts } from "@/components/readout";
+import { Skeleton } from "@/components/ui/skeleton";
 import { TaskBoard } from "@/components/tasks/task-board";
-import { todayVN } from "@/lib/date";
+import { addDays, todayVN } from "@/lib/date";
 import { StaleBanner } from "@/components/stale-banner";
 import type { GoalOption } from "@/components/tasks/task-forms";
 import { getGoals, getTaskProjects, getTasks } from "@/lib/db/data";
@@ -10,12 +12,20 @@ import { periodLabel, periodOf } from "@/lib/period";
 
 export default function TasksPage({ searchParams }: PageProps<"/tasks">) {
   return (
-    <div className="mx-auto max-w-5xl">
-      <PageHeader title="Tasks" subtitle="Nơi duy nhất thêm, sửa và xoá việc; việc chưa xong nhóm theo dự án." />
-      <Suspense fallback={<div className="h-48 animate-pulse rounded-xl border border-line bg-surface" />}>
+    <>
+      <PageHeader kicker="KHO VIỆC" title="Tasks" subtitle="Nơi duy nhất thêm, sửa và xoá việc; việc chưa xong nhóm theo dự án." />
+      <Suspense
+        fallback={
+          <div className="flex flex-col gap-6">
+            <Skeleton className="h-24 rounded-none" />
+            <Skeleton className="h-28 rounded-none" />
+            <Skeleton className="h-80 rounded-none" />
+          </div>
+        }
+      >
         <TasksContent searchParams={searchParams} />
       </Suspense>
-    </div>
+    </>
   );
 }
 
@@ -24,8 +34,11 @@ async function TasksContent({ searchParams }: Pick<PageProps<"/tasks">, "searchP
   // ?project= từ Dashboard (SPEC-v0.3 4.2) → lọc sẵn theo dự án
   const { project } = await searchParams;
   const today = todayVN();
-  const [{ data, stale }, goals] = await Promise.all([getTasks(), getGoals()]);
-  const projects = await getTaskProjects();
+  // Một tầng truy vấn song song (rà soát A4: getTaskProjects từng chạy nối sau)
+  const [{ data, stale }, goals, projects] = await Promise.all([getTasks(), getGoals(), getTaskProjects()]);
+  const open = data.filter((t) => t.status !== "Xong");
+  const in7 = addDays(today, 7);
+  const weekAgo = addDays(today, -6);
 
   // Mục tiêu gắn được (SPEC-v0.4 4.4): mục tiêu Tháng/Tuần — "open" nếu thuộc tháng/tuần hiện tại và chưa tích xong
   const thisMonth = periodOf("month", today).start;
@@ -41,6 +54,15 @@ async function TasksContent({ searchParams }: Pick<PageProps<"/tasks">, "searchP
   return (
     <>
       <StaleBanner show={stale || goals.stale} />
+      <Readouts
+        className="mb-6"
+        items={[
+          { label: "Chưa xong", value: open.length, note: "việc đang mở" },
+          { label: "Quá hạn", value: open.filter((t) => t.deadline && t.deadline < today).length, note: "hạn đã qua" },
+          { label: "Hạn 7 ngày", value: open.filter((t) => t.deadline && t.deadline >= today && t.deadline <= in7).length, note: "tính cả hôm nay" },
+          { label: "Xong 7 ngày", value: data.filter((t) => t.status === "Xong" && t.doneOn && t.doneOn >= weekAgo).length, note: "kể cả hôm nay" },
+        ]}
+      />
       <TaskBoard
         tasks={data}
         projects={projects}

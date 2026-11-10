@@ -1,5 +1,6 @@
 "use client";
 
+import { Button } from "@/components/ui/button";
 import { useState } from "react";
 import { format } from "date-fns";
 import { vi } from "react-day-picker/locale";
@@ -66,13 +67,9 @@ export function DeadlineField({
           onSelect={(d) => pick(d ? format(d, "yyyy-MM-dd") : "")}
         />
         {value && (
-          <button
-            type="button"
-            onClick={() => pick("")}
-            className="mx-2.5 mb-2.5 self-start text-sm text-muted-foreground transition-colors hover:text-foreground"
-          >
+          <Button type="button" variant="ghost" size="sm" onClick={() => pick("")} className="mx-2.5 mb-2.5 self-start">
             Bỏ {label.toLowerCase()}
-          </button>
+          </Button>
         )}
       </PopoverContent>
     </Popover>

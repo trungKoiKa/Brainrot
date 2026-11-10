@@ -4,7 +4,10 @@ import { useActionState, useEffect, useRef, useState } from "react";
 import { createTaskAction, updateTaskAction, type TaskFormState } from "@/app/actions/tasks";
 import type { Task } from "@/lib/types";
 import { EDITABLE_STATUSES, PRIORITIES } from "@/lib/task-form";
-import { Status, fieldClass, primaryButtonClass } from "../form-bits";
+import { Status, fieldClass } from "../form-bits";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 import { DeadlineField } from "./deadline-field";
 
 // Ô select/date hẹp hơn ô tên; giữ cùng kiểu viền với fieldClass
@@ -78,7 +81,7 @@ export function NewTaskForm({ projects, defaultProject = "" }: { projects: strin
   return (
     <form action={action} className="space-y-2">
       <div className="flex flex-wrap gap-2">
-        <input
+        <Input
           ref={titleRef}
           name="title"
           aria-label="Tên việc mới"
@@ -86,15 +89,15 @@ export function NewTaskForm({ projects, defaultProject = "" }: { projects: strin
           onChange={(e) => set("title")(e.target.value)}
           placeholder="Thêm việc mới…"
           autoComplete="off"
-          className={`${fieldClass} min-w-56 flex-1`}
+          className="min-w-56 flex-1"
         />
         <Select name="project" label="Dự án" value={values.project} options={projects} empty="Dự án" onChange={set("project")} />
         <Select name="priority" label="Ưu tiên" value={values.priority} options={PRIORITIES} empty="Ưu tiên" onChange={set("priority")} />
         <DeadlineField value={values.deadline} onChange={set("deadline")} triggerClass={compactField} />
         <DeadlineField name="plannedOn" label="Ngày làm" value={values.plannedOn} onChange={set("plannedOn")} triggerClass={compactField} />
-        <button type="submit" disabled={pending || !values.title.trim()} className={primaryButtonClass}>
+        <Button type="submit" disabled={pending || !values.title.trim()}>
           {pending ? "Đang thêm…" : "Thêm"}
-        </button>
+        </Button>
       </div>
       <Status state={shown} />
     </form>
@@ -138,10 +141,10 @@ export function EditTaskForm({
   const set = (key: keyof typeof values) => (v: string) => setValues((s) => ({ ...s, [key]: v }));
 
   return (
-    <li className="py-2.5 first:pt-0 last:pb-0">
+    <div>
       <form
         action={action}
-        className="space-y-2 rounded-lg border border-primary p-3"
+        className="flex flex-col gap-2 border-l-2 border-primary pl-3"
         onKeyDown={(e) => {
           // Esc đóng lịch / popover bên trong thì không đóng cả form (sự kiện bàn phím nổi lên qua portal)
           if (e.key !== "Escape" || e.defaultPrevented || (e.target as HTMLElement).closest("[data-slot=popover-content]")) return;
@@ -150,14 +153,13 @@ export function EditTaskForm({
         }}
       >
         <input type="hidden" name="id" value={task.id} />
-        <input
+        <Input
           name="title"
           aria-label="Tên việc"
           value={values.title}
           onChange={(e) => set("title")(e.target.value)}
           autoFocus
           autoComplete="off"
-          className={fieldClass}
         />
         <div className="flex flex-wrap gap-2">
           <Select name="status" label="Trạng thái" value={values.status} options={EDITABLE_STATUSES} onChange={set("status")} />
@@ -177,25 +179,24 @@ export function EditTaskForm({
             />
           )}
         </div>
-        <textarea
+        <Textarea
           name="note"
           aria-label="Ghi chú"
           rows={2}
           value={values.note}
           onChange={(e) => set("note")(e.target.value)}
           placeholder="Ghi chú"
-          className={fieldClass}
         />
         <div className="flex flex-wrap items-center gap-2">
           <Status state={state} />
-          <button type="button" onClick={onClose} className="ml-auto rounded-lg px-3 py-2 text-sm text-muted-foreground outline-none hover:text-foreground focus-visible:ring-3 focus-visible:ring-ring">
+          <Button type="button" variant="ghost" onClick={onClose} className="ml-auto">
             Hủy
-          </button>
-          <button type="submit" disabled={pending || !values.title.trim()} className={primaryButtonClass}>
+          </Button>
+          <Button type="submit" disabled={pending || !values.title.trim()}>
             {pending ? "Đang lưu…" : "Lưu"}
-          </button>
+          </Button>
         </div>
       </form>
-    </li>
+    </div>
   );
 }
