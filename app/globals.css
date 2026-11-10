@@ -182,6 +182,14 @@
   --color-destructive-foreground: var(--destructive-foreground);
 }
 
+/* Nền giấy kẻ ô 24px (DESIGN.md): chỉ nền trang, không trong khung */
+@utility graph-paper {
+  background-image:
+    linear-gradient(var(--grid) 1px, transparent 1px),
+    linear-gradient(90deg, var(--grid) 1px, transparent 1px);
+  background-size: 24px 24px;
+}
+
 @layer base {
   * {
     @apply border-border outline-ring;
