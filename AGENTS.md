@@ -39,18 +39,12 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
 > Sửa quy tắc dự án ở đây, **bên ngoài** cặp marker `HARNESS:BEGIN/END`
 > (phần trong marker do `harness update` quản lý).
 
-Đọc `SPEC.md` trước khi làm bất cứ việc gì. SPEC là nguồn sự thật về phạm vi; không tự thêm tính năng ngoài SPEC.
+Đọc `SPEC.md` trước khi làm bất cứ việc gì. SPEC là nguồn sự thật **duy nhất** về phạm vi; không tự thêm tính năng ngoài SPEC.
 
-> **Trạng thái:** v0.1 và **v0.2 xong 22/10/2026** (production https://brainrot-blue.vercel.app; tag `v0.1.0`, `v0.2.0`).
-> Phạm vi: `SPEC.md` + `SPEC-v0.2.md`; kết quả ở `docs/plans/completed/`. **v0.3 (Dashboard)**: `SPEC-v0.3.md` đã duyệt và triển khai,
-> plan `docs/plans/active/v0.3.md` chờ Trung test. **v0.4 (Mục tiêu · Thói quen · Nhìn lại)**: `SPEC-v0.4.md` đã duyệt, code xong 7 bước
-> (26/10/2026, tag `v0.4.0`), plan `docs/plans/active/v0.4.md` chờ Trung test.
-> **v0.5 (Một kho việc, bỏ Planner)**: `SPEC-v0.5.md` đã duyệt, code xong 5 bước (26/10/2026,
-> tag `v0.5.0`), plan `docs/plans/active/v0.5.md` chờ Trung test. Planner đã gỡ; Notion Tasks là kho việc duy nhất.
-> **v1.0 (Postgres, bỏ Notion)**: `SPEC-v1.0.md` đã duyệt 27/10/2026, **lên production 05/11/2026** (tag `v1.0.0`),
-> đăng nhập email + mật khẩu. Plan `docs/plans/active/v1.0.md`. **Bước 5 xong 10/11/2026** (giữ email + mật khẩu, không Google): đăng xuất, Cài đặt
-> (tên, hạn đếm ngược, dự án riêng, đổi mật khẩu, xoá tài khoản), chống dò mật khẩu; Trung tạo tài khoản bạn bằng `npm run user:password`.
-> **Redesign 11/2026 lên production 11/11/2026** (PR #110, tag `v1.1.0-ui`): rà soát `docs/audits/2026-11-audit.md`, hướng nhìn `DESIGN.md`.
+> **Trạng thái (11/11/2026):** **v1.0 đang chạy production** (https://brainrot-blue.vercel.app; Postgres, email + mật khẩu,
+> nhiều người dùng; tag `v1.0.0`, redesign `v1.1.0-ui`). Trung muốn **hoàn thành cả project trong tuần 11–18/11/2026**:
+> plan `docs/plans/active/v1.1.md`; phần v1.1 (Knowledge, Brain, Calendar) ở `SPEC.md` mục 10, **chờ Trung duyệt** mới code.
+> SPEC cũ (v0.1 → v1.0) là lịch sử ở `docs/specs/archive/`; plan cũ ở `docs/plans/completed/`.
 > Yêu cầu mới → ghi vào "Follow-ups" của plan đang chạy, chốt SPEC trước khi code.
 
 ## Thứ tự ưu tiên khi hướng dẫn mâu thuẫn
@@ -64,13 +58,15 @@ Harness tự nói repo sở hữu quy trình riêng, nên khi lệch nhau thì q
 
 ## Harness trong dự án này
 
-- **Sản phẩm:** nguồn sự thật là `SPEC.md` ở gốc repo. Không tách SPEC ra `docs/product/` ở v0.1.
+- **Sản phẩm:** nguồn sự thật là `SPEC.md` ở gốc repo (một file hiện hành). Không tách SPEC ra `docs/product/`.
 - **Quyết định thiết kế/sản phẩm** Trung đã chốt → cập nhật thẳng vào `SPEC.md` (SPEC yêu cầu vậy).
   `docs/decisions/` chỉ dùng cho quyết định kỹ thuật lâu dài (ví dụ cách tổ chức database), dùng template `docs/templates/decision.md`.
-- **Plan:** v0.1, v0.2 ở `docs/plans/completed/`. Phiên bản mới → plan mới trong `docs/plans/active/`, cập nhật sau mỗi bước.
-- **Bằng chứng từ v0.2:** thêm `npm test` (vitest) và ảnh chụp thật 1440×900 ở 2 theme cho mọi thay đổi giao diện.
-- **Bằng chứng hoàn thành (proof):** `npm run build` + `npm run lint` không lỗi, và Trung test tay theo
-  danh sách ở cuối mỗi bước. Không thêm framework test ở v0.1 (giữ ít dependency).
+  Khi quyết định mới thay quyết định cũ: sửa thẳng đoạn tương ứng trong `SPEC.md` (không viết ghi chú chồng lên)
+  và thêm một dòng vào mục 11 "Nhật ký quyết định".
+- **Plan:** plan đang chạy ở `docs/plans/active/` (cập nhật sau mỗi bước); xong thì chuyển sang `docs/plans/completed/`.
+  Mục "Active Plans" trong `docs/plans/README.md` là chữ mặc định của Harness, không phản ánh repo này.
+- **Bằng chứng hoàn thành (proof):** `npm run lint` + `npm test` (vitest) + `npm run build` không lỗi; ảnh chụp thật
+  1440×900 ở 2 theme cho mọi thay đổi giao diện; Trung test tay theo danh sách ở cuối mỗi bước.
 - **Git:** Trung cho phép agent tự tạo nhánh, commit, push, mở PR và **tự merge PR** vào `main`
   sau khi bước đó build/lint sạch. Không đổi CI hay branch protection nếu Trung chưa yêu cầu.
   **Giữ nhánh sau khi merge** (Trung yêu cầu 26/10/2026): `gh pr merge --merge`, **không** `--delete-branch`.
@@ -83,7 +79,8 @@ Harness tự nói repo sở hữu quy trình riêng, nên khi lệch nhau thì q
 
 ## Về người dùng
 
-Trung, sinh viên năm 4 PTIT (IoT/Nhúng), đang làm đồ án hạn 06/12/2026. Thời gian cho dự án này ≤ 2 giờ/tuần.
+Trung, sinh viên năm 4 PTIT (IoT/Nhúng), đang làm đồ án hạn 06/12/2026. Thời gian cho dự án này ≤ 2 giờ/tuần
+(riêng tuần 11–18/11/2026 Trung chấp nhận khoảng 2–3 giờ để chốt project).
 Trung không muốn tự viết code ở dự án này: agent viết, Trung review, test và quyết định.
 
 ## Cách giao tiếp
@@ -92,11 +89,12 @@ Trung không muốn tự viết code ở dự án này: agent viết, Trung revi
 - Thuật ngữ tiếng Anh / khái niệm mới → giải thích ngắn trong ngoặc. Ví dụ: "middleware (đoạn code chạy trước mỗi request để kiểm tra đăng nhập)".
 - Không bịa thông tin. Không chắc về API/thư viện → kiểm tra docs hoặc source, nói rõ là chưa chắc.
 - Khi có quyết định thiết kế chưa có trong SPEC → hỏi Trung, đưa phương án đề xuất, không tự quyết.
-- Phản biện nếu yêu cầu mới làm phình phạm vi hoặc ảnh hưởng mốc 08/11.
+- Phản biện nếu yêu cầu mới làm phình phạm vi hoặc ảnh hưởng mốc chốt project 18/11/2026 và hạn đồ án 06/12/2026.
 
 ## Stack
 
-Next.js (App Router) + TypeScript (strict) · Tailwind CSS · Drizzle ORM + Neon Postgres · react-force-graph-3d · Vercel
+Next.js 16 (App Router) + TypeScript (strict) · Tailwind CSS v4 · shadcn/ui + ReUI · Drizzle ORM + Neon Postgres · Recharts ·
+Vitest · Vercel. `react-force-graph-3d` (Brain) còn trong dependency nhưng trang đang ẩn tới khi làm `SPEC.md` mục 10.2.
 
 ## Quy tắc code
 
@@ -111,7 +109,7 @@ Next.js (App Router) + TypeScript (strict) · Tailwind CSS · Drizzle ORM + Neon
   `components/reui/` (Button, Input, Checkbox, Select, Collapsible, ToggleGroup, AlertDialog, Skeleton, toast `sonner`…),
   khung `components/card.tsx`, nhãn `components/pill.tsx`; không tự viết lại nút/ô nhập/dải hoàn tác.
 - Ngày giờ tính theo múi giờ Asia/Ho_Chi_Minh.
-- Ưu tiên đơn giản, ít dependency. Không thêm database, auth library hay state library ở v0.1.
+- Ưu tiên đơn giản, ít dependency. Không thêm auth library hay state library; thêm dependency mới phải nêu lý do trong PR.
 
 ## Bảo mật
 
@@ -121,7 +119,7 @@ Next.js (App Router) + TypeScript (strict) · Tailwind CSS · Drizzle ORM + Neon
 
 ## Quy trình
 
-- Lập plan theo mục 12 của SPEC, cho Trung duyệt trước khi code.
+- Tính năng mới: viết vào `SPEC.md` (kèm câu hỏi cần chốt), cho Trung duyệt trước khi code; lập plan trong `docs/plans/active/`.
 - Làm từng bước nhỏ; mỗi bước chạy được (`npm run dev`, `npm run build`, `npm run lint` không lỗi) rồi mới commit.
 - Commit message ngắn, tiếng Anh, dạng `feat: ...`, `fix: ...`.
 - Cuối mỗi bước: tóm tắt 2–3 dòng đã làm gì + Trung cần test gì.
@@ -133,6 +131,8 @@ npm install
 npm run dev      # http://localhost:3000
 npm run build
 npm run lint
-npm test                      # vitest: lib Brainrot (từ v0.2; Planner gỡ ở v0.5)
+npm test                      # vitest (truy vấn chạy trên PGlite)
+npm run db:generate           # sau khi sửa lib/db/schema.ts → commit migration
+npm run demo:seed             # làm mới tài khoản demo để chụp ảnh / rà soát
 scripts/bin/harness doctor    # kiểm tra Harness còn nguyên vẹn
 ```

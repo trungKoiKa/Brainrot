@@ -1,3 +1,5 @@
+> **Đã lưu trữ (11/11/2026).** File này là lịch sử, giữ nguyên văn. Hành vi hiện hành của sản phẩm: [`SPEC.md`](../../../SPEC.md).
+
 # SPEC — Second Brain Web v1.0: Nhiều người dùng (bỏ Notion)
 
 > Thay nền dữ liệu của `SPEC.md` → `SPEC-v0.5.md`. Hành vi các màn (Today, Tasks, Goal, Dashboard) **giữ nguyên** như

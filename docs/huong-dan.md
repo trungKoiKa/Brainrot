@@ -1,7 +1,7 @@
 # Hướng dẫn sử dụng Brainrot
 
 > Áp dụng từ **v1.0** (05/11/2026). Production: <https://brainrot-blue.vercel.app> (đăng nhập email + mật khẩu).
-> Cài đặt, biến môi trường, database: xem [`README.md`](../README.md). Lý do thiết kế: [`SPEC-v0.5.md`](../SPEC-v0.5.md), [`SPEC-v1.0.md`](../SPEC-v1.0.md).
+> Cài đặt, biến môi trường, database: xem [`README.md`](../README.md). Phạm vi và hành vi sản phẩm: [`SPEC.md`](../SPEC.md).
 > Sơ đồ là ảnh PNG; nguồn mermaid để sửa nằm cạnh ảnh trong [`images/huong-dan/`](images/huong-dan/) (`*.mmd`).
 
 ## 1. Ý tưởng chính
@@ -54,7 +54,8 @@ Thao tác:
 - Cuối khối là **mục tiêu tuần Ưu tiên** (✓ khi xong, kể cả tự xong) — nhắc mình tuần này đang hướng tới gì.
 - Thẻ **Thói quen hôm nay**: bấm từng thói quen đã làm → ghi vào Daily Log của hôm nay (tự tạo nếu chưa có).
 
-Các thẻ khác chỉ để xem: đếm ngược đồ án, **Next up** (Google Calendar), **Deadline 14 ngày tới**, kiến thức mới.
+Các phần khác chỉ để xem: dòng đếm ngược dưới lời chào và thẻ **Hạn · 14 ngày** (không lặp việc đã nằm trong "Hôm nay làm").
+Next up (Google Calendar) và "kiến thức mới" đang ẩn từ v1.0.
 
 ### 2.3 Buổi tối → Today, khối Ghi nhanh
 
@@ -100,12 +101,13 @@ Trên điện thoại 7 thẻ thành danh sách dọc, ngày hôm nay mở sẵn
 - Hàng KPI: **Việc tồn** (quá hạn → đỏ), **Hoàn thành**, **Tuần này** (% task có Ngày làm trong tuần đã xong;
   "—" nếu chưa xếp lịch việc nào), **Đồ án** (còn bao nhiêu ngày).
 - **Task theo dự án** (bấm cột → Tasks lọc dự án đó), **Mục tiêu tháng này**, **Sắp đến hạn** (14 ngày),
-  **Nhịp làm & học** (12 tuần), **Nhịp hằng ngày**, **Thói quen**.
-- Khối nào thiếu nguồn thật thì tự dùng mẫu và có nhãn **"Mẫu"**.
+  **Nhịp làm** (việc xong 12 tuần), **Nhịp hằng ngày**, **Thói quen**.
+- Ở chế độ Thật, khối nào chưa có dữ liệu thì gom vào khung **"Chưa có dữ liệu"** cuối trang kèm link tới chỗ thêm
+  (không tự lấp bằng dữ liệu mẫu). Chế độ Mẫu có một dải thông báo đầu trang và nút "Về dữ liệu thật".
 
 ### 2.8 Kiến thức → Brain
 
-Tạm ẩn từ v1.0 (chưa có bảng Kiến thức); quay lại ở v1.1. `/brain` chuyển về Today.
+Tạm ẩn từ v1.0 (chưa có bảng Kiến thức). `/brain` chuyển về Today. Kế hoạch làm lại: `SPEC.md` mục 10.
 
 ## 3. Luồng dữ liệu bên trong
 

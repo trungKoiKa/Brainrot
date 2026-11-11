@@ -4,7 +4,7 @@ Date: 2026-10-22
 
 ## Status
 
-Accepted
+Superseded (05/11/2026) — v1.0 bỏ Notion, dữ liệu ở Postgres. Xem [0004](0004-postgres-drizzle-userid.md).
 
 ## Context
 

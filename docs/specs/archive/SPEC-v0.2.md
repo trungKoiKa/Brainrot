@@ -1,3 +1,5 @@
+> **Đã lưu trữ (11/11/2026).** File này là lịch sử, giữ nguyên văn. Hành vi hiện hành của sản phẩm: [`SPEC.md`](../../../SPEC.md).
+
 # SPEC — Second Brain Web v0.2
 
 > Bổ sung cho `SPEC.md` (v0.1). Mục nào không nhắc ở đây thì giữ nguyên như v0.1.
