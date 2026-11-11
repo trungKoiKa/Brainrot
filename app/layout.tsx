@@ -1,10 +1,10 @@
 import type { Metadata } from "next";
-import { Be_Vietnam_Pro, IBM_Plex_Mono } from "next/font/google";
+import { IBM_Plex_Mono, Plus_Jakarta_Sans } from "next/font/google";
 import { THEME_INIT_SCRIPT } from "@/lib/theme";
 import "./globals.css";
 
-// Be Vietnam Pro cho chữ đọc (Trung đổi 11/11/2026: Plex Sans trông cứng), Plex Mono chỉ cho số và nhãn IN HOA ngắn.
-const sans = Be_Vietnam_Pro({
+// Plus Jakarta Sans cho chữ đọc (Trung chọn 11/11/2026 sau khi so 6 font), Plex Mono chỉ cho số và nhãn IN HOA ngắn.
+const sans = Plus_Jakarta_Sans({
   variable: "--font-sans-main",
   subsets: ["latin", "vietnamese"],
   weight: ["400", "500", "600"],

@@ -38,17 +38,17 @@ colors:
   project-neutral-dark: "#9ea69a"
 typography:
   display:
-    fontFamily: "Be Vietnam Pro, system-ui, sans-serif"
+    fontFamily: "Plus Jakarta Sans, system-ui, sans-serif"
     fontSize: "1.875rem"
     fontWeight: 600
     lineHeight: 1.15
   title:
-    fontFamily: "Be Vietnam Pro, system-ui, sans-serif"
+    fontFamily: "Plus Jakarta Sans, system-ui, sans-serif"
     fontSize: "0.875rem"
     fontWeight: 600
     lineHeight: 1.43
   body:
-    fontFamily: "Be Vietnam Pro, system-ui, sans-serif"
+    fontFamily: "Plus Jakarta Sans, system-ui, sans-serif"
     fontSize: "0.875rem"
     fontWeight: 400
     lineHeight: 1.43
@@ -108,8 +108,8 @@ và trạng thái là pill bo tròn mềm, chỗ duy nhất được bo tròn, �
 
 ## Typography
 
-- **Be Vietnam Pro** (400, 500, 600) cho mọi chữ đọc; tiêu đề trang 30px 600, tiêu đề khung 14px 600. Trung đổi từ
-  IBM Plex Sans ngày 11/11/2026 vì Plex Sans trông cứng; Be Vietnam Pro làm riêng cho tiếng Việt, mềm hơn.
+- **Plus Jakarta Sans** (400, 500, 600) cho mọi chữ đọc; tiêu đề trang 30px 600, tiêu đề khung 14px 600. Trung chọn
+  ngày 11/11/2026 sau khi so 6 font (Plex Sans rồi Be Vietnam Pro đều trông cứng).
 - **IBM Plex Mono** (400) **chỉ** cho số và nhãn IN HOA ngắn: hàng chỉ số (24px), số thứ tự dòng `01`, `T-03`, `D-25`,
   ngày đứng riêng `13/11`, nhãn ô chỉ số (`VIỆC HÔM NAY`). Chữ thường lẫn số ("hạn 13/11", "8 dòng") dùng font chữ đọc
   với `tabular-nums`.
