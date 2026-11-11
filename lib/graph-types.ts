@@ -1,4 +1,4 @@
-// Dữ liệu graph Brain (SPEC.md mục 10.2) — dùng chung server (dựng) và client (vẽ).
+// Dữ liệu graph Brain (SPEC.md mục 5.7) — dùng chung server (dựng) và client (vẽ).
 
 export type GraphNodeKind = "field" | "project" | "note" | "task";
 

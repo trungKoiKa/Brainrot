@@ -12,7 +12,7 @@ import { KNOWLEDGE_LEVELS, noteDay } from "@/lib/knowledge";
 
 export const metadata: Metadata = { title: "Knowledge · Brainrot" };
 
-// SPEC.md mục 10.1: "Tôi đã học được gì?" — ghi chú kiến thức theo lĩnh vực, mức hiểu, có liên kết giữa các ghi chú.
+// SPEC.md mục 5.6: "Tôi đã học được gì?" — ghi chú kiến thức theo lĩnh vực, mức hiểu, có liên kết giữa các ghi chú.
 export default function KnowledgePage({ searchParams }: PageProps<"/knowledge">) {
   return (
     <>

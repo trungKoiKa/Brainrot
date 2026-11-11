@@ -191,7 +191,7 @@ function DeadlinesCard({ items }: { items: DeadlineItem[] }) {
   );
 }
 
-/** "Kiến thức mới": 5 ghi chú mới nhất (SPEC.md mục 10.1). Bấm tên mở Knowledge. */
+/** "Kiến thức mới": 5 ghi chú mới nhất (SPEC.md mục 5.6). Bấm tên mở Knowledge. */
 function LatestNotesCard({ notes, fields }: { notes: Knowledge[]; fields: string[] }) {
   return (
     <Card

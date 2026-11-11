@@ -34,7 +34,7 @@ export const getTasks = cache(async (): Promise<Loaded<Task[]>> => {
   return fresh(await listTasks(db, userId));
 });
 
-/** Ghi chú kiến thức của người đang đăng nhập (SPEC.md mục 10.1). */
+/** Ghi chú kiến thức của người đang đăng nhập (SPEC.md mục 5.6). */
 export const getKnowledge = cache(async (): Promise<Loaded<Knowledge[]>> => {
   const { db, userId } = await scope();
   return fresh(await listKnowledge(db, userId));

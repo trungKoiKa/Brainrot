@@ -165,7 +165,7 @@ export const ideas = pgTable(
   (t) => [index("ideas_user_idx").on(t.userId)],
 );
 
-// ---------- Knowledge (SPEC.md mục 10.1, v1.1) ----------
+// ---------- Knowledge (SPEC.md mục 5.6, v1.1) ----------
 
 /** Lĩnh vực của ghi chú kiến thức: danh sách riêng từng người, quản lý ở Cài đặt (như `projects`). */
 export const fields = pgTable(

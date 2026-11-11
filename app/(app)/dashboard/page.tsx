@@ -14,7 +14,7 @@ import { reflectionOf } from "@/lib/reflections";
 import { doneHabits, LEGACY_EXERCISE } from "@/lib/habits";
 import { splitLines } from "@/lib/today";
 
-// SPEC.md mục 5: "Tôi đang làm tốt không?". Chỉ đọc. "Nhịp làm & học" đếm thêm ghi chú kiến thức (mục 10.1).
+// SPEC.md mục 5: "Tôi đang làm tốt không?". Chỉ đọc. "Nhịp làm & học" đếm thêm ghi chú kiến thức (mục 5.6).
 export default function DashboardPage() {
   return (
     <div>

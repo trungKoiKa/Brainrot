@@ -36,7 +36,7 @@ export type DashInput = {
   today: string;
   tasks: DashTask[];
   logs: DashLog[];
-  /** Ngày của từng ghi chú kiến thức (Ngày học, không có thì ngày tạo) — SPEC.md mục 10.1 */
+  /** Ngày của từng ghi chú kiến thức (Ngày học, không có thì ngày tạo) — SPEC.md mục 5.6 */
   knowledge: string[];
   thesisDeadline: string | null;
   /** Nhãn thẻ đếm ngược trong Cài đặt (vd. "hạn nộp đồ án"); thiếu → "Hạn chót" */

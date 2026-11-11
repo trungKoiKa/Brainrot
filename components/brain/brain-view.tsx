@@ -3,7 +3,7 @@
 import dynamic from "next/dynamic";
 import type { GraphData } from "@/lib/graph-types";
 
-// three.js chỉ chạy được trên trình duyệt → không render phía server; chỉ trang /brain tải gói này (SPEC.md mục 10.2)
+// three.js chỉ chạy được trên trình duyệt → không render phía server; chỉ trang /brain tải gói này (SPEC.md mục 5.7)
 const BrainGraph = dynamic(() => import("./brain-graph"), {
   ssr: false,
   loading: () => <p className="p-6 text-sm text-muted-foreground">Đang dựng graph…</p>,

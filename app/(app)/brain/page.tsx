@@ -13,7 +13,7 @@ export const metadata: Metadata = { title: "Brain · Brainrot" };
 
 const linkClass = "font-medium text-primary underline-offset-4 hover:underline";
 
-// SPEC.md mục 10.2: bản đồ 3D nối ghi chú với lĩnh vực, việc chưa xong với dự án, và các ghi chú "liên quan tới" nhau.
+// SPEC.md mục 5.7: bản đồ 3D nối ghi chú với lĩnh vực, việc chưa xong với dự án, và các ghi chú "liên quan tới" nhau.
 export default function BrainPage() {
   return (
     <>

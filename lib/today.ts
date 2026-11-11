@@ -92,7 +92,7 @@ export function upcomingDeadlines(today: string, tasks: Task[], horizon = 14): D
     .sort((a, b) => (a.deadline < b.deadline ? -1 : a.deadline > b.deadline ? 1 : 0));
 }
 
-/** 5 ghi chú mới nhất theo Ngày học, thiếu thì dùng ngày tạo (SPEC.md mục 10.1). */
+/** 5 ghi chú mới nhất theo Ngày học, thiếu thì dùng ngày tạo (SPEC.md mục 5.6). */
 export function latestKnowledge(notes: Knowledge[], limit = 5): Knowledge[] {
   return sortNotes(notes).slice(0, limit);
 }

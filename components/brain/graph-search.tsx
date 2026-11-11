@@ -15,7 +15,7 @@ const KIND_LABEL: Record<GraphNode["kind"], string> = {
 };
 
 /**
- * Ô tìm trên graph (SPEC.md mục 10.2): combobox, ↑↓ chọn, Enter bay tới, Esc bỏ chọn, phím / để focus.
+ * Ô tìm trên graph (SPEC.md mục 5.7): combobox, ↑↓ chọn, Enter bay tới, Esc bỏ chọn, phím / để focus.
  */
 export function GraphSearch({
   nodes,

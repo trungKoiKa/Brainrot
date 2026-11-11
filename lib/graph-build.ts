@@ -1,4 +1,4 @@
-// Dựng dữ liệu graph Brain (SPEC.md mục 10.2). Hàm thuần, không gọi database → test được.
+// Dựng dữ liệu graph Brain (SPEC.md mục 5.7). Hàm thuần, không gọi database → test được.
 import type { GraphData, GraphLink, GraphNode } from "./graph-types";
 import type { Knowledge, Task } from "./types";
 

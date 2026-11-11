@@ -126,7 +126,7 @@ type ListItem = { id: string; name: string; count: number };
 
 /**
  * Danh sách tên của riêng mình: thêm, đổi tên tại chỗ, xoá khi không còn mục nào gắn.
- * Dùng cho Dự án (SPEC.md mục 5.5) và Lĩnh vực (mục 10.1).
+ * Dùng cho Dự án (SPEC.md mục 5.5) và Lĩnh vực (mục 5.6).
  */
 function NameListManager({
   items,
@@ -260,7 +260,7 @@ export function ProjectManager({ projects }: { projects: { id: string; name: str
   );
 }
 
-/** Lĩnh vực của ghi chú kiến thức (SPEC.md mục 10.1): xoá chỉ khi không còn ghi chú. */
+/** Lĩnh vực của ghi chú kiến thức (SPEC.md mục 5.6): xoá chỉ khi không còn ghi chú. */
 export function FieldManager({ fields }: { fields: { id: string; name: string; notes: number }[] }) {
   return (
     <NameListManager
