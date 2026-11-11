@@ -3,12 +3,16 @@
 import Link from "next/link";
 import { CheckIcon } from "lucide-react";
 import { ErrorNotice } from "@/components/tasks/task-row";
+import { addDays, formatDay, weekdayShort } from "@/lib/date";
 import { useHabitDays } from "./use-habit-days";
 
-/** Thẻ "Thói quen hôm nay" trên Today (SPEC-v0.4 3.3): bấm là lưu. */
-export function HabitToday({ habits, done, today }: { habits: string[]; done: string[]; today: string }) {
-  const { days, toggle, error, dismissError } = useHabitDays({ [today]: done });
-  const list = days[today] ?? [];
+/**
+ * Thói quen trên Today dạng lưới 7 ngày như phương án C (Trung chọn 11/11/2026): mỗi hàng một thói quen, 7 ô vuông
+ * cho 6 ngày trước + hôm nay; bấm ô để tích / bỏ tích ngày đó (lưu ngay, như bảng tháng ở Goal — SPEC-v0.4 3.3).
+ */
+export function HabitToday({ habits, doneByDay, today }: { habits: string[]; doneByDay: Record<string, string[]>; today: string }) {
+  const { days, toggle, error, dismissError } = useHabitDays(doneByDay);
+  const week = Array.from({ length: 7 }, (_, i) => addDays(today, i - 6));
 
   if (habits.length === 0) {
     return (
@@ -21,39 +25,63 @@ export function HabitToday({ habits, done, today }: { habits: string[]; done: st
     );
   }
 
-  const count = habits.filter((h) => list.includes(h)).length;
+  const todayCount = habits.filter((h) => (days[today] ?? []).includes(h)).length;
   return (
     <div>
       {error && <ErrorNotice message={error} onDismiss={dismissError} />}
-      <ul className="flex flex-wrap gap-2">
-        {habits.map((name) => {
-          const on = list.includes(name);
-          return (
-            <li key={name}>
-              <button
-                type="button"
-                aria-pressed={on}
-                onClick={() => toggle(today, name, !on)}
-                className={`flex items-center gap-2 rounded-full border px-3 py-1.5 text-sm transition-colors outline-none focus-visible:ring-3 focus-visible:ring-ring ${
-                  on
-                    ? "border-primary bg-accent-soft font-medium text-primary"
-                    : "border-line text-muted-foreground hover:border-primary hover:text-foreground"
-                }`}
+      <table className="w-full border-collapse text-sm">
+        <caption className="sr-only">Thói quen 7 ngày gần nhất, bấm ô để tích</caption>
+        <thead>
+          <tr>
+            <th scope="col" className="sr-only">
+              Thói quen
+            </th>
+            {week.map((d) => (
+              <th
+                key={d}
+                scope="col"
+                className={`w-7 pb-1.5 text-center font-mono text-xs font-normal ${d === today ? "text-primary" : "text-muted-foreground"}`}
               >
-                <span
-                  aria-hidden="true"
-                  className={`flex size-4 items-center justify-center rounded-full border ${on ? "border-primary bg-primary text-primary-foreground" : "border-line"}`}
-                >
-                  {on && <CheckIcon className="size-3" strokeWidth={3} />}
-                </span>
+                <abbr title={formatDay(d, true)} className="no-underline">
+                  {weekdayShort(d)}
+                </abbr>
+              </th>
+            ))}
+          </tr>
+        </thead>
+        <tbody>
+          {habits.map((name) => (
+            <tr key={name}>
+              <th scope="row" className="max-w-0 truncate py-1 pr-2 text-left font-normal" title={name}>
                 {name}
-              </button>
-            </li>
-          );
-        })}
-      </ul>
+              </th>
+              {week.map((d) => {
+                const on = (days[d] ?? []).includes(name);
+                return (
+                  <td key={d} className="py-1 text-center">
+                    <button
+                      type="button"
+                      aria-pressed={on}
+                      aria-label={`${name} ${weekdayShort(d)} ${formatDay(d, true)}`}
+                      onClick={() => toggle(d, name, !on)}
+                      className={`mx-auto flex size-6 items-center justify-center border transition-colors max-md:size-8 ${
+                        on ? "border-primary bg-primary text-primary-foreground" : "border-input hover:border-primary"
+                      }`}
+                    >
+                      {on && <CheckIcon aria-hidden="true" className="size-3.5" strokeWidth={3} />}
+                    </button>
+                  </td>
+                );
+              })}
+            </tr>
+          ))}
+        </tbody>
+      </table>
       <p className="mt-3 text-xs text-muted-foreground">
-        {count}/{habits.length} hôm nay ·{" "}
+        <span className="font-mono">
+          {todayCount}/{habits.length}
+        </span>{" "}
+        hôm nay ·{" "}
         <Link href="/goals" className="underline underline-offset-2 hover:text-foreground">
           xem cả tháng
         </Link>

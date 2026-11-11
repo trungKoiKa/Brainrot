@@ -1,9 +1,8 @@
 "use client";
 
-import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useSyncExternalStore } from "react";
-import { LogOutIcon, SettingsIcon } from "lucide-react";
+import { LogOutIcon } from "lucide-react";
 import { logoutAction } from "@/app/actions/account";
 import { SidebarMenu, SidebarMenuButton, SidebarMenuItem } from "@/components/ui/sidebar";
 import { daysBetween, longDateVN, todayVN } from "@/lib/date";
@@ -38,16 +37,11 @@ export function SidebarAccount({ name, target }: { name: string; target: { date:
       {/* Today đã có ngày + đếm ngược ở dòng phụ dưới lời chào → không lặp ở đây */}
       {!isActive("/today", pathname) && <DateInfo target={target} />}
       <SidebarMenu>
-        <SidebarMenuItem>
-          <SidebarMenuButton
-            render={<Link href="/settings" aria-current={isActive("/settings", pathname) ? "page" : undefined} />}
-            isActive={isActive("/settings", pathname)}
-            tooltip="Cài đặt"
-          >
-            <SettingsIcon aria-hidden="true" />
-            <span className="min-w-0 truncate">{name || "Cài đặt"}</span>
-          </SidebarMenuButton>
-        </SidebarMenuItem>
+        {name && (
+          <SidebarMenuItem>
+            <p className="truncate px-2 pb-1 text-xs text-muted-foreground">Đang đăng nhập: {name}</p>
+          </SidebarMenuItem>
+        )}
         <SidebarMenuItem>
           <form action={logoutAction}>
             <SidebarMenuButton type="submit" tooltip="Đăng xuất">

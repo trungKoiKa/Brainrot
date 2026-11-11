@@ -12,7 +12,7 @@ import { DailyLogCapture, IdeaForm } from "@/components/quick-capture";
 import { HabitToday } from "@/components/habits/habit-today";
 import { doneHabits, habitsForMonth } from "@/lib/habits";
 import { monthOf, periodOf } from "@/lib/period";
-import { daysBetween, formatDay, greetingVN, isEveningVN, longDateVN, workdayClock, workdayVN } from "@/lib/date";
+import { addDays, daysBetween, formatDay, greetingVN, isEveningVN, longDateVN, workdayClock, workdayVN } from "@/lib/date";
 import { anyStale, getGoals, getHabits, getProfile, getRecentDailyLogs, getTaskProjects, getTasks } from "@/lib/db/data";
 import { resolveGoals } from "@/lib/db/goal-status";
 import { isGoalDone, type Goal } from "@/lib/goals";
@@ -72,7 +72,7 @@ async function TodayContent() {
 
   return (
     <>
-      <PageHeader kicker={`NHẬT KÝ · ${today}`} title={`${greetingVN(now)}, ${givenName(profile.name)}`} subtitle={longDateVN(workdayClock(now))} />
+      <PageHeader kicker={`NHẬT KÝ · ${today}`} title={`${greetingVN(now)}, ${givenName(profile.name)}`} aside={longDateVN(workdayClock(now))} />
       <StaleBanner show={anyStale(habitsLoaded, goalsLoaded, ...weekGoals.loaded, ...loaded)} />
 
       <Readouts
@@ -103,8 +103,12 @@ async function TodayContent() {
         </div>
 
         <aside className="flex min-w-0 flex-col gap-6" aria-label="Thói quen và hạn sắp tới">
-          <Card title="Thói quen hôm nay">
-            <HabitToday habits={habits} done={todayLog ? doneHabits(todayLog) : []} today={today} />
+          <Card title="Thói quen · 7 ngày">
+            <HabitToday
+              habits={habits}
+              doneByDay={Object.fromEntries(logs.flatMap((l) => (l.date && l.date > addDays(today, -7) ? [[l.date, doneHabits(l)]] : [])))}
+              today={today}
+            />
           </Card>
           <DeadlinesCard items={deadlines} />
         </aside>
