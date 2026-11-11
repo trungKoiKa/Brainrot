@@ -1,5 +1,6 @@
-// Quy tắc của trang Today (SPEC 7.1). Hàm thuần, không gọi Notion → dễ kiểm tra.
+// Quy tắc của trang Today (SPEC.md mục 5). Hàm thuần, không gọi database → dễ kiểm tra.
 import { addDays, daysBetween } from "./date";
+import { sortNotes } from "./knowledge";
 import type { Knowledge, Priority, Task } from "./types";
 
 const PRIORITY_RANK: Record<Priority, number> = { Cao: 0, Vừa: 1, Thấp: 2 };
@@ -91,12 +92,9 @@ export function upcomingDeadlines(today: string, tasks: Task[], horizon = 14): D
     .sort((a, b) => (a.deadline < b.deadline ? -1 : a.deadline > b.deadline ? 1 : 0));
 }
 
-/** 5 note mới nhất theo Ngày học, thiếu thì dùng thời điểm tạo trang. */
+/** 5 ghi chú mới nhất theo Ngày học, thiếu thì dùng ngày tạo (SPEC.md mục 10.1). */
 export function latestKnowledge(notes: Knowledge[], limit = 5): Knowledge[] {
-  const key = (k: Knowledge) => k.learnedOn ?? k.createdTime.slice(0, 10);
-  return [...notes]
-    .sort((a, b) => key(b).localeCompare(key(a)) || b.createdTime.localeCompare(a.createdTime))
-    .slice(0, limit);
+  return sortNotes(notes).slice(0, limit);
 }
 
 export function deadlineLabel(daysLeft: number): string {

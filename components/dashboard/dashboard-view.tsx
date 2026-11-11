@@ -99,8 +99,9 @@ export function DashboardView({ real }: { real: DashInput }) {
   const projects = tasksByProject(src.tasks);
   // Biểu đồ Nhịp hằng ngày cần ít nhất ngần này ngày có log (7 ngày → 3, 30/90 ngày → 5)
   const minLoggedDays = Math.min(5, Math.ceil(period / 3));
-  const weeklyTotal = weekly.rows.reduce((s, r) => s + r.done, 0);
-  const weeklyActive = weekly.rows.filter((r) => r.done > 0).length;
+  const weeklyDone = weekly.rows.reduce((s, r) => s + r.done, 0);
+  const weeklyLearned = weekly.rows.reduce((s, r) => s + r.learned, 0);
+  const weeklyActive = weekly.rows.filter((r) => r.done + r.learned > 0).length;
 
   // Thứ tự để lưới dày không hở: dự án (2) + mục tiêu · nhịp làm (2) + sắp đến hạn · nhịp hằng ngày (2) + thói quen
   const blocks: Block[] = [
@@ -155,17 +156,17 @@ export function DashboardView({ real }: { real: DashInput }) {
       key: "weekly",
       span: 2,
       full: weeklyActive >= MIN_ACTIVE_WEEKS,
-      title: "Nhịp làm",
+      title: "Nhịp làm & học",
       node: (
-        <Card title="Nhịp làm" className={fill} action={<ChangeBadge change={weekly.change} />}>
-          <p className="-mt-3 mb-4 text-sm text-muted-foreground">12 tuần · việc xong mỗi tuần · tuần cuối đang diễn ra</p>
+        <Card title="Nhịp làm & học" className={fill} action={<ChangeBadge change={weekly.change} />}>
+          <p className="-mt-3 mb-4 text-sm text-muted-foreground">12 tuần · việc xong và ghi chú mới mỗi tuần · tuần cuối đang diễn ra</p>
           <WeeklyArea rows={weekly.rows} />
         </Card>
       ),
       empty:
-        weeklyTotal === 0
-          ? "Chưa có việc nào xong trong 12 tuần qua."
-          : `12 tuần qua: ${weeklyTotal} việc xong, ${weeklyActive} tuần có việc xong. Biểu đồ hiện khi có từ ${MIN_ACTIVE_WEEKS} tuần.`,
+        weeklyDone + weeklyLearned === 0
+          ? "Chưa có việc nào xong hay ghi chú nào trong 12 tuần qua."
+          : `12 tuần qua: ${weeklyDone} việc xong, ${weeklyLearned} ghi chú mới, ${weeklyActive} tuần có hoạt động. Biểu đồ hiện khi có từ ${MIN_ACTIVE_WEEKS} tuần.`,
     },
     {
       key: "due",

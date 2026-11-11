@@ -13,12 +13,15 @@ import { HabitToday } from "@/components/habits/habit-today";
 import { doneHabits, habitsForMonth } from "@/lib/habits";
 import { monthOf, periodOf } from "@/lib/period";
 import { addDays, daysBetween, formatDay, greetingVN, isEveningVN, longDateVN, workdayClock, workdayVN } from "@/lib/date";
-import { anyStale, getGoals, getHabits, getProfile, getRecentDailyLogs, getTaskProjects, getTasks } from "@/lib/db/data";
+import { anyStale, getGoals, getHabits, getKnowledge, getKnowledgeFields, getProfile, getRecentDailyLogs, getTaskProjects, getTasks } from "@/lib/db/data";
 import { resolveGoals } from "@/lib/db/goal-status";
 import { isGoalDone, type Goal } from "@/lib/goals";
 import { StaleBanner } from "@/components/stale-banner";
-import type { DailyLog, Task } from "@/lib/types";
-import { planToday, todayProgress, upcomingDeadlines, type DeadlineItem } from "@/lib/today";
+import type { DailyLog, Knowledge, Task } from "@/lib/types";
+import { latestKnowledge, planToday, todayProgress, upcomingDeadlines, type DeadlineItem } from "@/lib/today";
+import { noteDay } from "@/lib/knowledge";
+import { projectColorByOrder } from "@/lib/fields";
+import { Pill } from "@/components/pill";
 
 // Today theo hướng "Nhật ký kỹ thuật" (DESIGN.md, redesign 11/2026): hàng chỉ số → "Hôm nay làm" | cột phụ (thói quen, hạn)
 export default function TodayPage() {
@@ -35,11 +38,13 @@ async function TodayContent() {
   const now = new Date();
   // Today đổi ngày lúc 4:00 (Trung chốt 06/11/2026): 0:00–3:59 vẫn là tối hôm trước
   const today = workdayVN(now);
-  const [profile, habitsLoaded, goalsLoaded, projects, ...loaded] = await Promise.all([
+  const [profile, habitsLoaded, goalsLoaded, projects, notesLoaded, fields, ...loaded] = await Promise.all([
     getProfile(),
     getHabits(),
     getGoals(),
     getTaskProjects(),
+    getKnowledge(),
+    getKnowledgeFields(),
     getTasks(),
     getRecentDailyLogs(),
   ]);
@@ -73,7 +78,7 @@ async function TodayContent() {
   return (
     <>
       <PageHeader kicker={`NHẬT KÝ · ${today}`} title={`${greetingVN(now)}, ${givenName(profile.name)}`} aside={longDateVN(workdayClock(now))} />
-      <StaleBanner show={anyStale(habitsLoaded, goalsLoaded, ...weekGoals.loaded, ...loaded)} />
+      <StaleBanner show={anyStale(habitsLoaded, goalsLoaded, notesLoaded, ...weekGoals.loaded, ...loaded)} />
 
       <Readouts
         className="mb-6"
@@ -102,7 +107,7 @@ async function TodayContent() {
           {!evening && endOfDay}
         </div>
 
-        <aside className="flex min-w-0 flex-col gap-6" aria-label="Thói quen và hạn sắp tới">
+        <aside className="flex min-w-0 flex-col gap-6" aria-label="Thói quen, hạn sắp tới và kiến thức mới">
           <Card title="Thói quen · 7 ngày">
             <HabitToday
               habits={habits}
@@ -111,6 +116,7 @@ async function TodayContent() {
             />
           </Card>
           <DeadlinesCard items={deadlines} />
+          <LatestNotesCard notes={latestKnowledge(notesLoaded.data)} fields={fields} />
         </aside>
       </div>
     </>
@@ -179,6 +185,52 @@ function DeadlinesCard({ items }: { items: DeadlineItem[] }) {
               </li>
             );
           })}
+        </ul>
+      )}
+    </Card>
+  );
+}
+
+/** "Kiến thức mới": 5 ghi chú mới nhất (SPEC.md mục 10.1). Bấm tên mở Knowledge. */
+function LatestNotesCard({ notes, fields }: { notes: Knowledge[]; fields: string[] }) {
+  return (
+    <Card
+      title="Kiến thức mới"
+      flush
+      action={
+        <Link href="/knowledge" className="text-xs text-muted-foreground hover:text-foreground">
+          Mở
+        </Link>
+      }
+    >
+      {notes.length === 0 ? (
+        <div className="p-4">
+          <Empty>
+            Chưa có ghi chú nào.{" "}
+            <Link href="/knowledge" className="font-medium text-primary underline-offset-4 hover:underline">
+              Ghi điều vừa học ở Knowledge
+            </Link>
+          </Empty>
+        </div>
+      ) : (
+        <ul>
+          {notes.map((n) => (
+            <li key={n.id} className="flex flex-col gap-1 border-b border-line px-4 py-2 text-sm last:border-b-0">
+              <span className="flex items-baseline gap-3">
+                <Link href="/knowledge" className="min-w-0 flex-1 truncate underline-offset-4 hover:underline" title={n.title}>
+                  {n.title}
+                </Link>
+                <span className="font-mono text-xs text-muted-foreground">{formatDay(noteDay(n), true)}</span>
+              </span>
+              {n.field && (
+                <span>
+                  <Pill color={`var(${projectColorByOrder(n.field, fields)})`} dot>
+                    {n.field}
+                  </Pill>
+                </span>
+              )}
+            </li>
+          ))}
         </ul>
       )}
     </Card>

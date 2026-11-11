@@ -1,18 +1,21 @@
 "use client";
 
 import { useEffect, useId, useRef, useState } from "react";
+import { XIcon } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { searchNodes } from "@/lib/graph-search";
 import type { GraphNode } from "@/lib/graph-types";
 
 const KIND_LABEL: Record<GraphNode["kind"], string> = {
-  note: "Trang",
-  task: "Task",
+  note: "Ghi chú",
+  task: "Việc",
   field: "Lĩnh vực",
   project: "Dự án",
 };
 
 /**
- * Ô "Tìm trang" trên graph (SPEC-v0.2 4.3): combobox, ↑↓ chọn, Enter bay tới, Esc bỏ chọn, phím / để focus.
+ * Ô tìm trên graph (SPEC.md mục 10.2): combobox, ↑↓ chọn, Enter bay tới, Esc bỏ chọn, phím / để focus.
  */
 export function GraphSearch({
   nodes,
@@ -80,17 +83,17 @@ export function GraphSearch({
 
   return (
     <div className="pointer-events-auto relative w-72 max-w-full">
-      <input
+      <Input
         ref={inputRef}
         type="search"
         role="combobox"
-        aria-label="Tìm trang trên Brain"
+        aria-label="Tìm ghi chú, việc, cụm trên Brain"
         aria-expanded={showList}
         aria-controls={listId}
         aria-activedescendant={showList && results[active] ? `${listId}-${active}` : undefined}
         aria-autocomplete="list"
         value={query}
-        placeholder="Tìm trang…  (/)"
+        placeholder="Tìm ghi chú, việc…  (/)"
         autoComplete="off"
         onChange={(e) => {
           setQuery(e.target.value);
@@ -100,26 +103,21 @@ export function GraphSearch({
         onFocus={() => setOpen(true)}
         onBlur={() => setOpen(false)}
         onKeyDown={onKeyDown}
-        className="w-full rounded-lg border border-line bg-surface/90 py-1.5 pl-3 pr-8 text-sm text-foreground outline-none backdrop-blur placeholder:text-muted-foreground focus:border-primary [&::-webkit-search-cancel-button]:hidden"
+        className="bg-surface pr-9 max-md:h-10 dark:bg-surface [&::-webkit-search-cancel-button]:hidden"
       />
       {(query || selected) && (
-        <button
-          type="button"
-          onClick={clear}
-          aria-label="Bỏ tìm kiếm"
-          className="absolute right-1.5 top-1/2 size-6 -translate-y-1/2 rounded text-muted-foreground hover:text-foreground"
-        >
-          ✕
-        </button>
+        <Button type="button" variant="ghost" size="icon-sm" onClick={clear} aria-label="Bỏ tìm kiếm" className="absolute top-1/2 right-0.5 -translate-y-1/2">
+          <XIcon aria-hidden="true" />
+        </Button>
       )}
       {showList && (
         <ul
           id={listId}
           role="listbox"
-          className="absolute inset-x-0 top-full z-10 mt-1 overflow-hidden rounded-lg border border-line bg-surface py-1 text-sm shadow-lg"
+          className="absolute inset-x-0 top-full z-10 mt-1 overflow-hidden border border-line bg-surface py-1 text-sm shadow-lg"
         >
           {results.length === 0 ? (
-            <li className="px-3 py-2 text-muted-foreground">Không có trang nào khớp.</li>
+            <li className="px-3 py-2 text-muted-foreground">Không có gì khớp.</li>
           ) : (
             results.map((n, i) => (
               <li

@@ -214,31 +214,25 @@ export function ProjectBars({ rows }: { rows: { project: string; doing: number; 
 
 const weeklyConfig = {
   done: { label: "Việc xong", color: "var(--primary)" },
+  learned: { label: "Ghi chú mới", color: "var(--chart-3)" },
 } satisfies ChartConfig;
 
 /** Dưới số tuần/ngày có dữ liệu này thì biểu đồ chỉ toàn số 0 → thu thành một dòng (SPEC-v1.0, critique lần 2). */
 export const MIN_ACTIVE_WEEKS = 3;
 
-export function WeeklyArea({ rows }: { rows: { week: string; done: number }[] }) {
+/** Trang gọi chỉ vẽ khi đã có từ MIN_ACTIVE_WEEKS tuần có hoạt động (dashboard-view.tsx). */
+export function WeeklyArea({ rows }: { rows: { week: string; done: number; learned: number }[] }) {
   const total = rows.reduce((s, r) => s + r.done, 0);
-  const active = rows.filter((r) => r.done > 0).length;
-  const thisWeek = rows.at(-1)?.done ?? 0;
-  if (active < MIN_ACTIVE_WEEKS) {
-    return (
-      <Empty>
-        {total === 0
-          ? "Chưa có việc nào xong trong 12 tuần qua."
-          : `12 tuần qua: ${total} việc xong, ${active} tuần có việc xong (tuần này ${thisWeek}). Biểu đồ hiện khi có từ ${MIN_ACTIVE_WEEKS} tuần.`}
-      </Empty>
-    );
-  }
+  const learned = rows.reduce((s, r) => s + r.learned, 0);
+  const last = rows.at(-1);
   return (
     <>
+      <Legend config={weeklyConfig} />
       <ChartContainer
         config={weeklyConfig}
         className="aspect-auto h-64 w-full"
         role="img"
-        aria-label={`12 tuần: tổng ${total} việc xong, tuần này ${thisWeek}.`}
+        aria-label={`12 tuần: tổng ${total} việc xong và ${learned} ghi chú mới; tuần này ${last?.done ?? 0} việc, ${last?.learned ?? 0} ghi chú.`}
       >
         <AreaChart accessibilityLayer={false} data={rows} margin={{ left: -12, right: 8 }}>
           <defs>
@@ -256,6 +250,7 @@ export function WeeklyArea({ rows }: { rows: { week: string; done: number }[] })
             content={<ChartTooltipContent labelFormatter={(w) => `Tuần từ ${formatDay(String(w), true)}`} />}
           />
           <Area dataKey="done" type="monotone" stroke="var(--color-done)" strokeWidth={2} fill="url(#fill-done)" />
+          <Area dataKey="learned" type="monotone" stroke="var(--color-learned)" strokeWidth={2} fill="url(#fill-learned)" />
         </AreaChart>
       </ChartContainer>
     </>
