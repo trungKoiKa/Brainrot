@@ -16,6 +16,10 @@
 > thư viện; được đổi bố cục từng trang. Làm trên nhánh `redesign`, merge vào `main` một lần ở cuối. Hành vi dữ liệu,
 > schema và server action **không đổi**.
 >
+> **Xoá hẳn thói quen (Trung chốt 11/11/2026):** ngoài "Ngừng theo dõi" (giữ lịch sử, SPEC-v0.4), Quản lý thói quen có nút
+> **Xoá hẳn**: hỏi xác nhận, xoá thói quen + mọi ngày đã tích, gỡ liên kết mục tiêu; toast **Hoàn tác** 8 giây chèn lại
+> đúng như cũ (`deleteHabit` / `restoreHabit`).
+>
 > **Bố cục Today (Trung chốt 06/11/2026, sau critique Impeccable):** "Hôm nay làm" đứng đầu, rộng hết hàng; đếm ngược đồ
 > án chuyển thành dòng phụ dưới lời chào (chưa đặt hạn thì không hiện); hàng 2 là Deadline 14 ngày tới + Thói quen hôm nay;
 > rồi "Ghi nhanh" (ý tưởng) và "Cuối ngày" (Daily Log + Ngày mai làm). Cụm Cuối ngày thu gọn, **từ 18:00** mới mở sẵn

@@ -1,8 +1,9 @@
 "use client";
 
 import { useState, useTransition } from "react";
-import { ArrowDownIcon, ArrowUpIcon, CircleStopIcon } from "lucide-react";
-import { addHabitAction, moveHabitAction, stopHabitAction, type HabitResult } from "@/app/actions/habits";
+import { ArrowDownIcon, ArrowUpIcon, CircleStopIcon, Trash2Icon } from "lucide-react";
+import { toast } from "sonner";
+import { addHabitAction, deleteHabitAction, moveHabitAction, restoreHabitAction, stopHabitAction, type HabitResult } from "@/app/actions/habits";
 import { fieldClass, primaryButtonClass } from "@/components/form-bits";
 import { ErrorNotice } from "@/components/tasks/task-row";
 import {
@@ -23,7 +24,7 @@ import { monthLabel, monthOf, shiftMonth } from "@/lib/period";
 const iconButton =
   "flex size-10 md:size-7 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-surface-muted hover:text-foreground disabled:opacity-30 disabled:hover:bg-transparent";
 
-/** Thêm / sắp xếp / ngừng thói quen của tháng đang xem (SPEC-v0.4 3.3). */
+/** Thêm / sắp xếp / ngừng / xoá thói quen của tháng đang xem (SPEC-v0.4 3.3; xoá hẳn: SPEC-v1.0, 11/11/2026). */
 export function HabitManager({ month, habits }: { month: string; habits: Habit[] }) {
   const [name, setName] = useState("");
   const [error, setError] = useState<string | null>(null);
@@ -35,6 +36,25 @@ export function HabitManager({ month, habits }: { month: string; habits: Habit[]
       const res = await action();
       if (!res.ok) return setError(res.error);
       after?.();
+    });
+
+  // Xoá hẳn → toast "Hoàn tác" 8 giây chèn lại thói quen, ngày đã tích và liên kết mục tiêu
+  const remove = (h: Habit) =>
+    start(async () => {
+      setError(null);
+      const res = await deleteHabitAction(h.id);
+      if (!res.ok) return setError(res.error);
+      toast(`Đã xoá thói quen “${h.name}”`, {
+        duration: 8000,
+        action: {
+          label: "Hoàn tác",
+          onClick: () =>
+            start(async () => {
+              const back = await restoreHabitAction(res.snapshot);
+              if (!back.ok) setError(back.error);
+            }),
+        },
+      });
     });
 
   return (
@@ -114,12 +134,42 @@ export function HabitManager({ month, habits }: { month: string; habits: Habit[]
                   </AlertDialogFooter>
                 </AlertDialogContent>
               </AlertDialog>
+              <AlertDialog>
+                <AlertDialogTrigger
+                  render={
+                    <button
+                      type="button"
+                      className={`${iconButton} hover:text-danger`}
+                      disabled={pending}
+                      aria-label={`Xoá hẳn ${h.name}`}
+                      title="Xoá hẳn (cả các ngày đã tích)"
+                    />
+                  }
+                >
+                  <Trash2Icon aria-hidden="true" className="size-4" />
+                </AlertDialogTrigger>
+                <AlertDialogContent>
+                  <AlertDialogHeader>
+                    <AlertDialogTitle>Xoá hẳn “{h.name}”?</AlertDialogTitle>
+                    <AlertDialogDescription>
+                      Thói quen và mọi ngày đã tích của nó bị xoá ở mọi tháng; mục tiêu đang gắn thói quen này sẽ bỏ liên kết.
+                      Có nút Hoàn tác trong 8 giây. Muốn giữ lịch sử thì dùng “Ngừng theo dõi”.
+                    </AlertDialogDescription>
+                  </AlertDialogHeader>
+                  <AlertDialogFooter>
+                    <AlertDialogCancel>Giữ lại</AlertDialogCancel>
+                    <AlertDialogAction variant="destructive" onClick={() => remove(h)}>
+                      Xoá hẳn
+                    </AlertDialogAction>
+                  </AlertDialogFooter>
+                </AlertDialogContent>
+              </AlertDialog>
             </li>
           );
         })}
       </ul>
       <p className="mt-3 text-xs text-muted-foreground">
-        Thói quen tự sang tháng sau cho tới khi ngừng.
+        Thói quen tự sang tháng sau cho tới khi ngừng. Ngừng theo dõi giữ lịch sử; xoá hẳn thì mất cả các ngày đã tích.
       </p>
     </div>
   );
