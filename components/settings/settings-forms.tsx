@@ -11,6 +11,8 @@ import {
   type AccountState,
 } from "@/app/actions/account";
 import { Status, fieldClass, primaryButtonClass } from "@/components/form-bits";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 
 // Trùng MIN_PASSWORD_LENGTH ở lib/password.ts (file đó dùng node:crypto nên không import vào bundle trình duyệt)
 const MIN_PASSWORD_LENGTH = 8;
@@ -50,28 +52,66 @@ export function ProfileForm({ email, name, targetDate, targetLabel }: { email: s
   );
 }
 
+const EMPTY_PASSWORDS = { current: "", next: "", confirm: "" };
+
+/**
+ * Đổi mật khẩu. Ô nhập có kiểm soát: sai thì giữ nguyên những gì đã gõ (rà soát A2 lỗi 3), chỉ xoá khi đổi xong.
+ * Kiểm tra ngay ở trình duyệt: độ dài tối thiểu và hai ô mật khẩu mới phải khớp; server vẫn kiểm tra lại.
+ */
 export function PasswordForm() {
-  const [state, action, pending] = useActionState<AccountState, FormData>(changePasswordAction, {});
+  const [v, setV] = useState(EMPTY_PASSWORDS);
+  const [state, action, pending] = useActionState<AccountState, FormData>(async (prev, form) => {
+    const res = await changePasswordAction(prev, form);
+    if (res.ok) setV(EMPTY_PASSWORDS);
+    return res;
+  }, {});
+  const set = (key: keyof typeof EMPTY_PASSWORDS) => (e: React.ChangeEvent<HTMLInputElement>) => setV((x) => ({ ...x, [key]: e.target.value }));
+  const short = v.next.length > 0 && v.next.length < MIN_PASSWORD_LENGTH;
+  const mismatch = v.confirm.length > 0 && v.confirm !== v.next;
   return (
-    <form action={action} className="grid gap-4 md:grid-cols-3" key={state.ok ? "done" : "form"}>
+    <form action={action} className="grid gap-4 md:grid-cols-3">
       <label className={label}>
         <span className="text-muted-foreground">Mật khẩu hiện tại</span>
-        <input name="current" type="password" required autoComplete="current-password" className={fieldClass} />
+        <Input name="current" type="password" required autoComplete="current-password" value={v.current} onChange={set("current")} />
       </label>
       <label className={label}>
         <span className="text-muted-foreground">Mật khẩu mới</span>
-        <input name="next" type="password" required minLength={MIN_PASSWORD_LENGTH} autoComplete="new-password" className={fieldClass} />
-        <span className={hint}>Tối thiểu {MIN_PASSWORD_LENGTH} ký tự.</span>
+        <Input
+          name="next"
+          type="password"
+          required
+          minLength={MIN_PASSWORD_LENGTH}
+          autoComplete="new-password"
+          value={v.next}
+          onChange={set("next")}
+          aria-invalid={short || undefined}
+          aria-describedby="pw-next-hint"
+        />
+        <span id="pw-next-hint" className={short ? "text-xs text-danger" : hint}>
+          Tối thiểu {MIN_PASSWORD_LENGTH} ký tự{short ? ` (mới ${v.next.length})` : ""}.
+        </span>
       </label>
       <label className={label}>
         <span className="text-muted-foreground">Nhập lại mật khẩu mới</span>
-        <input name="confirm" type="password" required autoComplete="new-password" className={fieldClass} />
+        <Input
+          name="confirm"
+          type="password"
+          required
+          autoComplete="new-password"
+          value={v.confirm}
+          onChange={set("confirm")}
+          aria-invalid={mismatch || undefined}
+          aria-describedby="pw-confirm-hint"
+        />
+        <span id="pw-confirm-hint" role={mismatch ? "alert" : undefined} className="text-xs text-danger empty:hidden">
+          {mismatch ? "Chưa khớp với mật khẩu mới." : ""}
+        </span>
       </label>
       <div className="flex flex-wrap items-center gap-3 md:col-span-3">
         <Status state={state} />
-        <button type="submit" disabled={pending} className={`ml-auto ${primaryButtonClass}`}>
+        <Button type="submit" className="ml-auto" disabled={pending || short || mismatch}>
           {pending ? "Đang đổi…" : "Đổi mật khẩu"}
-        </button>
+        </Button>
       </div>
     </form>
   );
@@ -103,8 +143,9 @@ export function ProjectManager({ projects }: { projects: { id: string; name: str
         <p className="text-sm text-muted-foreground">Chưa có dự án nào. Thêm một dự án để nhóm việc ở Tasks.</p>
       ) : (
         <ul className="divide-y divide-line">
-          {projects.map((p) => (
+          {projects.map((p, i) => (
             <li key={p.id} className="flex flex-wrap items-center gap-x-3 gap-y-1 py-2">
+              <span aria-hidden="true" className="size-2.5 shrink-0" style={{ background: `var(${i < 4 ? `--field-${i + 1}` : "--field-neutral"})` }} />
               {editing === p.id ? (
                 <form
                   className="flex min-w-0 flex-1 gap-2"
@@ -144,7 +185,7 @@ export function ProjectManager({ projects }: { projects: { id: string; name: str
                       setDraft(p.name);
                       setNote({});
                     }}
-                    className="min-h-10 rounded-md px-2 text-sm text-muted-foreground outline-none hover:text-foreground focus-visible:ring-3 focus-visible:ring-ring/50 md:min-h-0"
+                    className="min-h-10 rounded-md px-2 text-sm text-muted-foreground outline-none hover:text-foreground focus-visible:ring-3 focus-visible:ring-ring md:min-h-0"
                   >
                     Đổi tên
                   </button>
@@ -153,7 +194,7 @@ export function ProjectManager({ projects }: { projects: { id: string; name: str
                     disabled={busy || p.tasks > 0}
                     title={p.tasks > 0 ? "Còn việc trong dự án này" : undefined}
                     onClick={() => run(() => deleteProjectAction(p.id))}
-                    className="min-h-10 rounded-md px-2 text-sm text-danger outline-none hover:underline focus-visible:ring-3 focus-visible:ring-ring/50 disabled:cursor-not-allowed disabled:opacity-40 disabled:no-underline md:min-h-0"
+                    className="min-h-10 rounded-md px-2 text-sm text-danger outline-none hover:underline focus-visible:ring-3 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-40 disabled:no-underline md:min-h-0"
                   >
                     Xóa
                   </button>
@@ -172,7 +213,7 @@ export function DeleteAccountForm() {
   const [state, action, pending] = useActionState<AccountState, FormData>(deleteAccountAction, {});
   return (
     <details className="group">
-      <summary className="cursor-pointer rounded-md py-2.5 text-sm font-medium text-danger outline-none focus-visible:ring-3 focus-visible:ring-ring/50">
+      <summary className="cursor-pointer py-2.5 text-sm font-medium text-danger">
         Xoá tài khoản…
       </summary>
       <form action={action} className="mt-3 grid gap-4 md:grid-cols-2">
@@ -182,21 +223,18 @@ export function DeleteAccountForm() {
         </p>
         <label className={label}>
           <span className="text-muted-foreground">Gõ lại email để xác nhận</span>
-          <input name="email" type="email" required autoComplete="off" placeholder="email của bạn" aria-describedby={undefined} className={fieldClass} />
+          <Input name="email" type="email" required autoComplete="off" placeholder="email của bạn" />
         </label>
         <label className={label}>
           <span className="text-muted-foreground">Mật khẩu</span>
-          <input name="password" type="password" required autoComplete="current-password" className={fieldClass} />
+          <Input name="password" type="password" required autoComplete="current-password" />
         </label>
         <div className="flex flex-wrap items-center gap-3 md:col-span-2">
           <Status state={state} />
-          <button
-            type="submit"
-            disabled={pending}
-            className="ml-auto rounded-lg bg-danger px-4 py-2 text-sm font-medium text-white outline-none transition-opacity hover:opacity-90 focus-visible:ring-3 focus-visible:ring-ring/50 disabled:opacity-50"
-          >
+          {/* Nút "nguy hiểm" của thư viện: chữ đỏ trên nền đỏ nhạt, đủ tương phản ở cả hai theme (rà soát A3: 2,3:1 ở nền tối) */}
+          <Button type="submit" variant="destructive" className="ml-auto" disabled={pending}>
             {pending ? "Đang xoá…" : "Xoá tài khoản vĩnh viễn"}
-          </button>
+          </Button>
         </div>
       </form>
     </details>

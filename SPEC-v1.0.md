@@ -11,6 +11,11 @@
 > (`users.password_hash`, scrypt; đặt bằng `npm run user:password`), thay cho `APP_PASSWORD`. Đăng nhập Google,
 > `ALLOWED_EMAILS` và trang Cài đặt (bước 5) làm khi mở cho bạn bè. v1.0 lên production 05/11/2026, tag `v1.0.0`.
 >
+> **Thiết kế lại giao diện (Trung chốt 10/11/2026):** rà soát toàn bộ (`docs/audits/2026-11-audit.md`), làm **P0 + P1**;
+> hướng nhìn mới **"Nhật ký kỹ thuật"** (phương án C + pill của A, `DESIGN.md`); thay control tự viết bằng component
+> thư viện; được đổi bố cục từng trang. Làm trên nhánh `redesign`, merge vào `main` một lần ở cuối. Hành vi dữ liệu,
+> schema và server action **không đổi**.
+>
 > **Bố cục Today (Trung chốt 06/11/2026, sau critique Impeccable):** "Hôm nay làm" đứng đầu, rộng hết hàng; đếm ngược đồ
 > án chuyển thành dòng phụ dưới lời chào (chưa đặt hạn thì không hiện); hàng 2 là Deadline 14 ngày tới + Thói quen hôm nay;
 > rồi "Ghi nhanh" (ý tưởng) và "Cuối ngày" (Daily Log + Ngày mai làm). Cụm Cuối ngày thu gọn, **từ 18:00** mới mở sẵn

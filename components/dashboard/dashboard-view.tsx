@@ -289,7 +289,7 @@ export function DashboardView({ real }: { real: DashInput }) {
 
       {/* Một dải thông báo thay cho nhãn "Mẫu" trên từng khung (critique lần 3) */}
       {all && (
-        <div role="status" className="flex flex-wrap items-center gap-3 rounded-xl border border-line bg-surface-muted px-4 py-3 text-sm">
+        <div role="status" className="flex flex-wrap items-center gap-3 border border-line bg-surface-muted px-4 py-3 text-sm">
           <span>
             Đang xem <span className="font-medium">dữ liệu mẫu</span>, không phải số của bạn.
           </span>
@@ -302,7 +302,7 @@ export function DashboardView({ real }: { real: DashInput }) {
       {/* Câu kết luận là chữ to nhất thẻ; nhãn "Tuần này" chỉ là nhãn nhỏ (SPEC-v1.0, critique lần 2–3) */}
       <Card>
         <h2 className="text-sm font-medium text-muted-foreground">Tuần này · từ {formatDay(summary.monday, true)}</h2>
-        <p className="mt-3 flex items-start gap-3 font-serif text-2xl leading-snug font-semibold text-pretty md:text-3xl">
+        <p className="mt-3 flex items-start gap-3 text-2xl leading-snug font-semibold text-pretty md:text-3xl">
           {summary.tone !== "none" && (
             <span className="mt-[0.55em] flex shrink-0">
               <ToneDot tone={summary.tone} />
@@ -420,7 +420,7 @@ function Segmented<T extends string | number>({
             type="button"
             aria-pressed={o.value === value}
             onClick={() => onChange(o.value)}
-            className={`min-h-10 rounded-full px-3 py-1 text-sm transition-colors outline-none focus-visible:ring-3 focus-visible:ring-ring/50 md:min-h-0 ${
+            className={`min-h-10 rounded-full px-3 py-1 text-sm transition-colors outline-none focus-visible:ring-3 focus-visible:ring-ring md:min-h-0 ${
               o.value === value ? "bg-accent-soft font-medium text-primary" : "text-muted-foreground hover:text-foreground"
             }`}
           >

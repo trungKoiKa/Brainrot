@@ -4,7 +4,7 @@ import { useOptimistic, useState, useTransition } from "react";
 import { completeTask, deleteTaskAction, reopenTaskAction, restoreTaskAction } from "@/app/actions/tasks";
 import type { Task } from "@/lib/types";
 
-type Change = { type: "done" | "reopen" | "delete"; id: string } | { type: "restore"; task: Task };
+type Change = { type: "done" | "reopen" | "delete"; id: string; status?: "Chưa làm" | "Đang làm" } | { type: "restore"; task: Task };
 
 /**
  * Tích "xong" / bỏ tích / xóa task: đổi UI ngay (optimistic), gọi Server Action, rồi Next tải lại dữ liệu mới.
@@ -21,7 +21,7 @@ export function useTaskCompletion(tasks: Task[]) {
           t.id === change.id
             ? change.type === "done"
               ? { ...t, status: "Xong" as const }
-              : { ...t, status: "Chưa làm" as const, doneOn: null }
+              : { ...t, status: change.status ?? ("Chưa làm" as const), doneOn: null }
             : t,
         ),
   );
@@ -36,11 +36,13 @@ export function useTaskCompletion(tasks: Task[]) {
   }
 
   /** Hoàn tác tích xong / bỏ tích trong "Đã xong" (SPEC-v1.0, 07/11/2026): về Chưa làm. */
+  // Hoàn tác ngay sau khi tích: `task` là bản trước khi tích → giữ "Đang làm" (rà soát cuối A2 N1)
   function reopen(task: Task) {
+    const status = task.status === "Đang làm" ? "Đang làm" : "Chưa làm";
     setError(null);
     startTransition(async () => {
-      apply({ type: "reopen", id: task.id });
-      const res = await reopenTaskAction(task.id);
+      apply({ type: "reopen", id: task.id, status });
+      const res = await reopenTaskAction(task.id, status);
       if (!res.ok) setError(`Chưa mở lại được “${task.title}”. ${res.error}`);
     });
   }

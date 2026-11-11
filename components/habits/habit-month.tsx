@@ -11,7 +11,8 @@ import { HabitManager } from "./habit-manager";
 import { useHabitDays } from "./use-habit-days";
 
 // Ngưỡng màu giống chấm trạng thái Dashboard: ≥ 70% ổn, 40–69% cần để ý, < 40% cần xử lý (SPEC-v0.4 3.3)
-const tone = (pct: number) => (pct >= 70 ? "var(--good)" : pct >= 40 ? "var(--warning)" : "var(--danger)");
+// Redesign 11/2026: thói quen chưa đạt là "cần để ý" (vàng), không phải lỗi (đỏ) — DESIGN.md → Colors
+const tone = (pct: number) => (pct >= 70 ? "var(--good)" : "var(--warning)");
 const WEEKDAY = ["CN", "T2", "T3", "T4", "T5", "T6", "T7"];
 const weekday = (day: string) => WEEKDAY[new Date(`${day}T00:00:00Z`).getUTCDay()];
 
@@ -50,7 +51,7 @@ export function HabitMonth({
             <HabitManager month={month} habits={[]} />
           </div>
         ) : (
-          <div ref={scroller} className="-mx-5 overflow-x-auto px-5 md:-mx-6 md:px-6">
+          <div ref={scroller} className="-mx-4 overflow-x-auto px-4">
             <table className="w-full border-separate border-spacing-0 text-sm">
               <thead>
                 <tr>
@@ -81,7 +82,7 @@ export function HabitMonth({
                       data-today={d === today || undefined}
                       className={`px-0.5 pb-2 font-normal tabular-nums ${d === today ? "text-primary" : ""}`}
                     >
-                      <span className="block text-xs opacity-70">{weekday(d)}</span>
+                      <span className={`block text-xs ${d === today ? "" : "text-muted-foreground"}`}>{weekday(d)}</span>
                       {Number(d.slice(8))}
                     </th>
                   ))}
@@ -109,8 +110,8 @@ export function HabitMonth({
                             aria-label={`${r.habit.name} ngày ${Number(d.slice(8))}`}
                             onClick={() => toggle(d, r.habit.name, !on)}
                             className={`flex size-8 md:size-6 items-center justify-center rounded border transition-colors ${
-                              on ? "border-primary bg-primary text-primary-foreground" : "border-line hover:border-primary"
-                            } disabled:cursor-default disabled:opacity-30 disabled:hover:border-line`}
+                              on ? "border-primary bg-primary text-primary-foreground" : "border-input hover:border-primary"
+                            } disabled:cursor-default disabled:opacity-30 disabled:hover:border-input`}
                           >
                             {on && <CheckIcon aria-hidden="true" className="size-3.5" strokeWidth={3} />}
                           </button>

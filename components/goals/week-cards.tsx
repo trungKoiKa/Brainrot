@@ -1,11 +1,12 @@
 "use client";
 
 import { MaybeLink } from "@/components/tasks/maybe-link";
-import { useAutoDismiss } from "@/components/use-auto-dismiss";
-import { useRef, useState } from "react";
+import { toast } from "sonner";
+import { useState } from "react";
 import { CalendarDaysIcon, ChevronDownIcon } from "lucide-react";
 import { Empty } from "@/components/card";
 import { Badge } from "@/components/reui/badge";
+import { StatusPill } from "@/components/pill";
 import { ErrorNotice, TaskCheckbox } from "@/components/tasks/task-row";
 import { usePlanTasks } from "@/components/tasks/use-plan-tasks";
 import { addDays, formatDay } from "@/lib/date";
@@ -17,7 +18,6 @@ const SHORT = ["T2", "T3", "T4", "T5", "T6", "T7", "CN"];
 /** Thời gian hiện "Hoàn tác" sau khi dời ngày (SPEC-v1.0, Goal đợt 1) */
 const UNDO_MS = 8000;
 
-type Moved = { task: Task; from: string | null; to: string | null };
 
 /**
  * 7 thẻ ngày (SPEC-v0.5 4.3): task theo Ngày làm / Ngày xong / Hạn + Daily Log của tuần đang xem.
@@ -43,26 +43,21 @@ export function WeekCards({
   const { tasks, complete, plan, error, dismissError } = usePlanTasks(initial);
   const [open, setOpen] = useState<Record<string, boolean>>({});
   const [moving, setMoving] = useState<string | null>(null); // id task đang mở hàng chọn ngày
-  const [moved, setMoved] = useState<Moved | null>(null);
-  const movedHold = useAutoDismiss(moved, () => setMoved(null), UNDO_MS);
-  const undoRef = useRef<HTMLButtonElement>(null);
 
   const cards = weekDayCards(weekStart, tasks, logs);
   const empty = cards.every((c) => c.total === 0 && !c.log);
   const days = Array.from({ length: 7 }, (_, i) => addDays(weekStart, i));
   const tray = tasks.filter((t) => trayIds.includes(t.id) && t.status !== "Xong" && !t.plannedOn);
 
+  // Dời ngày → toast "Hoàn tác" (sonner, xếp chồng; thay dải tự viết — rà soát 11/2026)
   function move(t: Task, to: string | null) {
     setMoving(null);
-    setMoved({ task: t, from: t.plannedOn, to });
+    const from = t.plannedOn;
     plan(t, to);
-    requestAnimationFrame(() => undoRef.current?.focus());
-  }
-
-  function undo() {
-    if (!moved) return;
-    plan(moved.task, moved.from);
-    setMoved(null);
+    toast(`Đã dời “${t.title || "(Chưa đặt tên)"}” sang ${where(to)}`, {
+      duration: UNDO_MS,
+      action: { label: "Hoàn tác", onClick: () => plan({ ...t, plannedOn: to }, from) },
+    });
   }
 
   const where = (d: string | null) => {
@@ -94,14 +89,14 @@ export function WeekCards({
           <div className="flex flex-wrap items-center gap-1.5 pl-6">
             {t.dueOnly && (
               // đỏ chỉ khi đã quá hạn; hạn hôm nay / sắp tới là nhãn trung tính
-              <Badge variant={past ? "destructive-light" : "outline"}>{past ? "quá hạn" : "hạn"}</Badge>
+              past ? <StatusPill tone="danger">quá hạn</StatusPill> : <StatusPill tone="muted">hạn</StatusPill>
             )}
             <button
               type="button"
               aria-expanded={moving === t.id}
               aria-label={`Dời “${t.title}” sang ngày khác`}
               onClick={() => setMoving((m) => (m === t.id ? null : t.id))}
-              className="inline-flex min-h-10 items-center gap-1 rounded-md border border-line px-2 py-0.5 text-xs text-muted-foreground md:min-h-0 md:px-1.5 outline-none hover:border-primary hover:text-foreground focus-visible:ring-3 focus-visible:ring-ring/50"
+              className="inline-flex min-h-10 items-center gap-1 rounded-md border border-line px-2 py-0.5 text-xs text-muted-foreground md:min-h-0 md:px-1.5 outline-none hover:border-primary hover:text-foreground focus-visible:ring-3 focus-visible:ring-ring"
             >
               <CalendarDaysIcon aria-hidden="true" className="size-3" />
               Dời sang…
@@ -114,7 +109,7 @@ export function WeekCards({
                       key={d}
                       type="button"
                       onClick={() => move(t, d)}
-                      className="inline-flex min-h-10 items-center rounded-md border border-line px-2 py-0.5 text-xs tabular-nums md:min-h-0 md:px-1.5 outline-none hover:border-primary focus-visible:ring-3 focus-visible:ring-ring/50"
+                      className="inline-flex min-h-10 items-center rounded-md border border-line px-2 py-0.5 text-xs tabular-nums md:min-h-0 md:px-1.5 outline-none hover:border-primary focus-visible:ring-3 focus-visible:ring-ring"
                     >
                       {SHORT[k]} {formatDay(d, true)}
                     </button>
@@ -124,7 +119,7 @@ export function WeekCards({
                   <button
                     type="button"
                     onClick={() => move(t, null)}
-                    className="inline-flex min-h-10 items-center rounded-md px-1.5 py-0.5 text-xs text-muted-foreground outline-none hover:text-foreground md:min-h-0 focus-visible:ring-3 focus-visible:ring-ring/50"
+                    className="inline-flex min-h-10 items-center rounded-md px-1.5 py-0.5 text-xs text-muted-foreground outline-none hover:text-foreground md:min-h-0 focus-visible:ring-3 focus-visible:ring-ring"
                   >
                     Bỏ lịch
                   </button>
@@ -150,7 +145,8 @@ export function WeekCards({
           <ul className="mt-3 grid gap-x-6 gap-y-2.5 text-sm md:grid-cols-2 xl:grid-cols-3">{tray.map((t) => renderTask(t, false))}</ul>
         </section>
       )}
-      <div className="grid gap-3 md:grid-cols-4 xl:grid-cols-7">
+      {/* 4 cột thay 7: thẻ ngày đủ rộng cho tên việc ở 1440px (rà soát A1 P1) */}
+      <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
         {cards.map((c, i) => {
           const isToday = c.date === today;
           const expanded = open[c.date] ?? isToday; // mobile: hôm nay mở sẵn
@@ -159,13 +155,13 @@ export function WeekCards({
             <section
               key={c.date}
               aria-label={`${WEEKDAY[i]} ${formatDay(c.date, true)}`}
-              className={`min-w-0 rounded-lg border bg-surface p-3 ${isToday ? "border-primary" : "border-line"}`}
+              className={`min-w-0 border bg-surface p-3 ${isToday ? "border-primary" : "border-line"}`}
             >
               <div className="flex w-full items-start gap-2">
                 <div className="min-w-0 flex-1">
-                  <h3 className="font-serif text-base font-semibold">{WEEKDAY[i]}</h3>
+                  <h3 className="text-sm font-semibold">{WEEKDAY[i]}</h3>
                   <div className="mt-0.5 flex items-center justify-between gap-2">
-                    <p className="text-xs text-muted-foreground">{formatDay(c.date, true)}</p>
+                    <p className="font-mono text-xs text-muted-foreground">{formatDay(c.date, true)}</p>
                     {c.pct === null ? (
                       <span className="text-sm text-muted-foreground">—</span>
                     ) : !past ? (
@@ -190,7 +186,7 @@ export function WeekCards({
                   onClick={() => setOpen((o) => ({ ...o, [c.date]: !expanded }))}
                   aria-expanded={expanded}
                   aria-label={`${expanded ? "Thu gọn" : "Mở"} ${WEEKDAY[i]}`}
-                  className="flex size-10 shrink-0 items-center justify-center rounded-md text-muted-foreground outline-none hover:bg-surface-muted focus-visible:ring-3 focus-visible:ring-ring/50 md:hidden"
+                  className="flex size-10 shrink-0 items-center justify-center rounded-md text-muted-foreground outline-none hover:bg-surface-muted focus-visible:ring-3 focus-visible:ring-ring md:hidden"
                 >
                   <ChevronDownIcon aria-hidden="true" className={`size-4 transition-transform ${expanded ? "rotate-180" : ""}`} />
                 </button>
@@ -222,28 +218,6 @@ export function WeekCards({
         })}
       </div>
 
-      {/* Dải Hoàn tác sau khi dời: cố định cuối màn hình, aria-live cho trình đọc màn hình */}
-      <div aria-live="polite" className="pointer-events-none fixed inset-x-0 bottom-6 z-30 flex justify-center px-4">
-        {moved && (
-          <div
-            role="status"
-            {...movedHold}
-            className="pointer-events-auto flex max-w-md items-center gap-4 rounded-xl border border-line bg-surface px-4 py-3 text-sm shadow-lg"
-          >
-            <span className="min-w-0 truncate">
-              Đã dời “{moved.task.title || "(Chưa đặt tên)"}” sang {where(moved.to)}
-            </span>
-            <button
-              ref={undoRef}
-              type="button"
-              onClick={undo}
-              className="shrink-0 rounded-md font-medium text-primary underline-offset-4 outline-none hover:underline focus-visible:ring-3 focus-visible:ring-ring/50"
-            >
-              Hoàn tác
-            </button>
-          </div>
-        )}
-      </div>
     </div>
   );
 }

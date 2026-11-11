@@ -128,7 +128,7 @@ về như cũ và báo lỗi.
 | Tích thói quen | `setDayHabitsAction` | habit_days: các thói quen đã làm trong ngày |
 | Daily Log | `saveDailyLogAction` | Daily Log hôm nay: Xong · Rơi · Học được |
 | Ý tưởng | `addIdeaAction` | Ideas: dòng mới |
-| Mục tiêu | `createGoalAction` / `updateGoalAction` / `trashGoalAction` | Goals (xóa mềm, hoàn tác trong 5 giây) |
+| Mục tiêu | `createGoalAction` / `updateGoalAction` / `trashGoalAction` | Goals (xóa mềm, hoàn tác trong 8 giây) |
 | Nhìn lại / châm ngôn | `saveReflectionAction` | Reflections: 1 bản ghi / kỳ (có thì cập nhật) |
 | Thêm / ngừng / đổi thứ tự thói quen | `addHabitAction` / `stopHabitAction` / `moveHabitAction` | Habits |
 
@@ -148,7 +148,8 @@ database — chỉ tính lúc hiển thị.
 | Hỏi | Đáp |
 |---|---|
 | Không đặt Ngày làm thì task ở đâu? | Ở Tasks; lên Today khi Deadline là hôm nay hoặc khi được gợi ý lúc "Hôm nay làm" trống. |
-| Xóa task thế nào? | Ở Tasks, bấm icon thùng rác cuối dòng: việc biến mất ngay, có dải **Hoàn tác** 8 giây ở cuối màn hình. Hết 8 giây hoặc tải lại trang thì không hoàn tác được nữa. |
+| Xóa task thế nào? | Ở Tasks, bấm icon thùng rác cuối dòng: việc biến mất ngay, có thông báo nhỏ với nút **Hoàn tác** 8 giây ở cuối màn hình (rê chuột vào thì dừng đếm; xoá nhiều việc liên tiếp thì mỗi việc một thông báo). |
+| Tích nhầm ở Today? | Việc vừa tích vẫn ở nguyên chỗ, gạch ngang: bấm lại ô tích hoặc nút **Hoàn tác** trên thông báo để mở lại. |
 | Planner đâu rồi? | Bỏ từ v0.5; `/planner` tự chuyển sang Goal → Tuần. Xếp việc theo ngày bằng **Ngày làm**. |
 | Đổi máy / điện thoại có mất dữ liệu không? | Không — mọi dữ liệu nằm trong database (Neon), theo tài khoản. Chỉ lựa chọn giao diện (sáng/tối, Thật/Mẫu, kỳ) lưu theo trình duyệt. |
 

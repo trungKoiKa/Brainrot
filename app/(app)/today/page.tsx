@@ -4,6 +4,8 @@ import { connection } from "next/server";
 import { CheckIcon } from "lucide-react";
 import { Card, Empty } from "@/components/card";
 import { PageHeader } from "@/components/page-header";
+import { Readouts } from "@/components/readout";
+import { Skeleton } from "@/components/ui/skeleton";
 import { MaybeLink } from "@/components/tasks/maybe-link";
 import { TodayPlan, TomorrowPicker } from "@/components/tasks/today-plan";
 import { DailyLogCapture, IdeaForm } from "@/components/quick-capture";
@@ -11,20 +13,19 @@ import { HabitToday } from "@/components/habits/habit-today";
 import { doneHabits, habitsForMonth } from "@/lib/habits";
 import { monthOf, periodOf } from "@/lib/period";
 import { daysBetween, formatDay, greetingVN, isEveningVN, longDateVN, workdayClock, workdayVN } from "@/lib/date";
-import { anyStale, getGoals, getHabits, getProfile, getRecentDailyLogs, getTasks } from "@/lib/db/data";
+import { anyStale, getGoals, getHabits, getProfile, getRecentDailyLogs, getTaskProjects, getTasks } from "@/lib/db/data";
 import { resolveGoals } from "@/lib/db/goal-status";
 import { isGoalDone, type Goal } from "@/lib/goals";
 import { StaleBanner } from "@/components/stale-banner";
 import type { DailyLog, Task } from "@/lib/types";
-import { deadlineLabel, todayProgress, upcomingDeadlines, type DeadlineItem } from "@/lib/today";
+import { planToday, todayProgress, upcomingDeadlines, type DeadlineItem } from "@/lib/today";
 
+// Today theo hướng "Nhật ký kỹ thuật" (DESIGN.md, redesign 11/2026): hàng chỉ số → "Hôm nay làm" | cột phụ (thói quen, hạn)
 export default function TodayPage() {
   return (
-    <div className="mx-auto max-w-5xl">
-      <Suspense fallback={<TodaySkeleton />}>
-        <TodayContent />
-      </Suspense>
-    </div>
+    <Suspense fallback={<TodaySkeleton />}>
+      <TodayContent />
+    </Suspense>
   );
 }
 
@@ -34,68 +35,79 @@ async function TodayContent() {
   const now = new Date();
   // Today đổi ngày lúc 4:00 (Trung chốt 06/11/2026): 0:00–3:59 vẫn là tối hôm trước
   const today = workdayVN(now);
-  // Next up (Calendar) và Kiến thức mới ẩn ở v1.0 (SPEC-v1.0 mục 3), về lại ở v1.1
-  const [profile, habitsLoaded, goalsLoaded, ...loaded] = await Promise.all([
+  const [profile, habitsLoaded, goalsLoaded, projects, ...loaded] = await Promise.all([
     getProfile(),
     getHabits(),
     getGoals(),
+    getTaskProjects(),
     getTasks(),
     getRecentDailyLogs(),
   ]);
   const [tasks, logs] = loaded.map((l) => l.data) as [Task[], DailyLog[]];
   const todayLog = logs.find((l) => l.date === today) ?? null;
-  // 18:00–3:59: cụm "Cuối ngày" lên ngay dưới "Hôm nay làm" và mở sẵn (Daily Log chưa ghi + chọn việc ngày mai)
+  // 18:00–3:59: cụm "Cuối ngày" lên ngay dưới "Hôm nay làm" và mở sẵn
   const evening = isEveningVN(now);
-  // Mục tiêu tuần Ưu tiên dưới "Hôm nay làm" (SPEC-v0.4 mục 7)
   const week = periodOf("week", today);
   const weekGoals = await resolveGoals(
     goalsLoaded.data.filter((g) => g.level === "week" && g.start === week.start && g.type === "Ưu tiên" && g.title.trim()),
   );
 
-  // Cụm thứ yếu: viền nét đứt, không phải thẻ đầy đủ → "Hôm nay làm" là tiêu điểm duy nhất (critique cuối 10/11/2026)
+  const plan = planToday(today, tasks);
+  const progress = todayProgress(today, tasks);
+  const habits = habitsForMonth(habitsLoaded.data, monthOf(today)).map((h) => h.name);
+  const habitsDone = todayLog ? doneHabits(todayLog).filter((h) => habits.includes(h)).length : 0;
+  // Hạn sắp tới: bỏ việc đã nằm trong "Hôm nay làm" để không lặp (rà soát A1 P1)
+  const inPlan = new Set([...plan.planned, ...plan.late, ...plan.due].map((t) => t.id));
+  const deadlines = upcomingDeadlines(today, tasks).filter((t) => !inPlan.has(t.id));
+  const target = profile.target.date ? { days: daysBetween(today, profile.target.date), ...profile.target } : null;
+
   const endOfDay = (
-    <section aria-labelledby="end-of-day" className={`rounded-xl border border-line px-5 py-4 lg:col-span-2 ${evening ? "bg-surface" : "border-dashed"}`}>
-      <h2 id="end-of-day" className="mb-3 font-serif text-base font-semibold">
-        Cuối ngày
-      </h2>
-      <div className="space-y-4">
+    <Card title="Cuối ngày">
+      <div className="flex flex-col gap-2">
         <DailyLogCapture todayLog={todayLog} open={evening && !todayLog} showExercise={false} day={today} />
         <TomorrowPicker today={today} tasks={tasks} open={evening} />
       </div>
-    </section>
+    </Card>
   );
 
   return (
     <>
-      <PageHeader
-        title={`${greetingVN(now)}, ${givenName(profile.name)}`}
-        subtitle={
-          <>
-            {longDateVN(workdayClock(now))}
-            <TargetCountdown today={today} target={profile.target} />
-          </>
-        }
-      />
+      <PageHeader kicker={`NHẬT KÝ · ${today}`} title={`${greetingVN(now)}, ${givenName(profile.name)}`} subtitle={longDateVN(workdayClock(now))} />
       <StaleBanner show={anyStale(habitsLoaded, goalsLoaded, ...weekGoals.loaded, ...loaded)} />
-      {/* "Hôm nay làm" là tiêu điểm: rộng hết hàng, đứng đầu; buổi tối "Cuối ngày" lên ngay sau (critique 06/11/2026) */}
-      <div className="grid grid-cols-1 gap-5 lg:grid-cols-2">
-        <TodayPlanCard today={today} tasks={tasks} weekGoals={weekGoals.goals} />
-        {evening && endOfDay}
-        <DeadlinesCard items={upcomingDeadlines(today, tasks)} />
-        <Card title="Thói quen hôm nay">
-          <HabitToday
-            habits={habitsForMonth(habitsLoaded.data, monthOf(today)).map((h) => h.name)}
-            done={todayLog ? doneHabits(todayLog) : []}
-            today={today}
-          />
-        </Card>
-        <section aria-labelledby="idea-title" className="rounded-xl border border-dashed border-line px-5 py-3 lg:col-span-2">
-          <h2 id="idea-title" className="mb-2 text-xs font-medium text-muted-foreground">
-            Ghi nhanh ý tưởng
-          </h2>
-          <IdeaForm />
-        </section>
-        {!evening && endOfDay}
+
+      <Readouts
+        className="mb-6"
+        items={[
+          { label: "Việc hôm nay", value: progress ? `${progress.done}/${progress.total}` : "0/0", note: "việc xếp hôm nay (không tính trễ)" },
+          { label: "Trễ lịch", value: String(plan.late.length).padStart(2, "0"), note: "việc có Ngày làm đã qua" },
+          { label: "Thói quen", value: `${habitsDone}/${habits.length}`, note: "đã tích hôm nay" },
+          target
+            ? {
+                label: "Đếm ngược",
+                value: target.days >= 0 ? `D-${target.days}` : `D+${-target.days}`,
+                note: `${target.label} · ${formatDay(target.date as string, true)}`,
+                accent: true,
+              }
+            : { label: "Đếm ngược", value: "—", note: <Link href="/settings" className="underline underline-offset-2">đặt hạn ở Cài đặt</Link> },
+        ]}
+      />
+
+      <div className="grid grid-cols-1 items-start gap-6 xl:grid-cols-[minmax(0,1fr)_360px]">
+        <div className="flex min-w-0 flex-col gap-6">
+          <TodayPlanCard today={today} tasks={tasks} projects={projects} weekGoals={weekGoals.goals} />
+          {evening && endOfDay}
+          <Card title="Ghi nhanh ý tưởng">
+            <IdeaForm />
+          </Card>
+          {!evening && endOfDay}
+        </div>
+
+        <aside className="flex min-w-0 flex-col gap-6" aria-label="Thói quen và hạn sắp tới">
+          <Card title="Thói quen hôm nay">
+            <HabitToday habits={habits} done={todayLog ? doneHabits(todayLog) : []} today={today} />
+          </Card>
+          <DeadlinesCard items={deadlines} />
+        </aside>
       </div>
     </>
   );
@@ -104,65 +116,28 @@ async function TodayContent() {
 /** Tên gọi trong lời chào: từ cuối của tên hiển thị ("Anh Trung" → "Trung"); chưa đặt tên → "bạn". */
 const givenName = (name: string) => name.trim().split(/\s+/).at(-1) || "bạn";
 
-/** Đếm ngược theo hạn + nhãn của từng người (Cài đặt), ở dòng phụ dưới lời chào. Chưa đặt hạn thì không hiện gì. */
-function TargetCountdown({ today, target }: { today: string; target: { date: string | null; label: string } }) {
-  if (!target.date) return null;
-  const days = daysBetween(today, target.date);
-  const date = formatDay(target.date, true);
-  return (
-    <>
-      {" · "}
-      {days > 0 ? (
-        <>
-          còn <span className="font-medium text-primary tabular-nums">{days} ngày</span> đến {target.label} ({date})
-        </>
-      ) : days === 0 ? (
-        <span className="font-medium text-danger">hôm nay là {target.label} ({date})</span>
-      ) : (
-        <>
-          đã qua {target.label} {-days} ngày ({date})
-        </>
-      )}
-    </>
-  );
-}
-
 /** "Hôm nay làm" (SPEC-v0.5 4.2) + mục tiêu tuần Ưu tiên ở cuối (SPEC-v0.4 mục 7). */
-function TodayPlanCard({ today, tasks, weekGoals }: { today: string; tasks: Task[]; weekGoals: Goal[] }) {
-  // "x/y xong" thay link "Cả tuần" (trùng link "Mở" của Mục tiêu tuần); số cập nhật sau mỗi lần tích (Server Action làm mới trang)
-  const progress = todayProgress(today, tasks);
+function TodayPlanCard({ today, tasks, projects, weekGoals }: { today: string; tasks: Task[]; projects: string[]; weekGoals: Goal[] }) {
+  const rows = planToday(today, tasks);
+  const count = rows.planned.length + rows.late.length + rows.due.length;
   return (
-    <Card
-      title="Hôm nay làm"
-      focal
-      className="lg:col-span-2"
-      action={
-        progress && (
-          <span className="text-sm text-muted-foreground tabular-nums">
-            <span className={progress.done === progress.total ? "font-medium text-success" : "font-medium text-foreground"}>
-              {progress.done}/{progress.total}
-            </span>{" "}
-            việc xong
-          </span>
-        )
-      }
-    >
-      <TodayPlan today={today} tasks={tasks} />
+    <Card title="Hôm nay làm" focal flush action={<span className="font-mono text-xs text-muted-foreground">{count} dòng</span>}>
+      <TodayPlan today={today} tasks={tasks} projects={projects} />
       {weekGoals.length > 0 && (
-        <div className="mt-4 border-t border-line pt-3">
+        <div className="border-t border-line px-4 py-3">
           <p className="mb-2 flex items-baseline justify-between text-xs text-muted-foreground">
-            <span className="font-medium">Mục tiêu tuần</span>
+            <span className="font-mono uppercase">Mục tiêu tuần</span>
             <Link href="/goals?level=week" className="hover:text-foreground">
               Mở
             </Link>
           </p>
-          <ul className="space-y-1 text-sm">
+          <ul className="flex flex-col gap-1 text-sm">
             {weekGoals.map((g) => (
               <li key={g.id} className={`flex items-start gap-2 ${isGoalDone(g) ? "text-muted-foreground line-through" : ""}`}>
                 {isGoalDone(g) ? (
-                  <CheckIcon aria-label="Đã xong" className="mt-[3px] size-3.5 shrink-0 text-success" />
+                  <CheckIcon aria-label="Đã xong" className="mt-[3px] size-3.5 shrink-0 text-good" />
                 ) : (
-                  <span aria-hidden="true" className="mx-1 mt-[7px] size-1.5 shrink-0 rounded-full bg-muted-foreground" />
+                  <span aria-hidden="true" className="mx-1 mt-[7px] size-1.5 shrink-0 bg-muted-foreground" />
                 )}
                 <span>{g.title}</span>
               </li>
@@ -174,25 +149,29 @@ function TodayPlanCard({ today, tasks, weekGoals }: { today: string; tasks: Task
   );
 }
 
+/** Nhãn mono đếm ngày tới hạn: T-03 (còn 3 ngày), T-00 (hôm nay), T+2 (quá 2 ngày). */
+const tLabel = (d: number) => (d < 0 ? `T+${-d}` : `T-${String(d).padStart(2, "0")}`);
+
 function DeadlinesCard({ items }: { items: DeadlineItem[] }) {
   return (
-    <Card title="Deadline 14 ngày tới">
+    <Card title="Hạn · 14 ngày" flush>
       {items.length === 0 ? (
-        <Empty>Không có deadline nào trong 14 ngày tới.</Empty>
+        <div className="p-4">
+          <Empty>Không còn hạn nào khác trong 14 ngày tới.</Empty>
+        </div>
       ) : (
-        <ul className="divide-y divide-line">
+        <ul>
           {items.map((t) => {
-            const overdue = t.daysLeft < 0;
+            const tone = t.daysLeft < 0 ? "text-danger" : t.daysLeft <= 1 ? "text-warning" : "text-muted-foreground";
             return (
-              <li key={t.id} className="flex items-baseline justify-between gap-3 py-2 first:pt-0 last:pb-0">
-                <TaskLink task={t} className={overdue ? "text-danger" : undefined} />
-                <span
-                  className={`shrink-0 text-xs ${
-                    overdue ? "rounded-full bg-danger-soft px-2 py-0.5 font-medium text-danger" : t.daysLeft === 0 ? "font-medium text-primary" : "text-muted-foreground"
-                  }`}
-                >
-                  {deadlineLabel(t.daysLeft)} · {formatDay(t.deadline, true)}
+              <li key={t.id} className="flex items-baseline gap-3 border-b border-line px-4 py-2 text-sm last:border-b-0">
+                <span className={`w-12 shrink-0 font-mono text-xs ${tone}`} aria-label={t.daysLeft < 0 ? `quá hạn ${-t.daysLeft} ngày` : `còn ${t.daysLeft} ngày`}>
+                  {tLabel(t.daysLeft)}
                 </span>
+                <MaybeLink href={t.url} className={`min-w-0 flex-1 truncate ${t.daysLeft < 0 ? "text-danger" : ""}`} title={t.title}>
+                  {t.title || "(Chưa đặt tên)"}
+                </MaybeLink>
+                <span className="font-mono text-xs text-muted-foreground">{formatDay(t.deadline, true)}</span>
               </li>
             );
           })}
@@ -202,24 +181,22 @@ function DeadlinesCard({ items }: { items: DeadlineItem[] }) {
   );
 }
 
-function TaskLink({ task, className = "" }: { task: Task; className?: string }) {
-  return (
-    <MaybeLink href={task.url} className={`hover:text-primary ${className}`}>
-      {task.title || "(Chưa đặt tên)"}
-      {task.project && <span className="ml-2 text-xs text-muted-foreground">{task.project}</span>}
-    </MaybeLink>
-  );
-}
-
 function TodaySkeleton() {
+  // Cùng bố cục với trang thật (rà soát: Skeleton đúng bố cục, không pulse tự viết)
   return (
     <>
-      <PageHeader title="Hôm nay" subtitle="Đang tải…" />
-      {/* Cùng khung với trang thật: Hôm nay làm (rộng) · Deadline + Thói quen · Ghi nhanh · Cuối ngày */}
-      <div className="grid grid-cols-1 gap-5 lg:grid-cols-2">
-        {["h-48 lg:col-span-2", "h-36", "h-36", "h-28 lg:col-span-2", "h-28 lg:col-span-2"].map((size, i) => (
-          <div key={i} className={`animate-pulse rounded-xl border border-line bg-surface ${size}`} />
+      <PageHeader kicker="NHẬT KÝ" title="Hôm nay" subtitle="Đang tải…" />
+      <div className="mb-6 grid grid-cols-2 gap-px md:grid-cols-4">
+        {[0, 1, 2, 3].map((i) => (
+          <Skeleton key={i} className="h-24 rounded-none" />
         ))}
+      </div>
+      <div className="grid grid-cols-1 gap-6 xl:grid-cols-[minmax(0,1fr)_360px]">
+        <Skeleton className="h-96 rounded-none" />
+        <div className="flex flex-col gap-6">
+          <Skeleton className="h-40 rounded-none" />
+          <Skeleton className="h-64 rounded-none" />
+        </div>
       </div>
     </>
   );

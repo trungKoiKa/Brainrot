@@ -31,13 +31,14 @@ export async function completeTask(pageId: string): Promise<CompleteTaskResult> 
 }
 
 /** Hoàn tác tích xong / bỏ tích trong "Đã xong" (SPEC-v1.0, 07/11/2026). */
-export async function reopenTaskAction(pageId: string): Promise<CompleteTaskResult> {
+export async function reopenTaskAction(pageId: string, status: "Chưa làm" | "Đang làm" = "Chưa làm"): Promise<CompleteTaskResult> {
   if (!(await isSignedIn())) return { ok: false, error: SESSION_EXPIRED };
   if (typeof pageId !== "string" || !PAGE_ID.test(pageId)) return { ok: false, error: "ID task không hợp lệ." };
+  if (status !== "Chưa làm" && status !== "Đang làm") return { ok: false, error: "Trạng thái không hợp lệ." };
 
   try {
     const { db, userId } = await dbScope();
-    await reopenTask(db, userId, pageId);
+    await reopenTask(db, userId, pageId, status);
   } catch (e) {
     console.error("reopenTask failed:", e instanceof Error ? e.message : e);
     return { ok: false, error: WRITE_FAILED };

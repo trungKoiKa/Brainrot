@@ -11,6 +11,7 @@ import { WeekCards } from "@/components/goals/week-cards";
 import { ProgressRing } from "@/components/goals/progress-ring";
 import { HabitMonth } from "@/components/habits/habit-month";
 import { PageHeader } from "@/components/page-header";
+import { Skeleton } from "@/components/ui/skeleton";
 import { StaleBanner } from "@/components/stale-banner";
 import { todayVN } from "@/lib/date";
 import { goalCounts, goalsOf, isGoalDone, type Goal } from "@/lib/goals";
@@ -37,9 +38,9 @@ const href = (p: Period) => `/goals?level=${p.level}&period=${p.key}`;
 
 export default function GoalsPage({ searchParams }: PageProps<"/goals">) {
   return (
-    <div className="mx-auto max-w-6xl">
-      <PageHeader title="Goal" subtitle="Mục tiêu, thói quen và nhìn lại theo năm · quý · tháng · tuần." />
-      <Suspense fallback={<div className="h-96 animate-pulse rounded-xl border border-line bg-surface" />}>
+    <div>
+      <PageHeader kicker="MỤC TIÊU" title="Goal" subtitle="Mục tiêu, thói quen và nhìn lại theo năm · quý · tháng · tuần." />
+      <Suspense fallback={<Skeleton className="h-96 rounded-none" />}>
         <GoalsContent searchParams={searchParams} />
       </Suspense>
     </div>
@@ -55,11 +56,14 @@ async function GoalsContent({ searchParams }: Pick<PageProps<"/goals">, "searchP
   const current = periodOf(level, today);
 
   const children = childPeriods(period);
+  // Một lần đọc Daily Log phủ cả kỳ đang xem lẫn các kỳ con (tuần lấn sang tháng bên cạnh) → resolveGoals dùng lại (rà soát A4)
+  const logFrom = [period, ...children].reduce((m, p) => (p.start < m ? p.start : m), period.start);
+  const logTo = [period, ...children].reduce((m, p) => (p.end > m ? p.end : m), period.end);
   const [goalsLoaded, habits, reflections, logs, weekTasks] = await Promise.all([
     getGoals(),
     getHabits(),
     getReflections(),
-    level === "month" || level === "week" ? getDailyLogsBetween(period.start, period.end) : null,
+    level === "month" || level === "week" ? getDailyLogsBetween(logFrom, logTo) : null,
     getTasks(), // việc gắn dưới mỗi mục tiêu (mọi cấp) + thẻ ngày / khay ở Tuần
   ]);
   const reflection = reflectionOf(reflections.data, period);
@@ -67,7 +71,10 @@ async function GoalsContent({ searchParams }: Pick<PageProps<"/goals">, "searchP
   const motto = reflectionOf(reflections.data, periodOf("year", period.start))?.motto.trim() || null;
   // Trạng thái tự xong cho mục tiêu của kỳ đang xem + các kỳ con (cột %, thẻ quý/tháng)
   const shown = [period, ...children];
-  const resolved = await resolveGoals(goalsLoaded.data.filter((g) => shown.some((p) => p.level === g.level && p.start === g.start)));
+  const resolved = await resolveGoals(
+    goalsLoaded.data.filter((g) => shown.some((p) => p.level === g.level && p.start === g.start)),
+    logs ? { logs, from: logFrom, to: logTo } : undefined,
+  );
   const goals = resolved.goals;
   // Thói quen gắn được: được theo dõi ở ít nhất một tháng của kỳ
   const linkable = habits.data.filter(
@@ -107,17 +114,17 @@ async function GoalsContent({ searchParams }: Pick<PageProps<"/goals">, "searchP
     <div className="space-y-5">
       <StaleBanner show={anyStale(goalsLoaded, habits, reflections, weekTasks, ...resolved.loaded, ...(logs ? [logs] : []))} />
       {/* Châm ngôn năm (SPEC-v0.4 mục 5): hiện ở mọi chế độ của năm đó */}
-      {motto && <p className="font-serif text-lg text-muted-foreground italic">“{motto}”</p>}
+      {motto && <p className="text-base text-muted-foreground italic">“{motto}”</p>}
 
       <div className="flex flex-wrap items-center gap-3">
-        <nav aria-label="Cấp" className="flex rounded-full border border-line bg-surface p-0.5">
+        <nav aria-label="Cấp" className="flex border border-line bg-surface p-0.5">
           {LEVELS.map((l) => (
             <Link
               key={l}
               // đổi cấp giữ ngữ cảnh: đang xem tháng 10 → bấm Năm ra năm 2026
               href={href(periodOf(l, period.start <= today && today <= period.end ? today : period.start))}
               aria-current={l === level ? "page" : undefined}
-              className={`rounded-full px-3 py-1 text-sm transition-colors ${
+              className={`px-3 py-1 text-sm transition-colors ${
                 l === level ? "bg-accent-soft font-medium text-primary" : "text-muted-foreground hover:text-foreground"
               }`}
             >
@@ -129,7 +136,7 @@ async function GoalsContent({ searchParams }: Pick<PageProps<"/goals">, "searchP
           <Link href={href(shiftPeriod(period, -1))} aria-label="Kỳ trước" className="rounded-md p-1.5 text-muted-foreground hover:bg-surface-muted hover:text-foreground">
             <ChevronLeftIcon className="size-4" />
           </Link>
-          <span className="min-w-40 text-center font-serif text-lg font-semibold">{periodLabel(period)}</span>
+          <span className="min-w-40 text-center font-mono text-base">{periodLabel(period)}</span>
           <Link href={href(shiftPeriod(period, 1))} aria-label="Kỳ sau" className="rounded-md p-1.5 text-muted-foreground hover:bg-surface-muted hover:text-foreground">
             <ChevronRightIcon className="size-4" />
           </Link>
@@ -153,7 +160,7 @@ async function GoalsContent({ searchParams }: Pick<PageProps<"/goals">, "searchP
                   <a
                     key={g.id}
                     href={`#goal-${g.id}`}
-                    className={`inline-flex max-w-full items-center gap-2 rounded-full border border-line px-3 py-1 outline-none hover:border-primary focus-visible:ring-3 focus-visible:ring-ring/50 ${
+                    className={`inline-flex max-w-full items-center gap-2 rounded-full border border-line px-3 py-1 outline-none hover:border-primary focus-visible:ring-3 focus-visible:ring-ring ${
                       isGoalDone(g) ? "text-muted-foreground line-through" : ""
                     }`}
                   >
@@ -247,13 +254,13 @@ function ChildCard({ period, goals, current, today }: { period: Period; goals: G
     // Viền nổi bật đặt ở ring của link (Card đã có border-line, thêm border-* nữa thì không chắc class nào thắng)
     <Link
       href={href(period)}
-      className={`block rounded-xl ring-primary transition-shadow hover:ring-1 focus-visible:outline-2 focus-visible:outline-primary ${current ? "ring-1" : ""}`}
+      className={`block ring-primary transition-shadow hover:ring-1 focus-visible:outline-2 focus-visible:outline-primary ${current ? "ring-1" : ""}`}
     >
       <Card className="h-full">
         <div className="flex items-center gap-4">
           <ProgressRing pct={c.progress} size={64} empty={c.total === 0} neutral={period.end >= today} />
           <div>
-            <h2 className="font-serif text-lg font-semibold">{periodLabel(period)}</h2>
+            <h2 className="font-mono text-base">{periodLabel(period)}</h2>
             <p className="text-xs text-muted-foreground">
               {c.completed}/{c.total} mục tiêu
             </p>

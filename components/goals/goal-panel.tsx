@@ -1,7 +1,6 @@
 "use client";
 
 import { useRef, useState, useTransition } from "react";
-import { useRouter } from "next/navigation";
 import {
   ArrowDownUpIcon,
   EllipsisIcon,
@@ -16,7 +15,9 @@ import { completeTask, reopenTaskAction } from "@/app/actions/tasks";
 import { MaybeLink } from "@/components/tasks/maybe-link";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
-import { useAutoDismiss } from "@/components/use-auto-dismiss";
+import { toast } from "sonner";
+import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
 import { carryOverGoalsAction, createGoalAction, linkTaskAction, trashGoalAction, updateGoalAction } from "@/app/actions/goals";
 import { formatDay } from "@/lib/date";
 import { fieldClass, primaryButtonClass } from "@/components/form-bits";
@@ -39,8 +40,6 @@ import { ProgressRing } from "./progress-ring";
 export type LinkedTask = { id: string; title: string; url: string; plannedOn: string | null; done: boolean };
 
 const UNDO_MS = 8000;
-const iconButton =
-  "flex size-10 md:size-7 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-surface-muted hover:text-foreground";
 
 /**
  * Khối mục tiêu của một kỳ (SPEC-v0.4 4.2, 4.4): bộ đếm + vòng tròn %, nhóm Ưu tiên / Thường (Badge),
@@ -71,9 +70,8 @@ export function GoalPanel({
   /** Việc chưa xong, chưa gắn mục tiêu nào — chọn được ở "Gắn việc" (SPEC-v1.0, Goal đợt 3) */
   openTasks: { id: string; title: string }[];
 }) {
-  const router = useRouter();
   const [goals, setGoals] = useState(initial);
-  // Dữ liệu server mới (sau router.refresh) thay danh sách, không dựng lại cả khối → popover / focus / thông báo còn nguyên
+  // Dữ liệu server mới (sau mỗi Server Action) thay danh sách, không dựng lại cả khối → popover / focus / thông báo còn nguyên
   const [seen, setSeen] = useState(initial);
   // Đang có lưu dở (`saving`) thì giữ bản lạc quan; lưu xong sẽ refresh lại và bản server mới vào sau
   const [saving, setSaving] = useState(0);
@@ -83,8 +81,6 @@ export function GoalPanel({
     setGoals(initial);
   }
   const [error, setError] = useState<string | null>(null);
-  const [undo, setUndo] = useState<{ goal: Goal; index: number } | null>(null);
-  const undoHold = useAutoDismiss(undo, () => setUndo(null), UNDO_MS);
 
   const counts = goalCounts(goals);
   const priorityCount = goals.filter((g) => g.type === "Ưu tiên").length;
@@ -102,7 +98,7 @@ export function GoalPanel({
       setError(res.error ?? "Không lưu được.");
       return;
     }
-    router.refresh(); // chip tuần, danh sách việc, % tự xong đều do server tính → làm mới sau mỗi lần lưu
+    // Server Action đã gọi refreshData() → trang nhận dữ liệu mới trong cùng phản hồi; không router.refresh() thêm (rà soát A4)
   }
 
   const patch = (id: string, change: Partial<Pick<Goal, "title" | "type" | "done">>) =>
@@ -116,7 +112,6 @@ export function GoalPanel({
     setError(null);
     const res = await updateGoalAction(id, { habitId, threshold });
     if (!res.ok) return setError(res.error);
-    router.refresh();
   }
 
   /** Gắn / bỏ gắn việc: danh sách việc do server tính → xong thì tải lại dữ liệu trang. */
@@ -127,7 +122,6 @@ export function GoalPanel({
       setError(res.error);
       return false;
     }
-    router.refresh();
     return true;
   }
 
@@ -136,24 +130,24 @@ export function GoalPanel({
     setError(null);
     const res = t.done ? await reopenTaskAction(t.id) : await completeTask(t.id);
     if (!res.ok) return setError(res.error);
-    router.refresh();
   }
 
+  // Xoá mềm + toast Hoàn tác (sonner, xếp chồng; thay dải hoàn tác tự viết — rà soát 11/2026)
   function remove(goal: Goal) {
-    const index = goals.findIndex((g) => g.id === goal.id);
-    setUndo({ goal, index });
     optimistic(
       goals.filter((g) => g.id !== goal.id),
       () => trashGoalAction(goal.id, true),
     );
-  }
-
-  function restore() {
-    if (!undo) return;
-    const next = [...goals];
-    next.splice(undo.index, 0, undo.goal);
-    setUndo(null);
-    optimistic(next, () => trashGoalAction(undo.goal.id, false));
+    toast(`Đã xóa “${goal.title}”`, {
+      duration: UNDO_MS,
+      action: {
+        label: "Hoàn tác",
+        onClick: () => {
+          setError(null);
+          trashGoalAction(goal.id, false).then((res) => !res.ok && setError(res.error));
+        },
+      },
+    });
   }
 
   return (
@@ -166,7 +160,7 @@ export function GoalPanel({
             "Chưa có mục tiêu nào."
           ) : (
             <>
-              <span className="font-serif text-lg font-semibold text-foreground tabular-nums">
+              <span className="font-mono text-lg text-foreground tabular-nums">
                 {counts.completed}/{counts.total}
               </span>{" "}
               xong
@@ -217,19 +211,14 @@ export function GoalPanel({
         </p>
       )}
 
-      <div aria-live="polite">
-        {undo && (
-          <div {...undoHold} className="mt-3 flex items-center gap-3 rounded-lg bg-surface-muted px-3 py-2 text-sm">
-            <span className="min-w-0 flex-1 truncate">Đã xóa “{undo.goal.title}”</span>
-            <button type="button" onClick={restore} className="font-medium text-primary hover:underline">
-              Hoàn tác
-            </button>
-          </div>
-        )}
-      </div>
-
       {carry && counts.total > counts.completed && (
-        <CarryOver level={level} periodKey={periodKey} count={counts.total - counts.completed} label={carry.label} onError={setError} />
+        <CarryOver
+          level={level}
+          periodKey={periodKey}
+          goalIds={goals.filter((g) => g.title.trim() && !isGoalDone(g)).map((g) => g.id)}
+          label={carry.label}
+          onError={setError}
+        />
       )}
 
       <AddGoal
@@ -237,7 +226,6 @@ export function GoalPanel({
         periodKey={periodKey}
         onAdded={(goal) => {
           setGoals((list) => [...list, goal]);
-          router.refresh();
         }}
         onError={setError}
       />
@@ -286,18 +274,13 @@ function GoalRow({
   onRemove: () => void;
 }) {
   const [picking, setPicking] = useState(false);
-  // Việc vừa bỏ gắn → dải "Hoàn tác" 8 giây (SPEC-v1.0, Goal đợt 6)
-  const [unlinked, setUnlinked] = useState<LinkedTask | null>(null);
-  const unlinkHold = useAutoDismiss(unlinked, () => setUnlinked(null), UNDO_MS);
+  // Bỏ gắn việc → toast "Hoàn tác" 8 giây (SPEC-v1.0, Goal đợt 6; sonner thay dải tự viết)
   async function unlink(t: LinkedTask) {
     if (!(await onLinkTask(t.id, null))) return; // lỗi thì không hiện Hoàn tác
-    setUnlinked(t);
-  }
-  async function relink() {
-    if (!unlinked) return;
-    const t = unlinked;
-    setUnlinked(null);
-    await onLinkTask(t.id, goal.id);
+    toast(`Đã bỏ gắn “${t.title || "(Chưa đặt tên)"}”`, {
+      duration: UNDO_MS,
+      action: { label: "Hoàn tác", onClick: () => void onLinkTask(t.id, goal.id) },
+    });
   }
   const [linking, setLinking] = useState(false);
   const [editing, setEditing] = useState(false);
@@ -326,7 +309,7 @@ function GoalRow({
               ? "border-primary bg-primary text-primary-foreground"
               : goal.autoDone
                 ? "border-primary bg-accent-soft text-primary"
-                : "border-line hover:border-primary"
+                : "border-input hover:border-primary"
           }`}
         >
           {isGoalDone(goal) && <CheckIcon aria-hidden="true" className="size-3.5" strokeWidth={3} />}
@@ -356,17 +339,14 @@ function GoalRow({
         )}
         {!editing && (
           <span className="flex shrink-0 items-center gap-0.5">
-            <button type="button" className={iconButton} aria-label={`Sửa: ${goal.title}`} onClick={() => setEditing(true)}>
-              <PencilIcon aria-hidden="true" className="size-3.5" />
-            </button>
-            <button type="button" className={iconButton} aria-label={`Xóa: ${goal.title}`} onClick={onRemove}>
-              <Trash2Icon aria-hidden="true" className="size-3.5" />
-            </button>
             <DropdownMenu>
-              <DropdownMenuTrigger render={<button type="button" className={iconButton} aria-label={`Thêm tùy chọn: ${goal.title}`} />}>
+              <DropdownMenuTrigger render={<Button variant="ghost" size="icon" className="max-md:size-10" aria-label={`Tùy chọn: ${goal.title}`} />}>
                 <EllipsisIcon aria-hidden="true" className="size-4" />
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="w-52">
+                <DropdownMenuItem onClick={() => setEditing(true)}>
+                  <PencilIcon aria-hidden="true" /> Sửa tên
+                </DropdownMenuItem>
                 <DropdownMenuItem onClick={() => setPicking(true)}>
                   <ListPlusIcon aria-hidden="true" /> Gắn việc
                 </DropdownMenuItem>
@@ -375,6 +355,9 @@ function GoalRow({
                 </DropdownMenuItem>
                 <DropdownMenuItem onClick={() => onPatch({ type: other })}>
                   <ArrowDownUpIcon aria-hidden="true" /> Chuyển sang {other}
+                </DropdownMenuItem>
+                <DropdownMenuItem variant="destructive" onClick={onRemove}>
+                  <Trash2Icon aria-hidden="true" /> Xóa
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
@@ -390,17 +373,15 @@ function GoalRow({
         {tasks.length > 0 && (
           <ul className="space-y-0.5" aria-label={`Việc của mục tiêu: ${goal.title}`}>
             {tasks.map((t) => (
-              <li key={t.id} className="flex flex-wrap items-center gap-x-2">
-                <label className="flex size-10 md:size-6 shrink-0 cursor-pointer items-center justify-center">
-                <input
-                  type="checkbox"
-                  checked={t.done}
-                  onChange={() => onToggleTask(t)}
-                  aria-label={t.done ? `Bỏ đánh dấu xong: ${t.title}` : `Đánh dấu xong: ${t.title}`}
-                  className="size-4 shrink-0 cursor-pointer accent-[var(--primary)]"
-                />
-                </label>
-                <MaybeLink href={t.url} className={`min-w-0 flex-1 basis-40 break-words hover:text-primary ${t.done ? "text-muted-foreground line-through" : ""}`}>
+              <li key={t.id} className="flex items-center gap-x-2">
+                <span className="flex size-10 shrink-0 items-center justify-center md:size-6">
+                  <Checkbox
+                    checked={t.done}
+                    onCheckedChange={() => onToggleTask(t)}
+                    aria-label={t.done ? `Bỏ đánh dấu xong: ${t.title}` : `Đánh dấu xong: ${t.title}`}
+                  />
+                </span>
+                <MaybeLink href={t.url} className={`min-w-0 flex-1 break-words hover:text-primary ${t.done ? "text-muted-foreground line-through" : ""}`}>
                   {t.title || "(Chưa đặt tên)"}
                 </MaybeLink>
                 <span className="shrink-0 text-xs text-muted-foreground tabular-nums">
@@ -411,7 +392,7 @@ function GoalRow({
                   aria-label={`Bỏ gắn “${t.title}” khỏi mục tiêu`}
                   title="Bỏ gắn"
                   onClick={() => unlink(t)}
-                  className="flex size-10 md:size-7 shrink-0 items-center justify-center rounded-md text-muted-foreground outline-none hover:bg-surface-muted hover:text-foreground focus-visible:ring-3 focus-visible:ring-ring/50"
+                  className="flex size-10 md:size-7 shrink-0 items-center justify-center rounded-md text-muted-foreground outline-none hover:bg-surface-muted hover:text-foreground focus-visible:ring-3 focus-visible:ring-ring"
                 >
                   <XIcon aria-hidden="true" className="size-3.5" />
                 </button>
@@ -419,16 +400,6 @@ function GoalRow({
             ))}
           </ul>
         )}
-        <div aria-live="polite">
-          {unlinked && (
-            <p {...unlinkHold} className="flex items-center gap-2 py-0.5 text-xs text-muted-foreground">
-            <span className="min-w-0 truncate">Đã bỏ gắn “{unlinked.title || "(Chưa đặt tên)"}”</span>
-            <button type="button" onClick={relink} className="shrink-0 rounded-md font-medium text-primary underline-offset-4 outline-none hover:underline focus-visible:ring-3 focus-visible:ring-ring/50">
-              Hoàn tác
-            </button>
-            </p>
-          )}
-        </div>
         <TaskPicker
           open={picking}
           onOpenChange={setPicking}
@@ -577,68 +548,64 @@ function AddGoal({
   );
 }
 
-/** "Chuyển N mục tiêu chưa xong sang <kỳ sau>" (SPEC-v1.0, Goal đợt 2): tạo bản sao ở kỳ sau, không đụng mục tiêu hiện tại. */
+/**
+ * "Chuyển N mục tiêu chưa xong sang <kỳ sau>" (SPEC-v1.0, Goal đợt 2): tạo bản sao ở kỳ sau, không đụng mục tiêu hiện tại.
+ * Gửi đúng danh sách đang hiện là chưa xong → số trên nút khớp số đã chuyển (rà soát A2 lỗi 2); xong thì ẩn nút,
+ * kết quả + Hoàn tác ở toast.
+ */
 function CarryOver({
   level,
   periodKey,
-  count,
+  goalIds,
   label,
   onError,
 }: {
   level: Level;
   periodKey: string;
-  count: number;
+  goalIds: string[];
   label: string;
   onError: (message: string) => void;
 }) {
-  const router = useRouter();
   const [pending, start] = useTransition();
-  // Kết quả + id các bản sao vừa tạo: "Hoàn tác" = xoá mềm chính các bản sao đó (SPEC-v1.0, Goal đợt 6)
-  const [result, setResult] = useState<{ text: string; ids: string[] } | null>(null);
+  const [carried, setCarried] = useState<string | null>(null);
+  const key = goalIds.join(",");
+  if (carried === key || goalIds.length === 0) return null;
   return (
-    <p className="mt-4 flex flex-wrap items-center gap-x-3 gap-y-1 text-sm">
-      <button
-        type="button"
+    <div className="mt-4">
+      <Button
+        variant="outline"
+        // nhãn dài trên mobile được xuống dòng thay vì tràn ngang (rà soát 375px)
+        className="h-auto min-h-8 max-w-full py-1.5 text-left whitespace-normal"
         disabled={pending}
         onClick={() =>
           start(async () => {
-            const res = await carryOverGoalsAction(level, periodKey);
+            const res = await carryOverGoalsAction(level, periodKey, goalIds);
             if (!res.ok) return onError(res.error);
-            setResult({
-              text: res.ids.length ? `Đã chuyển ${res.ids.length} mục tiêu sang ${label}.` : `${label} đã có đủ các mục tiêu này.`,
-              ids: res.ids,
+            setCarried(key);
+            const skipped = goalIds.length - res.ids.length;
+            const text = res.ids.length
+              ? `Đã chuyển ${res.ids.length} mục tiêu sang ${label}${skipped ? ` (${skipped} đã có sẵn)` : ""}.`
+              : `${label} đã có đủ các mục tiêu này.`;
+            toast(text, {
+              duration: UNDO_MS,
+              action: res.ids.length
+                ? {
+                    label: "Hoàn tác",
+                    onClick: async () => {
+                      const results = await Promise.all(res.ids.map((id) => trashGoalAction(id, true)));
+                      const failed = results.find((r) => !r.ok);
+                      if (failed && !failed.ok) return onError(failed.error);
+                      setCarried(null);
+                    },
+                  }
+                : undefined,
             });
-            router.refresh();
           })
         }
-        className="rounded-md border border-line px-3 py-1.5 font-medium outline-none hover:border-primary focus-visible:ring-3 focus-visible:ring-ring/50 disabled:opacity-50"
       >
-        {pending ? "Đang chuyển…" : `Chuyển ${count} mục tiêu chưa xong sang ${label}`}
-      </button>
-      {result && (
-        <span role="status" className="flex items-center gap-2 text-muted-foreground">
-          {result.text}
-          {result.ids.length > 0 && (
-            <button
-              type="button"
-              disabled={pending}
-              onClick={() =>
-                start(async () => {
-                  const results = await Promise.all(result.ids.map((id) => trashGoalAction(id, true)));
-                  const failed = results.find((r) => !r.ok);
-                  if (failed && !failed.ok) return onError(failed.error);
-                  setResult({ text: `Đã hoàn tác, ${label} không còn các mục tiêu vừa chuyển.`, ids: [] });
-                  router.refresh();
-                })
-              }
-              className="rounded-md font-medium text-primary underline-offset-4 outline-none hover:underline focus-visible:ring-3 focus-visible:ring-ring/50"
-            >
-              Hoàn tác
-            </button>
-          )}
-        </span>
-      )}
-    </p>
+        {pending ? "Đang chuyển…" : `Chuyển ${goalIds.length} mục tiêu chưa xong sang ${label}`}
+      </Button>
+    </div>
   );
 }
 
@@ -679,13 +646,13 @@ function TaskPicker({
         render={
           <button
             type="button"
-            className="mt-0.5 inline-flex min-h-10 items-center rounded-md text-left text-muted-foreground underline-offset-4 md:min-h-0 outline-none hover:text-foreground hover:underline focus-visible:ring-3 focus-visible:ring-ring/50"
+            className="mt-0.5 inline-flex min-h-10 items-center rounded-md text-left text-muted-foreground underline-offset-4 md:min-h-0 outline-none hover:text-foreground hover:underline focus-visible:ring-3 focus-visible:ring-ring"
           />
         }
       >
         {trigger}
       </PopoverTrigger>
-      <PopoverContent align="start" className="w-80 gap-2 p-2">
+      <PopoverContent align="start" className="w-80 gap-2 p-2" aria-label={`Gắn việc vào mục tiêu: ${goalTitle}`}>
         <input
           autoFocus
           type="search"
@@ -714,7 +681,7 @@ function TaskPicker({
                     inputRef.current?.focus(); // dòng vừa bấm đã biến mất → trả focus về ô tìm kiếm
                     setBusy(null);
                   }}
-                  className="flex w-full items-center justify-between gap-2 rounded-md px-2 py-1.5 text-left text-sm break-words outline-none hover:bg-surface-muted focus-visible:ring-3 focus-visible:ring-ring/50 disabled:opacity-60"
+                  className="flex w-full items-center justify-between gap-2 rounded-md px-2 py-1.5 text-left text-sm break-words outline-none hover:bg-surface-muted focus-visible:ring-3 focus-visible:ring-ring disabled:opacity-60"
                 >
                   <span className="min-w-0">{t.title || "(Chưa đặt tên)"}</span>
                   {busy === t.id && <span className="shrink-0 text-xs text-muted-foreground">Đang gắn…</span>}

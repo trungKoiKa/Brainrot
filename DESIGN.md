@@ -1,273 +1,179 @@
 ---
 name: Brainrot
-description: Sổ tay hằng ngày gom việc, mục tiêu và thói quen của một sinh viên năm cuối.
+description: Nhật ký kỹ thuật hằng ngày gom việc, mục tiêu và thói quen của một sinh viên năm cuối (và nhóm bạn).
 colors:
-  paper: "#f6f4ef"
-  paper-dark: "#141413"
+  graph-paper: "#f1f2ee"
+  graph-paper-dark: "#0c0e0d"
   surface: "#ffffff"
-  surface-dark: "#1d1c1a"
-  surface-muted: "#efece5"
-  surface-muted-dark: "#262522"
-  line: "#e2ddd3"
-  line-dark: "#34322e"
-  ink: "#1f1d1a"
-  ink-dark: "#ece9e2"
-  ink-muted: "#6f6a61"
-  ink-muted-dark: "#9c978d"
-  indigo-signal: "#3b5bdb"
-  indigo-signal-dark: "#91a7ff"
-  indigo-wash: "#e5eafb"
-  indigo-wash-dark: "#232a45"
-  danger: "#c92a2a"
-  danger-dark: "#ff8787"
-  danger-soft: "#fdecec"
-  danger-soft-dark: "#3a1f1f"
-  good: "#2f7d32"
-  good-dark: "#6cc36c"
-  field-blue: "#2a78d6"
-  field-pink: "#e87ba4"
-  field-green: "#008300"
-  field-amber: "#eda100"
-  field-neutral: "#a19d94"
+  surface-dark: "#141716"
+  surface-muted: "#f6f7f3"
+  surface-muted-dark: "#191c1a"
+  line: "#cfd3ca"
+  line-dark: "#2d322e"
+  input: "#848a7f"
+  input-dark: "#6f776c"
+  ink: "#121412"
+  ink-dark: "#e4e8e2"
+  ink-muted: "#50564d"
+  ink-muted-dark: "#9ea69a"
+  signal-orange: "#b03a0a"
+  signal-orange-dark: "#ff8a3d"
+  signal-wash: "#fdebe1"
+  signal-wash-dark: "#3a2112"
+  warning: "#8a5a00"
+  warning-dark: "#f2b84b"
+  danger: "#b42318"
+  danger-dark: "#ff8b80"
+  success: "#2b6f3a"
+  success-dark: "#79c98a"
+  project-1: "#2459b8"
+  project-1-dark: "#7aa7ff"
+  project-2: "#a8326a"
+  project-2-dark: "#f08bbd"
+  project-3: "#0f766e"
+  project-3-dark: "#4fd1c5"
+  project-4: "#6d4bc4"
+  project-4-dark: "#b39dff"
+  project-neutral: "#61675c"
+  project-neutral-dark: "#9ea69a"
 typography:
   display:
-    fontFamily: "Lora, Georgia, serif"
-    fontSize: "2.25rem"
+    fontFamily: "IBM Plex Sans, system-ui, sans-serif"
+    fontSize: "1.875rem"
     fontWeight: 600
-    lineHeight: 1.1
-  headline:
-    fontFamily: "Lora, Georgia, serif"
-    fontSize: "1.5rem"
-    fontWeight: 600
-    lineHeight: 1.33
+    lineHeight: 1.15
   title:
-    fontFamily: "Lora, Georgia, serif"
-    fontSize: "1.125rem"
+    fontFamily: "IBM Plex Sans, system-ui, sans-serif"
+    fontSize: "0.875rem"
     fontWeight: 600
-    lineHeight: 1.55
+    lineHeight: 1.43
   body:
-    fontFamily: "Inter, system-ui, sans-serif"
+    fontFamily: "IBM Plex Sans, system-ui, sans-serif"
     fontSize: "0.875rem"
     fontWeight: 400
     lineHeight: 1.43
+  readout:
+    fontFamily: "IBM Plex Mono, ui-monospace, monospace"
+    fontSize: "1.5rem"
+    fontWeight: 400
+    lineHeight: 1.2
   label:
-    fontFamily: "Inter, system-ui, sans-serif"
+    fontFamily: "IBM Plex Mono, ui-monospace, monospace"
     fontSize: "0.75rem"
-    fontWeight: 500
+    fontWeight: 400
     lineHeight: 1.33
 rounded:
+  none: "0px"
   sm: "4px"
-  md: "6px"
-  lg: "8px"
-  xl: "12px"
-  2xl: "16px"
   full: "9999px"
 spacing:
   xs: "4px"
   sm: "8px"
   md: "16px"
   lg: "24px"
-  xl: "40px"
-components:
-  button-primary:
-    backgroundColor: "{colors.indigo-signal}"
-    textColor: "{colors.surface}"
-    rounded: "{rounded.lg}"
-    padding: "8px 16px"
-    typography: "{typography.body}"
-  button-ghost:
-    backgroundColor: "transparent"
-    textColor: "{colors.ink-muted}"
-    rounded: "{rounded.md}"
-    padding: "4px 8px"
-  button-ghost-hover:
-    backgroundColor: "{colors.surface-muted}"
-    textColor: "{colors.ink}"
-  button-danger-ghost:
-    backgroundColor: "transparent"
-    textColor: "{colors.danger}"
-    rounded: "{rounded.md}"
-    padding: "4px 8px"
-  button-danger-ghost-hover:
-    backgroundColor: "{colors.danger-soft}"
-  input:
-    backgroundColor: "{colors.paper}"
-    textColor: "{colors.ink}"
-    rounded: "{rounded.lg}"
-    padding: "8px 12px"
-  filter-chip:
-    backgroundColor: "transparent"
-    textColor: "{colors.ink-muted}"
-    rounded: "{rounded.full}"
-    padding: "4px 12px"
-  field-badge:
-    textColor: "{colors.field-blue}"
-    rounded: "{rounded.full}"
-    padding: "2px 8px"
-    typography: "{typography.label}"
-  card-frame:
-    backgroundColor: "{colors.surface}"
-    rounded: "{rounded.xl}"
-    padding: "20px"
+  xl: "32px"
 ---
 
-# Design System: Brainrot
+# Brainrot — Nhật ký kỹ thuật
+
+> Hướng thiết kế lại (redesign) **Trung chốt 10/11/2026**: phương án C "Kỹ thuật" trong 3 phương án Today
+> (`/preview/a|b|c`), lấy **nhãn bo tròn (pill)** của phương án A cho dự án và trạng thái. Thay hoàn toàn hướng cũ
+> (giấy kem, Lora, xanh chàm). Đầu vào: `docs/audits/2026-11-audit.md`.
 
 ## Overview
 
-**Creative North Star: "Sổ tay của sinh viên" (The Student's Desk Notebook)**
+Mở ra như một trang nhật ký đo của dân kỹ thuật: nền giấy kẻ ô mảnh, khung vuông viền 1px, số liệu đọc bằng chữ mono,
+một màu tín hiệu cam cho điều cần chú ý. Thông tin dày nhưng có trật tự: mỗi trang có **hàng chỉ số** ở đầu (đọc trong
+2 giây), rồi **bảng chính** trả lời câu hỏi của trang, cột phải là thông tin phụ.
 
-Brainrot là cuốn sổ nằm sẵn trên bàn học: nền giấy kem ấm, tiêu đề chữ có chân như viết nắn nót, nội dung chữ không chân
-gọn gàng để đọc nhanh. Mỗi trang trả lời một câu hỏi (hôm nay làm gì, tôi có việc gì, đang hướng tới đâu, làm có tốt
-không), nên mỗi màn chỉ có một tiêu đề lớn và các khung nội dung xếp thoáng bên dưới.
-
-Cảm giác **mềm và thân thiện** (Trung chốt 06/11/2026): góc bo rõ, màu nền chuyển lớp nhẹ, nhấn màu ít. Mật độ ở mức
-công cụ dùng hằng ngày: chữ nội dung 14px, khoảng trắng rộng giữa các khung, không nhồi số liệu. Màu chỉ dùng để mang
-nghĩa (đang chọn, trễ hạn, đã xong, thuộc lĩnh vực nào), không để trang trí.
-
-Có hai theme sáng và tối ngang hàng. Theme tối là "sổ trong đêm": nền than ấm, không phải đen xanh lạnh.
-
-**Key Characteristics:**
-- Nền giấy kem (sáng) / than ấm (tối), khung nội dung trắng hoặc xám ấm nổi lên trên.
-- Tiêu đề Lora (serif), nội dung Inter (sans), cả hai có bộ ký tự tiếng Việt.
-- Một màu nhấn duy nhất: Xanh chàm.
-- Bốn màu Lĩnh vực cố định, dùng chung giữa badge, biểu đồ và graph.
-- Khung lồng nhau (Frame ReUI) bo 12px, chiều sâu bằng lớp màu chứ không bằng bóng.
+Cá tính nằm ở chi tiết chính xác (số thứ tự dòng `01`, nhãn `T-03`, `D-26`, lưới 24px), không ở trang trí. Nhãn dự án
+và trạng thái là pill bo tròn mềm, chỗ duy nhất được bo tròn, để mắt bắt ngay "việc này thuộc đâu, có gấp không".
 
 ## Colors
 
-Bảng màu giấy và mực: trung tính ấm làm nền, một xanh chàm làm tín hiệu, bốn màu phân loại cho Lĩnh vực / Dự án.
-Mọi màu khai báo bằng CSS variable trong `app/globals.css`; mỗi token có cặp giá trị sáng (key thường) và tối (hậu tố `-dark`).
+- **Giấy kẻ ô** (`background`): nền trang, có lưới 24px rất mờ (`--grid`). Chỉ ở nền trang, không trong khung.
+- **Surface**: nền khung (trắng / gần đen). `surface-muted` cho hàng tiêu đề bảng, vùng chọn.
+- **Line** (`--line`): viền khung, kẻ dòng. Chỉ trang trí, **không** dùng làm viền control.
+- **Input** (`--input`): viền ô nhập, ô tích, select (≥ 3:1 trên surface, WCAG 1.4.11).
+- **Tín hiệu cam** (`--primary`): nút chính, mục đang chọn, đếm ngược, focus ring. Màu nhấn duy nhất.
+- **Trạng thái** (chữ ≥ 4,5:1 trên surface ở cả hai theme):
+  - `warning` vàng đất: trễ lịch, thói quen chưa đạt.
+  - `danger` đỏ: quá hạn, hạn hôm nay, xoá.
+  - `success` xanh lá: xong, đạt.
+- **Dự án** (`--field-1..4`, `--field-neutral`): xanh dương, hồng sẫm, xanh mòng két, tím; dự án thứ 5 trở đi xám.
+  Khác hẳn màu trạng thái để "Đồ án" không bị đọc nhầm là "trễ". Màu gán theo **thứ tự dự án của từng người** (Cài đặt),
+  không theo tên cứng.
 
-### Primary
-- **Xanh chàm** (Indigo Signal, `indigo-signal` / `indigo-signal-dark`): nút chính, link, mục sidebar đang chọn, vòng
-  focus, số ngày còn lại đến hạn đồ án. **Xanh chàm nhạt** (`indigo-wash`) làm nền cho vùng đang chọn.
-
-### Neutral
-- **Giấy kem / Than ấm** (`paper`): nền trang.
-- **Mặt khung** (`surface`): nền panel bên trong khung, popover, sidebar.
-- **Giấy xám** (`surface-muted`): nền hover, nút phụ, viền ngoài của Frame (ở 50%).
-- **Kẻ dòng** (`line`): viền khung, viền ô nhập, đường phân cách.
-- **Mực** (`ink`) và **Mực nhạt** (`ink-muted`): chữ chính và chữ phụ (mô tả, nhãn, trạng thái trống).
-
-### Trạng thái
-- **Đỏ trễ hạn** (`danger`, nền `danger-soft`): quá hạn, lỗi, xác nhận xoá.
-- **Xanh ổn** (`good`): trạng thái tốt (huy hiệu, chấm). Tách khỏi `field-green` để chỉnh riêng cho nền tối.
-
-### Tertiary: màu Lĩnh vực / Dự án
-- **Xanh dương** (`field-blue`), **Hồng** (`field-pink`), **Xanh lá** (`field-green`), **Hổ phách** (`field-amber`),
-  **Xám** (`field-neutral`). Giá trị theme tối nằm trong `app/globals.css`. Ánh xạ: `lib/fields.ts`, lý do:
-  `docs/decisions/0003-field-colors.md`. Cũng là `--chart-1..5` cho Recharts.
-
-### Named Rules
-**The One Ink Rule.** Xanh chàm là màu nhấn duy nhất. Không thêm màu thương hiệu thứ hai; cần phân biệt thì dùng màu Lĩnh vực.
-
-**The Four Fields Rule.** Chỉ 4 màu Lĩnh vực được validator xác nhận phân biệt được; mọi lĩnh vực khác là xám và phải có
-nhãn chữ đi kèm. Trên nền tối, CVD ΔE chỉ 6.9, nên màu không bao giờ là cách nhận diện duy nhất.
-
-**The Token-Only Rule.** Component không viết mã màu cứng; chỉ dùng token (`bg-surface`, `text-muted-foreground`,
-`var(--field-1)`), để cả hai theme luôn đúng.
+**The One Status Map Rule.** Mỗi trạng thái chỉ có một cách vẽ ở mọi trang (bảng ở mục Components → Pill).
 
 ## Typography
 
-**Display Font:** Lora (dự phòng Georgia, serif)
-**Body Font:** Inter (dự phòng system-ui, sans-serif)
-
-**Character:** Lora mang nét viết tay chỉn chu của tiêu đề sổ; Inter trung tính, rõ ở cỡ nhỏ cho danh sách việc. Cả hai
-nạp qua `next/font` với subset `vietnamese`.
-
-### Hierarchy
-- **Display** (Lora 600, 1.875rem → 2.25rem từ md): tiêu đề trang (`PageHeader`), mỗi màn một lần.
-- **Headline** (Lora 600, 1.5rem): số lớn trên KPI, tiêu đề màn đăng nhập.
-- **Title** (Lora 600, 1.125rem): tiêu đề khung (`Card`), tên mục tiêu; bản nghiêng màu mực nhạt cho châm ngôn năm.
-- **Body** (Inter 400, 0.875rem): gần như toàn bộ nội dung, dòng task, ô nhập, nút.
-- **Label** (Inter 500, 0.75rem): badge Lĩnh vực, ngày trong sidebar, chú thích biểu đồ.
-
-### Named Rules
-**The Serif-Means-Heading Rule.** Lora chỉ dùng cho tiêu đề và số nổi bật; mọi chữ thao tác (nút, ô nhập, danh sách) là Inter.
-
-**The Tabular Numbers Rule.** Số đếm (KPI, ngày còn lại, phần trăm) dùng `tabular-nums` để không nhảy khi đổi giá trị.
+- **IBM Plex Sans** (400, 600) cho mọi chữ đọc; tiêu đề trang 30px 600, tiêu đề khung 14px 600.
+- **IBM Plex Mono** (400) cho số liệu và nhãn kỹ thuật: hàng chỉ số (24px), số thứ tự dòng, ngày `13/11`, `T-03`,
+  nhãn ô chỉ số viết hoa (`VIỆC HÔM NAY`). Luôn `tabular-nums`.
+- Không chữ nào dưới 12px. Không dùng serif.
 
 ## Layout
 
-- **Khung app:** sidebar trái (thu gọn được thành cột icon, nhớ trong cookie `sidebar_state`), bên phải là thanh trên
-  cao 48px, dính đầu trang, nền giấy mờ 85% có blur, rồi vùng nội dung.
-- **Vùng nội dung:** đệm 16px ngang / 24px dọc trên mobile, 40px / 40px từ md. Tiêu đề trang cách nội dung 32px.
-- **Lưới:** khung xếp bằng grid/flex với khoảng cách 16–24px; Dashboard và Today dùng lưới nhiều cột trên desktop, một cột trên mobile.
-- **Desktop-first:** chuẩn là ≥ 1280px. Dưới 768px sidebar thành ngăn kéo mở từ thanh trên; graph không cần đẹp trên mobile.
-- **Nhịp khoảng cách:** bậc 4 / 8 / 16 / 24 / 40px (Tailwind `1 / 2 / 4 / 6 / 10`).
+- App shell đặt **một** bề rộng nội dung (`max-w-7xl`) và lề 16px (mobile) / 32px (desktop) cho mọi trang.
+- Bố cục trang: tiêu đề + dòng phụ → hàng chỉ số (2 cột mobile, 4 cột desktop, ô chung viền) → lưới
+  `minmax(0,1fr) 360px` (bảng chính | cột phụ) từ `xl`, một cột dưới đó.
+- Sidebar 192px, mục có số `01…05` mono, mục đang chọn chữ đậm + ô vuông cam nhỏ; mobile thu thành thanh trên + ngăn kéo.
+- Khoảng cách theo bội 4px; giữa các khung 24px.
 
 ## Elevation & Depth
 
-Chiều sâu chủ yếu bằng **lớp màu**: giấy (`paper`) → viền Frame xám ấm 50% → panel `surface`. Code hiện tại gần như
-không dùng bóng (vài `shadow-xs/sm` của shadcn trên popover, tooltip, sheet).
-
-Hướng đã chốt là **mềm, thân thiện**: được phép thêm bóng rất nhẹ như phản hồi trạng thái (hover trên phần tử bấm được),
-nhưng không dùng bóng để tách khung ở trạng thái nghỉ.
-
-### Shadow Vocabulary
-- **Nổi khi mở** (`shadow-md` / `shadow-lg` của Tailwind): popover, lịch chọn ngày, sheet mobile.
-- **Gợi ý hover** (`shadow-sm`): tuỳ chọn cho thẻ bấm được; chưa dùng rộng.
-
-### Named Rules
-**The Paper-Stack Rule.** Khung ở trạng thái nghỉ thì phẳng; tách lớp bằng màu nền và viền 1px. Bóng chỉ xuất hiện khi phần tử nổi lên (mở, kéo, hover).
+Phẳng. Tách lớp bằng nền (giấy kẻ ô → surface) và viền 1px. Bóng chỉ cho lớp nổi (popover, menu, ngăn kéo, toast).
 
 ## Shapes
 
-Góc bo mềm, nhất quán: khung ngoài 12px, panel bên trong bo đồng tâm (bằng 12px trừ phần đệm và viền), nút và ô nhập
-8px, nút nhỏ và icon 6px, chip lọc và badge bo tròn hẳn (pill). Ô tích task là hình vuông bo 4px. Viền luôn 1px màu `line`.
-
-**The Concentric Corners Rule.** Thứ gì nằm trong khung bo thì góc nhỏ hơn khung ngoài, để hai đường cong song song. Không đặt khung bo 12px trong khung bo 12px.
+- Khung, bảng, ô nhập, nút, ô tích: **vuông** hoặc 4px (`--radius: 0.25rem`).
+- **Ngoại lệ duy nhất:** pill (nhãn dự án, trạng thái, nút "Làm hôm nay") bo tròn hẳn.
 
 ## Components
 
-### Buttons
-- **Shape:** bo 8px (nút thường), 6px (nút nhỏ, nút icon).
-- **Primary:** nền Xanh chàm, chữ màu `surface`, Inter 14px 500, đệm 8px × 16px. Hover giảm còn 80%. Chỉ một nút chính mỗi khung.
-- **Ghost:** chữ mực nhạt, hover nền `surface-muted` + chữ mực. Dùng cho thao tác phụ trên dòng (sửa, huỷ).
-- **Danger ghost:** chữ đỏ, hover nền `danger-soft`. Dùng cho xoá; luôn có bước xác nhận ngay tại dòng.
-- **Focus:** viền màu ring + vòng 3px ring 50%. Bấm: dịch xuống 1px.
+### Pill (`components/pill.tsx`)
+Chữ 12px 500, đệm 2px × 10px, nền là chính màu chữ trộn 13% với trong suốt; nhãn dự án có chấm 6px phía trước.
 
-### Chips
-- **Filter chip** (bộ lọc Tasks): pill, viền `line`, chữ 14px mực nhạt, đệm 4px × 12px. Đang chọn: viền và chữ Xanh chàm, nền Xanh chàm nhạt; có `aria-pressed`. Chuyển màu bằng `transition-colors`.
-- **Segmented chip** (Dashboard Thật / Mẫu): như filter chip nhưng không viền; đang chọn thêm chữ đậm 500.
-- **Field badge:** pill, chữ 12px 500 màu Lĩnh vực, nền là chính màu đó trộn 14% với trong suốt. Không có viền.
+| Trạng thái | Pill |
+|---|---|
+| Dự án | chấm + tên, màu dự án |
+| Trễ lịch | vàng "trễ N ngày" |
+| Hạn hôm nay | đỏ "hạn hôm nay" |
+| Quá hạn | đỏ "quá N ngày" |
+| Xong | xanh lá "xong" |
+| Đang làm | cam "đang làm" |
 
-### Cards / Containers
-- **Corner Style:** Frame ReUI bo 12px, panel bên trong bo đồng tâm.
-- **Background:** viền ngoài `surface-muted` 50% + viền 1px `line`; panel `surface`.
-- **Shadow Strategy:** phẳng (xem Paper-Stack Rule).
-- **Internal Padding:** 20px, 24px từ md. Tiêu đề khung (Lora 18px, heading cấp 2) cách nội dung 16px, nút hành động căn phải cùng hàng.
-- **Thẻ tiêu điểm** (`focal`, mỗi trang tối đa một, ví dụ "Hôm nay làm"): tiêu đề Lora 24px (Headline), rộng hết hàng, đứng đầu.
-- **Trạng thái trống:** một dòng chữ 14px mực nhạt, không hình minh hoạ.
+Nút pill (ví dụ "Làm hôm nay"): viền `--input`, nền surface, chữ 12px 500.
 
-### Inputs / Fields
-- **Style:** nền giấy, viền 1px `line`, bo 8px, đệm 8px × 12px, chữ 14px.
-- **Focus:** viền đổi sang Xanh chàm.
-- **Error:** dòng báo dưới form chữ đỏ (`role="alert"`); thành công chữ mực nhạt có dấu ✓.
+### Bảng việc (signature)
+Dòng: số thứ tự mono `01` · ô tích vuông · tên việc · cột nhãn căn phải (pill + ngày mono). Dưới `md`: nhãn xuống dòng
+dưới tên, không bao giờ bóp tên thành cột hẹp. Việc vừa tích **ở lại** gạch ngang, pill "xong", tới hết ngày.
 
-### Navigation
-- **Sidebar** theo mẫu ReUI c-sidebar-2 (Icon Rail): logo vuông bo 8px nền Xanh chàm + chữ "Second Brain" Lora; menu
-  icon Lucide + nhãn 14px; mục đang chọn nền `accent` và `aria-current="page"`. Chân sidebar: ngày hôm nay, số ngày còn
-  đến hạn đồ án (Xanh chàm), nút đổi theme.
-- **Thanh trên:** nút thu/mở sidebar, gạch đứng, tên màn hiện tại 14px 500.
+### Hàng chỉ số
+Ô chung viền, nhãn mono 12px viết hoa màu mực nhạt, giá trị mono 24px, chú thích 12px. Chỉ ô đếm ngược dùng màu cam.
 
-### Week Day Cards (signature)
-7 thẻ ngày của tuần ở màn Goal: mỗi thẻ một ngày, liệt kê việc có Ngày làm rơi vào ngày đó; dời việc sang ngày khác
-ngay trên thẻ. Trên mobile thẻ thu gọn, có mũi tên xoay 180° khi mở.
+### Controls
+Dùng component thư viện (`components/ui`, `components/reui`), không tự viết: `Button`, `Input`, `Textarea`, `Select`,
+`Checkbox`, `Collapsible`, `ToggleGroup`/`Tabs`, `AlertDialog`, `Popover`, `DropdownMenu`, `Skeleton`, toast `sonner`
+(có nút Hoàn tác, xếp chồng).
+- Focus ring: 2px đặc màu `--ring` (cam), cách 2px, ≥ 3:1 ở cả hai theme.
+- Vùng bấm ≥ 24px desktop, ≥ 40px cảm ứng.
+
+### Trạng thái trống / tải / lỗi
+Trống: một dòng 14px mực nhạt nói vì sao trống và chỗ để làm tiếp. Tải: `Skeleton` đúng bố cục thật. Lỗi: `Alert`
+destructive có nút Thử lại.
+
+## Motion
+Chỉ `transition-colors` cho hover; mở lớp nổi theo component thư viện. Tôn trọng `prefers-reduced-motion`.
 
 ## Do's and Don'ts
 
-### Do:
-- **Do** lấy màu từ token trong `app/globals.css` và kiểm tra cả theme sáng lẫn tối (ảnh 1440×900) cho mọi thay đổi giao diện.
-- **Do** dùng component ReUI / shadcn đã cài (`Frame`, `Button`, `Badge`, `Alert`) đúng như bản phát hành, không tự viết lại.
-- **Do** đi kèm nhãn chữ với mọi màu Lĩnh vực.
-- **Do** chỉ dùng `transition-colors` (hoặc opacity/transform cụ thể) cho hover; không `transition-all` cho code mới.
-- **Do** giữ tiêu đề trang một dòng Lora; phần giải thích để ở dòng phụ mực nhạt.
-
-### Don't:
+- **Do** lấy màu từ token trong `app/globals.css`; kiểm cả hai theme (1440×900) và 375px.
+- **Do** đi kèm nhãn chữ với mọi màu dự án/trạng thái.
+- **Do** dùng chữ mono cho số và ngày.
 - **Don't** viết mã màu cứng trong component.
-- **Don't** thêm màu nhấn thứ hai cạnh Xanh chàm.
-- **Don't** dùng bóng để tách khung ở trạng thái nghỉ.
-- **Don't** lồng Card trong Frame hay Frame trong Card.
-- **Don't** dùng chữ nhỏ hơn 12px cho nội dung đọc. Không còn ngoại lệ: chữ viết tắt thứ ở bảng thói quen tháng đã nâng lên 12px (10/11/2026).
+- **Don't** thêm màu nhấn thứ hai cạnh cam tín hiệu.
+- **Don't** bo tròn khung, bảng hay nút thường; bo tròn chỉ dành cho pill.
+- **Don't** lồng Card trong Frame hay Frame trong Card; mỗi màn một họ khung.
+- **Don't** dùng `opacity` cho chữ phụ; dùng `--muted-foreground`.

@@ -27,9 +27,12 @@ export async function markTaskDone(db: Db, userId: string, id: string): Promise<
   if (!res.length) throw new Error("Không tìm thấy task");
 }
 
-/** Bỏ tích xong (SPEC-v1.0, 07/11/2026): về Chưa làm, xoá Ngày xong; liên kết mục tiêu giữ nguyên. */
-export async function reopenTask(db: Db, userId: string, id: string): Promise<void> {
-  const res = await db.update(tasks).set({ status: "Chưa làm", doneOn: null }).where(ownTask(userId, id)).returning({ id: tasks.id });
+/**
+ * Bỏ tích xong (SPEC-v1.0, 07/11/2026): về Chưa làm (hoặc trạng thái trước khi tích, khi Hoàn tác), xoá Ngày xong;
+ * liên kết mục tiêu giữ nguyên.
+ */
+export async function reopenTask(db: Db, userId: string, id: string, status: "Chưa làm" | "Đang làm" = "Chưa làm"): Promise<void> {
+  const res = await db.update(tasks).set({ status, doneOn: null }).where(ownTask(userId, id)).returning({ id: tasks.id });
   if (!res.length) throw new Error("Không tìm thấy task");
 }
 
@@ -190,14 +193,18 @@ export async function saveReflection(db: Db, userId: string, level: Level, start
 /**
  * Chuyển mục tiêu chưa xong sang kỳ sau (SPEC-v1.0, Goal đợt 2): bản sao giữ loại, không sao thói quen / việc gắn;
  * bỏ qua tên đã có ở kỳ sau. Trả về id các mục tiêu đã tạo (để hoàn tác bằng xoá mềm).
+ * `onlyIds`: chỉ chuyển đúng các mục tiêu màn hình đang coi là chưa xong (kể cả "tự xong" theo thói quen/việc,
+ * thứ chỉ tính được ở lớp trên) → số trên nút khớp số đã chuyển (rà soát 11/2026, A2 lỗi 2).
  */
-export async function carryOverGoals(db: Db, userId: string, level: Level, from: string, to: string): Promise<string[]> {
+export async function carryOverGoals(db: Db, userId: string, level: Level, from: string, to: string, onlyIds?: readonly string[]): Promise<string[]> {
   const rows = await db
-    .select({ title: goals.title, type: goals.type, done: goals.done, start: goals.start })
+    .select({ id: goals.id, title: goals.title, type: goals.type, done: goals.done, start: goals.start })
     .from(goals)
     .where(and(eq(goals.userId, userId), eq(goals.level, level), isNull(goals.deletedAt), inArray(goals.start, [from, to])));
   const existing = new Set(rows.filter((g) => g.start === to).map((g) => g.title.trim().toLowerCase()));
-  const todo = rows.filter((g) => g.start === from && !g.done && g.title.trim() && !existing.has(g.title.trim().toLowerCase()));
+  const todo = rows.filter(
+    (g) => g.start === from && !g.done && g.title.trim() && !existing.has(g.title.trim().toLowerCase()) && (!onlyIds || onlyIds.includes(g.id)),
+  );
   if (!todo.length) return [];
   const created = await db
     .insert(goals)

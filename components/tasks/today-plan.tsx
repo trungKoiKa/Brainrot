@@ -3,39 +3,90 @@
 import Link from "next/link";
 import { useActionState, useRef, useState } from "react";
 import { createTaskAction, type TaskFormState } from "@/app/actions/tasks";
-import { fieldClass, primaryButtonClass } from "@/components/form-bits";
+import { toast } from "sonner";
 import { MaybeLink } from "@/components/tasks/maybe-link";
 import { Empty } from "@/components/card";
-import { Badge } from "@/components/reui/badge";
-import { addDays, formatDay, weekdayShort } from "@/lib/date";
+import { ProjectPill, StatusPill } from "@/components/pill";
+import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Input } from "@/components/ui/input";
+import { addDays, daysBetween, formatDay, weekdayShort } from "@/lib/date";
 import type { Task } from "@/lib/types";
 import { planToday, todayEmptyKind, tomorrowCandidates, type TodayEmptyKind } from "@/lib/today";
-import { ErrorNotice, TaskCheckbox } from "./task-row";
+import { ErrorNotice } from "./task-row";
 import { usePlanTasks } from "./use-plan-tasks";
 
 const dayLabel = (day: string) => `${weekdayShort(day)} ${formatDay(day, true)}`;
 
-function Row({ task, onComplete, children }: { task: Task; onComplete: (t: Task) => void; children?: React.ReactNode }) {
+type RowState = "late" | "due" | "plan" | "suggest";
+
+/**
+ * Một dòng việc kiểu "nhật ký kỹ thuật" (DESIGN.md → Bảng việc): số thứ tự mono · ô tích · tên · pill.
+ * Dưới md pill xuống dòng dưới tên để tên không bị bóp (rà soát 11/2026, P0). Việc vừa tích ở lại, gạch ngang.
+ */
+function Row({
+  n,
+  task,
+  state,
+  today,
+  projects,
+  onToggle,
+  onPlan,
+}: {
+  n: number;
+  task: Task;
+  state: RowState;
+  today: string;
+  projects: readonly string[];
+  onToggle: (t: Task) => void;
+  onPlan: (t: Task) => void;
+}) {
   const done = task.status === "Xong";
+  const late = state === "late" && task.plannedOn ? daysBetween(task.plannedOn, today) : 0;
+  const tags = (
+    <>
+      <ProjectPill project={task.project} projects={projects} />
+      {done ? (
+        <StatusPill tone="success">xong</StatusPill>
+      ) : (
+        <>
+          {state === "late" && <StatusPill tone="warning">trễ {late} ngày</StatusPill>}
+          {task.deadline && task.deadline < today && <StatusPill tone="danger">quá {daysBetween(task.deadline, today)} ngày</StatusPill>}
+          {(state === "due" || (state === "plan" && task.deadline === today)) && <StatusPill tone="danger">hạn hôm nay</StatusPill>}
+          {state === "plan" && task.deadline && task.deadline !== today && (
+            <span className="font-mono text-xs whitespace-nowrap text-muted-foreground">hạn {formatDay(task.deadline, true)}</span>
+          )}
+          {state !== "plan" && (
+            <Button variant="outline" size="xs" className="rounded-full" onClick={() => onPlan(task)}>
+              Làm hôm nay
+            </Button>
+          )}
+        </>
+      )}
+    </>
+  );
   return (
-    <li className="flex items-start gap-3 py-2 first:pt-0 last:pb-0">
-      <TaskCheckbox task={task} onComplete={onComplete} />
+    <li className="flex items-start gap-3 border-b border-line px-4 py-2.5 last:border-b-0" data-task-id={task.id}>
+      <span aria-hidden="true" className="w-5 pt-0.5 font-mono text-xs text-muted-foreground">
+        {String(n).padStart(2, "0")}
+      </span>
+      <span className="flex h-5 items-center">
+        <Checkbox
+          checked={done}
+          onCheckedChange={() => onToggle(task)}
+          aria-label={done ? `Bỏ đánh dấu xong: ${task.title}` : `Đánh dấu xong: ${task.title}`}
+        />
+      </span>
       <div className="min-w-0 flex-1">
-        <MaybeLink
-          href={task.url}
-          className={`break-words hover:text-primary ${done ? "text-muted-foreground line-through" : ""}`}
-        >
+        <MaybeLink href={task.url} className={`text-sm break-words ${done ? "text-muted-foreground line-through" : "hover:text-primary"}`}>
           {task.title || "(Chưa đặt tên)"}
         </MaybeLink>
-        {task.project && <span className="ml-2 text-xs text-muted-foreground">{task.project}</span>}
+        <div className="mt-1.5 flex flex-wrap items-center gap-1.5 md:hidden">{tags}</div>
       </div>
-      {children}
+      <div className="hidden shrink-0 flex-wrap items-center justify-end gap-1.5 md:flex">{tags}</div>
     </li>
   );
 }
-
-const smallButton =
-  "inline-flex min-h-10 shrink-0 items-center rounded-md border border-line px-2 py-1 text-xs text-muted-foreground md:min-h-0 transition-colors hover:border-primary hover:text-foreground focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-ring/50";
 
 const EMPTY_TEXT: Record<TodayEmptyKind, { text: string; link: string }> = {
   "no-tasks": { text: "Chưa có việc nào. Thêm việc đầu tiên ở ô bên dưới.", link: "" },
@@ -47,7 +98,7 @@ const EMPTY_TEXT: Record<TodayEmptyKind, { text: string; link: string }> = {
 function EmptyPlan({ kind }: { kind: TodayEmptyKind }) {
   const { text, link } = EMPTY_TEXT[kind];
   return (
-    <p className="text-sm text-pretty text-muted-foreground">
+    <p className="px-4 py-3 text-sm text-pretty text-muted-foreground">
       {text}{" "}
       {link && (
         <Link href="/tasks" className="font-medium text-primary underline-offset-4 hover:underline">
@@ -58,79 +109,64 @@ function EmptyPlan({ kind }: { kind: TodayEmptyKind }) {
   );
 }
 
-/** Khối "Hôm nay làm" trên Today (SPEC-v0.5 4.2): Ngày làm hôm nay · trễ · hạn hôm nay · gợi ý khi trống. */
-export function TodayPlan({ today, tasks: initial }: { today: string; tasks: Task[] }) {
-  const { tasks, complete, plan, error, dismissError } = usePlanTasks(initial);
-  // Task vừa tích xong vẫn hiện (gạch ngang) tới lần tải lại, để thấy mình vừa làm gì
-  const p = planToday(today, tasks.map((t) => (t.status === "Xong" && initial.find((i) => i.id === t.id)?.status !== "Xong" ? { ...t, status: null } : t)));
+/**
+ * Khối "Hôm nay làm" trên Today (SPEC-v0.5 4.2): trễ · hạn hôm nay · Ngày làm hôm nay · gợi ý khi trống.
+ * Redesign 11/2026 (P0): việc tích xong trong ngày ở nguyên chỗ, gạch ngang, bỏ tích được; toast có nút Hoàn tác.
+ */
+export function TodayPlan({ today, tasks: initial, projects }: { today: string; tasks: Task[]; projects: readonly string[] }) {
+  const { tasks, complete, reopen, plan, error, dismissError } = usePlanTasks(initial);
+  // Việc xong trong ngày (kể cả vừa tích) vẫn xếp vào nhóm cũ: coi như chưa xong khi chia nhóm, rồi vẽ theo trạng thái thật
+  const doneToday = (t: Task) => t.status === "Xong" && (t.doneOn === today || initial.find((i) => i.id === t.id)?.status !== "Xong");
+  const p = planToday(
+    today,
+    tasks.map((t) => (doneToday(t) ? { ...t, status: null } : t)),
+  );
   const shown = (t: Task) => tasks.find((x) => x.id === t.id) ?? t;
 
-  return (
-    <div className="space-y-4">
-      {error && <ErrorNotice message={error} onDismiss={dismissError} />}
+  function toggle(t: Task) {
+    if (t.status === "Xong") {
+      reopen(t);
+      return;
+    }
+    complete(t);
+    toast(`Đã xong “${t.title || "(Chưa đặt tên)"}”`, { action: { label: "Hoàn tác", onClick: () => reopen(t) } });
+  }
+  const toToday = (t: Task) => plan(t, today);
 
-      {p.planned.length > 0 && (
-        <ul className="divide-y divide-line">
-          {p.planned.map((t) => (
-            <Row key={t.id} task={shown(t)} onComplete={complete}>
-              {t.deadline === today && <Badge variant="destructive-light" size="sm">hạn hôm nay</Badge>}
-            </Row>
+  const rows: { task: Task; state: RowState }[] = [
+    ...p.late.map((t) => ({ task: shown(t), state: "late" as const })),
+    ...p.due.map((t) => ({ task: shown(t), state: "due" as const })),
+    ...p.planned.map((t) => ({ task: shown(t), state: "plan" as const })),
+  ];
+
+  return (
+    <div>
+      {error && (
+        <div className="px-4 pt-4">
+          <ErrorNotice message={error} onDismiss={dismissError} />
+        </div>
+      )}
+      {rows.length > 0 ? (
+        <ul>
+          {rows.map((r, i) => (
+            <Row key={r.task.id} n={i + 1} {...r} today={today} projects={projects} onToggle={toggle} onPlan={toToday} />
           ))}
         </ul>
-      )}
-
-      {p.late.length > 0 && (
-        <section className="space-y-2">
-          <h3 className="text-xs font-medium text-muted-foreground">Trễ lịch</h3>
-          <ul className="divide-y divide-line">
-            {p.late.map((t) => (
-              <Row key={t.id} task={shown(t)} onComplete={complete}>
-                <Badge variant="warning-light" size="sm" className="shrink-0">
-                  trễ từ {dayLabel(t.plannedOn)}
-                </Badge>
-                <button type="button" className={smallButton} onClick={() => plan(t, today)}>
-                  Dời sang hôm nay
-                </button>
-              </Row>
+      ) : p.suggest.length === 0 ? (
+        <EmptyPlan kind={todayEmptyKind(tasks)} />
+      ) : (
+        <>
+          <p className="px-4 pt-3 text-sm text-muted-foreground">Chưa xếp việc nào cho hôm nay. Gợi ý:</p>
+          <ul>
+            {p.suggest.map((t, i) => (
+              <Row key={t.id} n={i + 1} task={shown(t)} state="suggest" today={today} projects={projects} onToggle={toggle} onPlan={toToday} />
             ))}
           </ul>
-        </section>
+        </>
       )}
-
-      {p.due.length > 0 && (
-        <section className="space-y-2">
-          <h3 className="text-xs font-medium text-muted-foreground">Hạn hôm nay</h3>
-          <ul className="divide-y divide-line">
-            {p.due.map((t) => (
-              <Row key={t.id} task={shown(t)} onComplete={complete}>
-                <button type="button" className={smallButton} onClick={() => plan(t, today)}>
-                  Làm hôm nay
-                </button>
-              </Row>
-            ))}
-          </ul>
-        </section>
-      )}
-
-      {p.planned.length + p.late.length + p.due.length === 0 &&
-        (p.suggest.length === 0 ? (
-          <EmptyPlan kind={todayEmptyKind(tasks)} />
-        ) : (
-          <section className="space-y-2">
-            <Empty>Chưa xếp việc nào cho hôm nay. Gợi ý:</Empty>
-            <ul className="divide-y divide-line">
-              {p.suggest.map((t) => (
-                <Row key={t.id} task={shown(t)} onComplete={complete}>
-                  <button type="button" className={smallButton} onClick={() => plan(t, today)}>
-                    Làm hôm nay
-                  </button>
-                </Row>
-              ))}
-            </ul>
-          </section>
-        ))}
-
-      <TodayAdd today={today} />
+      <div className="border-t border-line px-4 py-3">
+        <TodayAdd today={today} />
+      </div>
     </div>
   );
 }
@@ -153,7 +189,7 @@ export function TomorrowPicker({
 
   return (
     <details className="group" open={open}>
-      <summary className="cursor-pointer rounded-md py-2.5 text-sm font-medium outline-none focus-visible:ring-3 focus-visible:ring-ring/50">
+      <summary className="cursor-pointer py-2.5 text-sm font-medium">
         Ngày mai làm{" "}
         <span className="font-normal text-muted-foreground">
           · {dayLabel(tomorrow)} · đã chọn {list.filter((t) => t.plannedOn === tomorrow).length}
@@ -170,12 +206,7 @@ export function TomorrowPicker({
               return (
                 <li key={t.id}>
                   <label className="flex cursor-pointer items-start gap-2 text-sm">
-                    <input
-                      type="checkbox"
-                      checked={on}
-                      onChange={() => plan(t, on ? null : tomorrow)}
-                      className="mt-0.5 size-4 shrink-0 accent-[var(--primary)]"
-                    />
+                    <Checkbox className="mt-0.5" checked={on} onCheckedChange={() => plan(t, on ? null : tomorrow)} />
                     <span className="min-w-0 break-words">
                       {t.title || "(Chưa đặt tên)"}
                       {t.priority && <span className="ml-2 text-xs text-muted-foreground">{t.priority}</span>}
@@ -208,22 +239,22 @@ function TodayAdd({ today }: { today: string }) {
     return next;
   }, {});
   return (
-    <form action={action} className="space-y-1.5 pt-1">
+    <form action={action} className="flex flex-col gap-1.5">
       <input type="hidden" name="plannedOn" value={today} />
       <div className="flex gap-2">
-        <input
+        <Input
           ref={inputRef}
           name="title"
           aria-label="Thêm việc cho hôm nay"
           value={title}
           onChange={(e) => setTitle(e.target.value)}
-          placeholder="Thêm việc cho hôm nay…"
+          placeholder="+ Thêm việc cho hôm nay…"
           autoComplete="off"
-          className={`${fieldClass} min-w-0 flex-1`}
+          className="min-w-0 flex-1"
         />
-        <button type="submit" disabled={pending || !title.trim()} className={primaryButtonClass}>
+        <Button type="submit" disabled={pending || !title.trim()}>
           {pending ? "Đang thêm…" : "Thêm"}
-        </button>
+        </Button>
       </div>
       <div role="status" aria-live="polite" className="text-xs text-muted-foreground empty:hidden">
         {state.message ? (state.ok ? state.message : <span className="text-(--danger)">{state.message}</span>) : ""}

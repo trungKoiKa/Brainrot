@@ -1,6 +1,7 @@
 import { Suspense } from "react";
 import { connection } from "next/server";
 import { PageHeader } from "@/components/page-header";
+import { Skeleton } from "@/components/ui/skeleton";
 import { StaleBanner } from "@/components/stale-banner";
 import { DashboardClient } from "@/components/dashboard/dashboard-client";
 import { toVNDate, todayVN } from "@/lib/date";
@@ -15,9 +16,9 @@ import { splitLines } from "@/lib/today";
 // SPEC-v0.3: "Tôi đang làm tốt không?". Chỉ đọc; v0.5 bỏ Planner; v1.0 ẩn Brain + Knowledge (SPEC-v1.0 mục 3).
 export default function DashboardPage() {
   return (
-    <div className="mx-auto max-w-6xl">
-      <PageHeader title="Dashboard" subtitle="Tôi đang làm tốt không?" />
-      <Suspense fallback={<div className="h-96 animate-pulse rounded-2xl border border-line bg-surface" />}>
+    <div>
+      <PageHeader kicker="TỔNG QUAN" title="Dashboard" subtitle="Tôi đang làm tốt không?" />
+      <Suspense fallback={<Skeleton className="h-96 rounded-none" />}>
         <DashboardContent />
       </Suspense>
     </div>
@@ -38,7 +39,15 @@ async function DashboardContent() {
   // Châm ngôn năm (SPEC-v0.4 mục 5) dưới tiêu đề
   const motto = reflectionOf(reflections.data, periodOf("year", today))?.motto.trim() || null;
   const month = periodOf("month", today);
-  const monthGoals = await resolveGoals(goals.data.filter((g) => g.level === "month" && g.start === month.start));
+  const monthGoals = await resolveGoals(
+    goals.data.filter((g) => g.level === "month" && g.start === month.start),
+    // 90 bản ghi gần nhất: chưa đủ 90 thì là toàn bộ lịch sử; đủ 90 thì phủ từ bản ghi cũ nhất tới hôm nay
+    {
+      logs,
+      from: logs.data.length < 90 ? "0000-01-01" : logs.data.reduce((m, l) => (l.date && l.date < m ? l.date : m), today),
+      to: today,
+    },
+  );
 
   const real: DashInput = {
     today,
@@ -73,7 +82,7 @@ async function DashboardContent() {
 
   return (
     <>
-      {motto && <p className="-mt-5 mb-6 font-serif text-lg text-muted-foreground italic">“{motto}”</p>}
+      {motto && <p className="-mt-3 mb-6 text-base text-muted-foreground italic">“{motto}”</p>}
       <StaleBanner show={anyStale(tasks, logs, habits, goals, reflections, ...monthGoals.loaded)} />
       <DashboardClient real={real} />
     </>

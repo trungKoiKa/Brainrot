@@ -1,26 +1,17 @@
 "use client";
 
-import { MaybeLink } from "@/components/tasks/maybe-link";
 import { CircleAlertIcon, PencilIcon, Trash2Icon, XIcon } from "lucide-react";
+import { MaybeLink } from "@/components/tasks/maybe-link";
+import { Pill, ProjectPill, StatusPill } from "@/components/pill";
 import { Alert, AlertAction, AlertDescription, AlertTitle } from "@/components/reui/alert";
 import { Button } from "@/components/ui/button";
-import { deadlineLabel } from "@/lib/today";
+import { Checkbox } from "@/components/ui/checkbox";
 import { daysBetween, formatDay, weekdayShort } from "@/lib/date";
 import type { Task } from "@/lib/types";
 
-// Ưu tiên là phân loại, không phải cảnh báo → màu trung tính; đỏ dành cho quá hạn (critique Tasks 07/11/2026)
-const PRIORITY_CLASS: Record<string, string> = {
-  Cao: "border border-line font-semibold text-foreground",
-  Vừa: "border border-line text-muted-foreground",
-  Thấp: "text-muted-foreground",
-};
-
-const iconButton =
-  "grid size-10 md:size-7 shrink-0 place-items-center rounded-md text-muted-foreground transition-colors outline-none focus-visible:ring-3 focus-visible:ring-ring/50";
-
 /**
- * Ô tích xong. Có `onReopen` → việc đã xong bỏ tích được (về Chưa làm, SPEC-v1.0 07/11/2026);
- * không có → việc đã xong khoá ô (Today giữ nguyên hành vi cũ).
+ * Ô tích xong (Checkbox thư viện). Có `onReopen` → việc đã xong bỏ tích được (về Chưa làm, SPEC-v1.0 07/11/2026);
+ * không có → việc đã xong khoá ô.
  */
 export function TaskCheckbox({
   task,
@@ -34,16 +25,41 @@ export function TaskCheckbox({
   const done = task.status === "Xong";
   const locked = done ? !onReopen : !onComplete;
   return (
-    <label className={`-m-3 shrink-0 p-3 md:-m-2 md:p-2 ${locked ? "cursor-default" : "cursor-pointer"}`}>
-    <input
-      type="checkbox"
-      checked={done}
-      disabled={locked}
-      onChange={() => (done ? onReopen?.(task) : onComplete?.(task))}
-      aria-label={done ? (onReopen ? `Bỏ đánh dấu xong: ${task.title}` : `${task.title} đã xong`) : `Đánh dấu xong: ${task.title}`}
-      className="mt-1 block size-4 accent-[var(--primary)] disabled:cursor-default"
-    />
-    </label>
+    <span className="flex h-5 shrink-0 items-center">
+      <Checkbox
+        checked={done}
+        disabled={locked}
+        onCheckedChange={() => (done ? onReopen?.(task) : onComplete?.(task))}
+        aria-label={done ? (onReopen ? `Bỏ đánh dấu xong: ${task.title}` : `${task.title} đã xong`) : `Đánh dấu xong: ${task.title}`}
+      />
+    </span>
+  );
+}
+
+/** Pill + nhãn mono của một việc theo bảng trạng thái chung (DESIGN.md → Pill). */
+function TaskTags({ task, today, projects }: { task: Task; today: string; projects?: readonly string[] }) {
+  const done = task.status === "Xong";
+  const daysLeft = task.deadline ? daysBetween(today, task.deadline) : null;
+  return (
+    <>
+      {projects && <ProjectPill project={task.project} projects={projects} />}
+      {task.priority && !done && <Pill color="var(--muted-foreground)">{task.priority === "Cao" ? "ưu tiên cao" : task.priority === "Vừa" ? "ưu tiên vừa" : "ưu tiên thấp"}</Pill>}
+      {task.status === "Đang làm" && <StatusPill tone="primary">đang làm</StatusPill>}
+      {done && <StatusPill tone="success">xong</StatusPill>}
+      {!done && daysLeft !== null && daysLeft < 0 && <StatusPill tone="danger">quá {-daysLeft} ngày</StatusPill>}
+      {!done && daysLeft === 0 && <StatusPill tone="danger">hạn hôm nay</StatusPill>}
+      {task.deadline && daysLeft !== null && daysLeft > 0 && !done && (
+        <span className="font-mono text-xs whitespace-nowrap text-muted-foreground">
+          hạn {formatDay(task.deadline, true)} · {daysLeft}n
+        </span>
+      )}
+      {done && task.doneOn && <span className="font-mono text-xs whitespace-nowrap text-muted-foreground">{formatDay(task.doneOn, true)}</span>}
+      {task.plannedOn && !done && (
+        <span className={`font-mono text-xs whitespace-nowrap ${task.plannedOn < today ? "text-warning" : task.plannedOn === today ? "text-primary" : "text-muted-foreground"}`}>
+          làm {weekdayShort(task.plannedOn)} {formatDay(task.plannedOn, true)}
+        </span>
+      )}
+    </>
   );
 }
 
@@ -54,7 +70,7 @@ export function TaskRow({
   onReopen,
   onEdit,
   onDelete,
-  showProject = false,
+  projects,
 }: {
   task: Task;
   today: string;
@@ -62,65 +78,49 @@ export function TaskRow({
   /** Việc đã xong: bỏ tích → về Chưa làm */
   onReopen?: (t: Task) => void;
   onEdit?: () => void;
-  /** Có → hiện icon thùng rác; bấm xoá ngay, dải "Hoàn tác" 8 giây ở cuối màn hình (SPEC-v1.0, Tasks đợt 3). */
+  /** Có → hiện nút thùng rác; xoá ngay, toast "Hoàn tác" (SPEC-v1.0, Tasks đợt 3). */
   onDelete?: (t: Task) => void;
-  showProject?: boolean;
+  /** Có → hiện pill dự án (danh sách không nhóm theo dự án, vd. "Đã xong"). */
+  projects?: readonly string[];
 }) {
-
   const done = task.status === "Xong";
-  const daysLeft = task.deadline ? daysBetween(today, task.deadline) : null;
-  const overdue = !done && daysLeft !== null && daysLeft < 0;
+  const overdue = !done && task.deadline !== null && task.deadline < today;
+  const tags = <TaskTags task={task} today={today} projects={projects} />;
 
   return (
-    <li className="group flex flex-wrap gap-x-3 py-2.5 first:pt-0 last:pb-0" data-task-id={task.id}>
+    <li className="flex items-start gap-3 border-b border-line px-4 py-2.5 last:border-b-0" data-task-id={task.id}>
       {(onComplete || onReopen) && <TaskCheckbox task={task} onComplete={onComplete} onReopen={onReopen} />}
       <div className="min-w-0 flex-1">
         <MaybeLink
           href={task.url}
-          className={`break-words ${task.url ? "hover:text-primary" : ""} ${done ? "text-muted-foreground line-through" : overdue ? "text-danger" : ""}`}
+          className={`text-sm break-words ${task.url ? "hover:text-primary" : ""} ${done ? "text-muted-foreground line-through" : overdue ? "text-danger" : ""}`}
         >
           {task.title || "(Chưa đặt tên)"}
         </MaybeLink>
-        <div className="mt-1 flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
-          {task.priority && !done && (
-            <span className={`rounded-full px-2 py-0.5 ${PRIORITY_CLASS[task.priority] ?? ""}`}>{task.priority}</span>
-          )}
-          {showProject && task.project && <span>{task.project}</span>}
-          {task.deadline && daysLeft !== null && (
-            <span className={overdue ? "font-medium text-danger" : daysLeft === 0 && !done ? "font-medium text-primary" : ""}>
-              {done ? formatDay(task.deadline) : `${deadlineLabel(daysLeft)} · ${formatDay(task.deadline, true)}`}
-            </span>
-          )}
-          {task.plannedOn && !done && (
-            <span className={task.plannedOn < today ? "text-danger" : task.plannedOn === today ? "font-medium text-primary" : ""}>
-              Làm: {weekdayShort(task.plannedOn)} {formatDay(task.plannedOn, true)}
-            </span>
-          )}
-          {task.status === "Đang làm" && <span className="font-medium text-primary">Đang làm</span>}
-          {task.note && <span className="truncate">{task.note}</span>}
-        </div>
+        {task.note && <p className="mt-0.5 truncate text-xs text-muted-foreground" title={task.note}>{task.note}</p>}
+        <div className="mt-1.5 flex flex-wrap items-center gap-1.5 lg:hidden">{tags}</div>
       </div>
-      {onEdit && (
-        <button
-          type="button"
-          onClick={onEdit}
-          aria-label={`Sửa: ${task.title}`}
-          title="Sửa"
-          className={`${iconButton} hover:bg-surface-muted hover:text-foreground`}
-        >
-          <PencilIcon className="size-4" aria-hidden="true" />
-        </button>
-      )}
-      {onDelete && (
-        <button
-          type="button"
-          onClick={() => onDelete(task)}
-          aria-label={`Xóa: ${task.title}`}
-          title="Xóa"
-          className={`${iconButton} hover:bg-danger-soft hover:text-danger`}
-        >
-          <Trash2Icon className="size-4" aria-hidden="true" />
-        </button>
+      <div className="hidden shrink-0 flex-wrap items-center justify-end gap-1.5 lg:flex">{tags}</div>
+      {(onEdit || onDelete) && (
+        <div className="-my-1 flex shrink-0 items-center gap-0.5">
+          {onEdit && (
+            <Button variant="ghost" size="icon" className="max-md:size-10" onClick={onEdit} aria-label={`Sửa: ${task.title}`} title="Sửa">
+              <PencilIcon aria-hidden="true" />
+            </Button>
+          )}
+          {onDelete && (
+            <Button
+              variant="ghost"
+              size="icon"
+              className="max-md:size-10 hover:text-danger"
+              onClick={() => onDelete(task)}
+              aria-label={`Xóa: ${task.title}`}
+              title="Xóa"
+            >
+              <Trash2Icon aria-hidden="true" />
+            </Button>
+          )}
+        </div>
       )}
     </li>
   );

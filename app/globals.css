@@ -5,71 +5,78 @@
 /* dark: variant theo thuộc tính data-theme trên <html> (do script chống nháy đặt) */
 @custom-variant dark (&:where([data-theme="dark"], [data-theme="dark"] *));
 
-/* ---------- Token màu: theme sáng ---------- */
+/* ---------- Token màu: theme sáng (hướng "Nhật ký kỹ thuật", DESIGN.md, Trung chốt 10/11/2026) ----------
+   Chữ trạng thái/dự án ≥ 4,5:1 trên surface và trên nền pill 13%; --input-border ≥ 3:1 (rà soát 11/2026). */
 :root,
 [data-theme="light"] {
-  --background: #f6f4ef;
+  --background: #f1f2ee;
+  --grid: rgb(20 30 20 / 0.05);
   --surface: #ffffff;
-  --surface-muted: #efece5;
-  --line: #e2ddd3;
-  --foreground: #1f1d1a;
-  --muted-foreground: #6f6a61;
-  --primary: #3b5bdb;
-  --accent-soft: #e5eafb;
-  --danger: #c92a2a;
-  --danger-soft: #fdecec;
-  --good: #2f7d32; /* trạng thái "ổn" (huy hiệu, chấm) — tách khỏi --field-3 để chỉnh riêng cho nền tối */
-
-  /* Lĩnh vực — 4 slot màu phân loại + 1 xám trung tính (docs/decisions/0003).
-     Đã chạy validator dataviz (--pairs all, nền #f6f4ef): normal-vision ΔE 19.6, CVD ΔE 13. */
-  --field-1: #2a78d6; /* xanh dương */
-  --field-2: #e87ba4; /* hồng */
-  --field-3: #008300; /* xanh lá */
-  --field-4: #eda100; /* vàng hổ phách */
-  --field-neutral: #a19d94;
-
+  --surface-muted: #f6f7f3;
+  --line: #cfd3ca;
+  --input-border: #848a7f;
+  --foreground: #121412;
+  --muted-foreground: #50564d;
+  --primary: #b03a0a;
+  --accent-soft: #fdebe1;
+  --danger: #b42318;
+  --danger-soft: #fdecea;
+  --good: #2b6f3a;
+  --warning: #8a5a00;
+  --field-1: #2459b8;
+  --field-2: #a8326a;
+  --field-3: #0f766e;
+  --field-4: #6d4bc4;
+  --field-neutral: #61675c;
   color-scheme: light;
 }
 
 /* ---------- Token màu: theme tối ---------- */
 [data-theme="dark"] {
-  --background: #141413;
-  --surface: #1d1c1a;
-  --surface-muted: #262522;
-  --line: #34322e;
-  --foreground: #ece9e2;
-  --muted-foreground: #9c978d;
-  --primary: #91a7ff;
-  --accent-soft: #232a45;
-  --danger: #ff8787;
-  --danger-soft: #3a1f1f;
-  --good: #6cc36c;
-
-  /* Cùng 4 màu, bước tối hơn cho nền tối (validator, nền #141413): normal-vision ΔE 19.3, CVD ΔE 6.9
-     → bắt buộc có cách nhận diện thứ hai: tên cụm trên graph + chip chú thích */
-  --field-1: #3987e5;
-  --field-2: #d55181;
-  --field-3: #008300;
-  --field-4: #c98500;
-  --field-neutral: #6d6a63;
-
+  --background: #0c0e0d;
+  --grid: rgb(220 235 220 / 0.04);
+  --surface: #141716;
+  --surface-muted: #191c1a;
+  --line: #2d322e;
+  --input-border: #6f776c;
+  --foreground: #e4e8e2;
+  --muted-foreground: #9ea69a;
+  --primary: #ff8a3d;
+  --accent-soft: #3a2112;
+  --danger: #ff8b80;
+  --danger-soft: #3d1d1b;
+  --good: #79c98a;
+  --warning: #f2b84b;
+  --field-1: #7aa7ff;
+  --field-2: #f08bbd;
+  --field-3: #4fd1c5;
+  --field-4: #b39dff;
+  --field-neutral: #9ea69a;
   color-scheme: dark;
 }
 
 /* Không có JS: vẫn theo hệ điều hành */
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme]) {
-    --background: #141413;
-    --surface: #1d1c1a;
-    --surface-muted: #262522;
-    --line: #34322e;
-    --foreground: #ece9e2;
-    --muted-foreground: #9c978d;
-    --primary: #91a7ff;
-    --accent-soft: #232a45;
-    --danger: #ff8787;
-    --danger-soft: #3a1f1f;
-    --good: #6cc36c;
+    --background: #0c0e0d;
+    --grid: rgb(220 235 220 / 0.04);
+    --surface: #141716;
+    --surface-muted: #191c1a;
+    --line: #2d322e;
+    --input-border: #6f776c;
+    --foreground: #e4e8e2;
+    --muted-foreground: #9ea69a;
+    --primary: #ff8a3d;
+    --accent-soft: #3a2112;
+    --danger: #ff8b80;
+    --danger-soft: #3d1d1b;
+    --good: #79c98a;
+    --warning: #f2b84b;
+    --field-1: #7aa7ff;
+    --field-2: #f08bbd;
+    --field-3: #4fd1c5;
+    --field-4: #b39dff;
+    --field-neutral: #9ea69a;
     color-scheme: dark;
   }
 }
@@ -89,7 +96,7 @@
   --accent-foreground: var(--foreground);
   --destructive: var(--danger);
   --border: var(--line);
-  --input: var(--line);
+  --input: var(--input-border);
   --ring: var(--primary);
   --chart-1: var(--field-1);
   --chart-2: var(--field-2);
@@ -104,23 +111,16 @@
   --sidebar-accent-foreground: var(--accent-foreground);
   --sidebar-border: var(--line);
   --sidebar-ring: var(--ring);
-  --radius: 0.5rem;
+  --radius: 0.25rem;
   /* màu trạng thái của ReUI (Alert, Badge…) */
   --destructive-foreground: var(--danger);
   --success: var(--good);
   --success-foreground: var(--foreground);
   --info: var(--primary);
   --info-foreground: var(--foreground);
-  --warning: var(--field-4);
   --warning-foreground: var(--foreground);
   --invert: var(--foreground);
   --invert-foreground: var(--background);
-}
-
-/* Chữ trạng thái "cảnh báo" (Badge warning-light…) trên nền tối: --field-4 tối (#c98500) chỉ đạt 4.46:1 trên nền
-   vàng 15% → sáng hơn một bậc cho chữ, màu Lĩnh vực giữ nguyên (critique Dashboard 07/11/2026) */
-[data-theme="dark"] {
-  --warning: #dca12e;
 }
 
 @theme inline {
@@ -164,9 +164,13 @@
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-ring: var(--sidebar-ring);
 
-  --font-sans: var(--font-inter);
-  --font-serif: var(--font-lora);
-  --font-heading: var(--font-inter);
+  --font-sans: var(--font-plex-sans);
+  --font-mono: var(--font-plex-mono);
+  /* font-serif cũ (Lora) trỏ về Plex Sans cho tới khi các trang dựng lại bỏ class font-serif */
+  --font-serif: var(--font-plex-sans);
+  --font-heading: var(--font-plex-sans);
+  --color-input-border: var(--input-border);
+  --color-good: var(--good);
   --color-invert-foreground: var(--invert-foreground);
   --color-invert: var(--invert);
   --color-warning-foreground: var(--warning-foreground);
@@ -178,11 +182,48 @@
   --color-destructive-foreground: var(--destructive-foreground);
 }
 
+/* Nền giấy kẻ ô 24px (DESIGN.md): chỉ nền trang, không trong khung */
+@utility graph-paper {
+  background-image:
+    linear-gradient(var(--grid) 1px, transparent 1px),
+    linear-gradient(90deg, var(--grid) 1px, transparent 1px);
+  background-size: 24px 24px;
+}
+
 @layer base {
   * {
-    @apply border-border outline-ring/50;
+    @apply border-border outline-ring;
   }
   body {
     @apply bg-background text-foreground;
+  }
+  /* Focus ring đặc, ≥ 3:1 cả hai theme (rà soát 11/2026, A3 mục 2) */
+  :focus-visible {
+    outline: 2px solid var(--ring);
+    outline-offset: 2px;
+  }
+  /* Nút trong toast sonner tự đặt viền focus mờ → dùng viền chung (A3 cuối: 1,07:1 ở nền tối) */
+  [data-sonner-toast] button:focus-visible {
+    outline: 2px solid var(--ring) !important;
+    outline-offset: 2px;
+    box-shadow: none !important;
+  }
+  /* Mục đang chọn trong menu: nền accent chỉ 1,1:1 → thêm viền trong màu ring (≥ 3:1, WCAG 1.4.11) */
+  [data-slot^="dropdown-menu"][data-highlighted] {
+    box-shadow: inset 0 0 0 2px var(--ring);
+  }
+  /* Header dính 48px trên mobile không che phần tử đang focus (A3 mục 3) */
+  html {
+    scroll-padding-top: 4rem;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+      scroll-behavior: auto !important;
+    }
   }
 }

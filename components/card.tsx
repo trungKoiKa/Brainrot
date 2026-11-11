@@ -1,37 +1,33 @@
-import { Frame, FramePanel, FrameTitle } from "@/components/reui/frame";
+// Khung chuẩn của hướng "Nhật ký kỹ thuật" (DESIGN.md): hộp vuông viền 1px nền surface, hàng tiêu đề kẻ dưới.
+// Một họ khung cho mọi trang; không lồng khung trong khung.
 
 export function Card({
   title,
   action,
   className = "",
   focal = false,
+  flush = false,
   children,
 }: {
-  title?: string;
+  title?: React.ReactNode;
   action?: React.ReactNode;
   className?: string;
-  /** Thẻ tiêu điểm của trang (Today: "Hôm nay làm"): tiêu đề cỡ headline 24px thay vì 18px. */
+  /** Khung tiêu điểm của trang (vd. "Hôm nay làm"): tiêu đề lớn hơn một bậc. */
   focal?: boolean;
+  /** Nội dung sát viền (bảng, danh sách kẻ dòng tự có đệm). */
+  flush?: boolean;
   children: React.ReactNode;
 }) {
-  // Khung ReUI (Frame): viền ngoài + panel lồng bên trong; `className` đặt trên Frame (col-span, h-full…)
-  // Tiêu đề thẻ là heading cấp 2 (dưới h1 của trang) để trình đọc màn hình nhảy giữa các thẻ
   return (
-    <Frame className={className}>
-      <FramePanel className="p-5 md:p-6">
-        {(title || action) && (
-          <div className="mb-4 flex items-baseline justify-between gap-3">
-            {title && (
-              <FrameTitle role="heading" aria-level={2} className={`font-serif ${focal ? "text-2xl" : "text-lg"}`}>
-                {title}
-              </FrameTitle>
-            )}
-            {action}
-          </div>
-        )}
-        {children}
-      </FramePanel>
-    </Frame>
+    <section className={`min-w-0 border border-line bg-surface ${className}`}>
+      {(title || action) && (
+        <div className="flex min-h-11 items-center justify-between gap-3 border-b border-line px-4 py-2.5">
+          {title && <h2 className={`font-semibold ${focal ? "text-base" : "text-sm"}`}>{title}</h2>}
+          {action}
+        </div>
+      )}
+      <div className={flush ? "" : "p-4"}>{children}</div>
+    </section>
   );
 }
 

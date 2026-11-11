@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
 import { PlusIcon } from "lucide-react";
 import { createGoalAction } from "@/app/actions/goals";
 import { MAX_GOAL_TITLE } from "@/lib/goals";
@@ -15,7 +14,6 @@ const clean = (line: string) => line.replace(/^[\s\-*•\d.)]+/, "").trim();
  * dòng trùng tên mục tiêu có sẵn ghi "Đã có".
  */
 export function PrevFocus({ text, level, periodKey, existing }: { text: string; level: Level; periodKey: string; existing: string[] }) {
-  const router = useRouter();
   const [added, setAdded] = useState<string[]>([]);
   const [busy, setBusy] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -29,7 +27,6 @@ export function PrevFocus({ text, level, periodKey, existing }: { text: string; 
     setBusy(null);
     if (!res.ok) return setError(res.error);
     setAdded((a) => [...a, line]);
-    router.refresh();
   }
 
   return (
@@ -47,7 +44,7 @@ export function PrevFocus({ text, level, periodKey, existing }: { text: string; 
                 disabled={busy !== null}
                 onClick={() => add(l)}
                 aria-label={`Thêm làm mục tiêu: ${l}`}
-                className="inline-flex shrink-0 items-center gap-1 rounded-md px-1.5 py-0.5 text-xs font-medium text-primary outline-none hover:bg-accent-soft focus-visible:ring-3 focus-visible:ring-ring/50 disabled:opacity-50"
+                className="inline-flex shrink-0 items-center gap-1 rounded-md px-1.5 py-0.5 text-xs font-medium text-primary outline-none hover:bg-accent-soft focus-visible:ring-3 focus-visible:ring-ring disabled:opacity-50"
               >
                 <PlusIcon aria-hidden="true" className="size-3" />
                 {busy === l ? "Đang thêm…" : "Thêm làm mục tiêu"}

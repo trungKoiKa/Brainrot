@@ -7,9 +7,11 @@ import { SESSION_COOKIE, SESSION_MAX_AGE, createSessionToken } from "@/lib/auth"
 import { getDb, isDbConfigured } from "@/lib/db/client";
 import { users } from "@/lib/db/schema";
 import { verifyPassword } from "@/lib/password";
+import { safeNextPath } from "@/lib/next-path";
 import { WINDOW_MINUTES, clearFailures, isLocked, recentFailures, recordFailure } from "@/lib/db/login-throttle";
 
-export type LoginState = { error?: string };
+/** `email` trả lại để ô email không bị xoá khi sai (rà soát A2). */
+export type LoginState = { error?: string; email?: string };
 
 // Hash giả để người dùng không tồn tại cũng tốn cùng thời gian băm → không dò được email nào có tài khoản
 const DUMMY_HASH = "scrypt$AAAAAAAAAAAAAAAAAAAAAA==$" + "A".repeat(86) + "==";
@@ -19,7 +21,7 @@ export async function login(_prev: LoginState, formData: FormData): Promise<Logi
   const password = String(formData.get("password") ?? "");
 
   if (!isDbConfigured() || !process.env.AUTH_SECRET) {
-    return { error: "Server chưa cấu hình DATABASE_URL / AUTH_SECRET." };
+    return { email, error: "Server chưa cấu hình DATABASE_URL / AUTH_SECRET." };
   }
 
   let userId: string | null = null;
@@ -35,7 +37,7 @@ export async function login(_prev: LoginState, formData: FormData): Promise<Logi
   }
   if (locked) {
     await new Promise((r) => setTimeout(r, 800));
-    return { error: `Đăng nhập sai quá nhiều lần. Thử lại sau ${WINDOW_MINUTES} phút.` };
+    return { email, error: `Đăng nhập sai quá nhiều lần. Thử lại sau ${WINDOW_MINUTES} phút.` };
   }
 
   try {
@@ -44,7 +46,7 @@ export async function login(_prev: LoginState, formData: FormData): Promise<Logi
     if (user && ok) userId = user.id;
   } catch (e) {
     console.error("login failed:", e instanceof Error ? e.message : e);
-    return { error: "Không kết nối được database, thử lại sau." };
+    return { email, error: "Không kết nối được database, thử lại sau." };
   }
 
   if (!userId) {
@@ -57,7 +59,7 @@ export async function login(_prev: LoginState, formData: FormData): Promise<Logi
     }
     // Chậm lại một chút để việc thử mật khẩu hàng loạt tốn thời gian hơn
     await new Promise((r) => setTimeout(r, 800));
-    return { error: "Sai email hoặc mật khẩu." };
+    return { email, error: "Sai email hoặc mật khẩu." };
   }
 
   try {
@@ -74,5 +76,5 @@ export async function login(_prev: LoginState, formData: FormData): Promise<Logi
     maxAge: SESSION_MAX_AGE,
   });
 
-  redirect("/");
+  redirect(safeNextPath(formData.get("next")));
 }

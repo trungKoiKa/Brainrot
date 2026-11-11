@@ -7,11 +7,15 @@ export async function proxy(request: NextRequest) {
   const loggedIn = await verifySessionToken(request.cookies.get(SESSION_COOKIE)?.value);
 
   if (pathname === "/login") {
-    return loggedIn ? NextResponse.redirect(new URL("/", request.url)) : NextResponse.next();
+    return loggedIn ? NextResponse.redirect(new URL("/today", request.url)) : NextResponse.next();
   }
 
   if (!loggedIn) {
-    return NextResponse.redirect(new URL("/login", request.url));
+    // Giữ trang định mở để đăng nhập xong quay lại (rà soát A2 lỗi 4); login/actions.ts kiểm tra lại bằng safeNextPath
+    const url = new URL("/login", request.url);
+    const target = pathname + request.nextUrl.search;
+    if (pathname !== "/") url.searchParams.set("next", target);
+    return NextResponse.redirect(url);
   }
 
   return NextResponse.next();

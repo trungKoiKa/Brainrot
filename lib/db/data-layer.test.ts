@@ -72,6 +72,9 @@ describe("tasks", () => {
     await reopenTask(db, ME, t.id); // hoàn tác tích xong (SPEC-v1.0, 07/11/2026)
     expect((await listTasks(db, ME)).find((x) => x.id === t.id)).toMatchObject({ status: "Chưa làm", doneOn: null, plannedOn: "2026-10-30" });
     await markTaskDone(db, ME, t.id);
+    await reopenTask(db, ME, t.id, "Đang làm"); // Hoàn tác việc đang làm giữ "Đang làm" (rà soát cuối 11/2026)
+    expect((await listTasks(db, ME)).find((x) => x.id === t.id)?.status).toBe("Đang làm");
+    await markTaskDone(db, ME, t.id);
 
     await updateTask(db, ME, t.id, update("Mở lại")); // mở lại → bỏ Ngày xong
     expect((await listTasks(db, ME)).find((x) => x.id === t.id)?.doneOn).toBeNull();
@@ -289,6 +292,15 @@ describe("goals và nhìn lại", () => {
     expect(await carryOverGoals(db, ME, "week", "2027-03-01", "2027-03-08")).toEqual([]); // chạy lại không nhân đôi
     await trashGoal(db, ME, made[0], true); // hoàn tác = xoá mềm bản sao
     expect((await listGoals(db, ME)).some((g) => g.id === made[0])).toBe(false);
+  });
+
+  it("chuyển kỳ chỉ đúng các mục tiêu được chọn (mục tiêu tự xong không bị chuyển)", async () => {
+    const keep = await createGoal(db, ME, "month", "2027-05-01", "Chưa xong thật", "Thường");
+    await createGoal(db, ME, "month", "2027-05-01", "Tự xong theo thói quen", "Thường");
+    const made = await carryOverGoals(db, ME, "month", "2027-05-01", "2027-06-01", [keep]);
+    expect(made).toHaveLength(1);
+    const next = (await listGoals(db, ME)).filter((g) => g.start === "2027-06-01").map((g) => g.title);
+    expect(next).toEqual(["Chưa xong thật"]);
   });
 
   it("gắn việc từ dòng mục tiêu: thay liên kết cũ, bỏ gắn, không chạm đồ của người khác", async () => {
