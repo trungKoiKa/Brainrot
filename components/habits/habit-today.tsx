@@ -58,13 +58,14 @@ export function HabitToday({ habits, doneByDay, today }: { habits: string[]; don
               {week.map((d) => {
                 const on = (days[d] ?? []).includes(name);
                 return (
-                  <td key={d} className="py-1 text-center">
+                  <td key={d} className="px-0.5 py-1 text-center">
                     <button
                       type="button"
                       aria-pressed={on}
                       aria-label={`${name} ${weekdayShort(d)} ${formatDay(d, true)}`}
                       onClick={() => toggle(d, name, !on)}
-                      className={`mx-auto flex size-6 items-center justify-center border transition-colors max-md:size-8 ${
+                      // Bo 4px + khe giữa các ô cho mềm hơn (Trung góp ý 11/11/2026: ô vuông góc trông thô)
+                      className={`mx-auto flex size-6 items-center justify-center rounded-[4px] border transition-colors max-md:size-7 ${
                         on ? "border-primary bg-primary text-primary-foreground" : "border-input hover:border-primary"
                       }`}
                     >

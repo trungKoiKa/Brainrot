@@ -128,6 +128,7 @@ Phẳng. Tách lớp bằng nền (giấy kẻ ô → surface) và viền 1px. B
 ## Shapes
 
 - Khung, bảng, ô nhập, nút, ô tích: **vuông** hoặc 4px (`--radius: 0.25rem`).
+- Ô nhỏ bấm được (ô tích, ô thói quen): luôn bo 4px và có khe 4px giữa các ô — vuông góc hẳn trông thô (Trung, 11/11/2026).
 - **Ngoại lệ duy nhất:** pill (nhãn dự án, trạng thái, nút "Làm hôm nay") bo tròn hẳn.
 
 ## Components
