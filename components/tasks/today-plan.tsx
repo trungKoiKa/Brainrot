@@ -54,7 +54,7 @@ function Row({
           {task.deadline && task.deadline < today && <StatusPill tone="danger">quá {daysBetween(task.deadline, today)} ngày</StatusPill>}
           {(state === "due" || (state === "plan" && task.deadline === today)) && <StatusPill tone="danger">hạn hôm nay</StatusPill>}
           {state === "plan" && task.deadline && task.deadline !== today && (
-            <span className="font-mono text-xs whitespace-nowrap text-muted-foreground">hạn {formatDay(task.deadline, true)}</span>
+            <span className="text-xs whitespace-nowrap text-muted-foreground tabular-nums">hạn {formatDay(task.deadline, true)}</span>
           )}
           {state !== "plan" && (
             <Button variant="outline" size="xs" className="rounded-full" onClick={() => onPlan(task)}>

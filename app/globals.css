@@ -164,11 +164,11 @@
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-ring: var(--sidebar-ring);
 
-  --font-sans: var(--font-plex-sans);
+  --font-sans: var(--font-sans-main);
   --font-mono: var(--font-plex-mono);
-  /* font-serif cũ (Lora) trỏ về Plex Sans cho tới khi các trang dựng lại bỏ class font-serif */
-  --font-serif: var(--font-plex-sans);
-  --font-heading: var(--font-plex-sans);
+  /* font-serif cũ (Lora) trỏ về font chữ đọc chính */
+  --font-serif: var(--font-sans-main);
+  --font-heading: var(--font-sans-main);
   --color-input-border: var(--input-border);
   --color-good: var(--good);
   --color-invert-foreground: var(--invert-foreground);

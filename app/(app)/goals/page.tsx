@@ -136,7 +136,7 @@ async function GoalsContent({ searchParams }: Pick<PageProps<"/goals">, "searchP
           <Link href={href(shiftPeriod(period, -1))} aria-label="Kỳ trước" className="rounded-md p-1.5 text-muted-foreground hover:bg-surface-muted hover:text-foreground">
             <ChevronLeftIcon className="size-4" />
           </Link>
-          <span className="min-w-40 text-center font-mono text-base">{periodLabel(period)}</span>
+          <span className="min-w-40 text-center text-base font-semibold tabular-nums">{periodLabel(period)}</span>
           <Link href={href(shiftPeriod(period, 1))} aria-label="Kỳ sau" className="rounded-md p-1.5 text-muted-foreground hover:bg-surface-muted hover:text-foreground">
             <ChevronRightIcon className="size-4" />
           </Link>
@@ -260,7 +260,7 @@ function ChildCard({ period, goals, current, today }: { period: Period; goals: G
         <div className="flex items-center gap-4">
           <ProgressRing pct={c.progress} size={64} empty={c.total === 0} neutral={period.end >= today} />
           <div>
-            <h2 className="font-mono text-base">{periodLabel(period)}</h2>
+            <h2 className="text-base font-semibold tabular-nums">{periodLabel(period)}</h2>
             <p className="text-xs text-muted-foreground">
               {c.completed}/{c.total} mục tiêu
             </p>

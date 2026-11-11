@@ -147,7 +147,7 @@ export function TaskBoard({
                   {g.name}
                 </span>
               }
-              action={<span className="font-mono text-xs text-muted-foreground">{g.tasks.length} việc</span>}
+              action={<span className="text-xs text-muted-foreground tabular-nums">{g.tasks.length} việc</span>}
             >
               <ul>
                 {g.tasks.map((t) =>
