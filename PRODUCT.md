@@ -47,7 +47,7 @@ nối các mảnh này; Brainrot nối sẵn. Lý do và phương án đã cân 
 - Chi phí 0 đồng: chỉ gói miễn phí (Neon, Vercel Hobby), không dùng API LLM trả phí.
 - Ngày giờ theo múi Asia/Ho_Chi_Minh.
 - Xoá task là xoá thật nhưng có nút Hoàn tác 8 giây chèn lại đúng như cũ; xoá mục tiêu là xoá mềm (`SPEC.md` mục 5.2, 5.3).
-- Đang ẩn ở v1.0: Knowledge, Brain 3D, thẻ Next up (Google Calendar). Đề xuất làm lại ở `SPEC.md` mục 10, chờ Trung duyệt.
+- Đang ẩn ở v1.0: Knowledge, Brain 3D, thẻ Next up (Google Calendar). Làm lại trong v1.1 (`SPEC.md` mục 10, Trung duyệt 11/11/2026).
 - Không tự thêm tính năng ngoài SPEC; yêu cầu mới ghi vào Follow-ups của plan đang chạy.
 
 ## Brand Commitments

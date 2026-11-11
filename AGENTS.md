@@ -43,7 +43,7 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
 
 > **Trạng thái (11/11/2026):** **v1.0 đang chạy production** (https://brainrot-blue.vercel.app; Postgres, email + mật khẩu,
 > nhiều người dùng; tag `v1.0.0`, redesign `v1.1.0-ui`). Trung muốn **hoàn thành cả project trong tuần 11–18/11/2026**:
-> plan `docs/plans/active/v1.1.md`; phần v1.1 (Knowledge, Brain, Calendar) ở `SPEC.md` mục 10, **chờ Trung duyệt** mới code.
+> plan `docs/plans/active/v1.1.md`; phần v1.1 (Knowledge, Brain, Calendar) ở `SPEC.md` mục 10, **Trung duyệt 11/11/2026**.
 > SPEC cũ (v0.1 → v1.0) là lịch sử ở `docs/specs/archive/`; plan cũ ở `docs/plans/completed/`.
 > Yêu cầu mới → ghi vào "Follow-ups" của plan đang chạy, chốt SPEC trước khi code.
 
