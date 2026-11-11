@@ -5,7 +5,8 @@
 > (comment trong code kiểu "SPEC-v0.4 6.3" trỏ tới các file đó).
 > Mọi thay đổi phạm vi phải được Trung đồng ý và ghi vào file này trước khi code.
 >
-> **Trạng thái:** mục 1–9 = **v1.0, đang chạy production**. Mục 10 = **v1.1, đề xuất, chờ Trung duyệt**.
+> **Trạng thái:** mục 1–9 = **v1.0, đang chạy production**. Mục 10 = **v1.1, Trung duyệt 11/11/2026**, đang làm
+> (`docs/plans/active/v1.1.md`).
 
 ## 1. Mục đích và ràng buộc
 
@@ -197,9 +198,9 @@ Chia sẻ / việc nhóm giữa các tài khoản · thông báo, nhắc nhở �
 từ Notion · trang tự đăng ký · đăng nhập Google · việc lặp lại · kéo thả việc giữa các ngày, khối giờ trong ngày ·
 kéo thả sắp xếp mục tiêu, mục tiêu dạng số đo · export báo cáo, khoảng ngày tuỳ ý ở Dashboard · LLM (chờ ngân sách).
 
-## 10. v1.1 — Knowledge, Brain, Calendar (đề xuất, chờ Trung duyệt)
+## 10. v1.1 — Knowledge, Brain, Calendar (Trung duyệt 11/11/2026)
 
-> Phần này **chưa được duyệt**. Không code trước khi Trung chốt 5 câu ở mục 10.5.
+> Chưa có trên production. Khi một phần làm xong thì chuyển mô tả của nó lên mục 3, 5, 7 và xoá khỏi đây.
 
 ### 10.1 Knowledge (`/knowledge`)
 
@@ -239,13 +240,13 @@ kéo thả sắp xếp mục tiêu, mục tiêu dạng số đo · export báo c
 3. (Nếu làm 10.3) nối và ngắt Calendar được; token trong database là bản mã hoá; không in token ra log.
 4. Lint, test, build sạch; ảnh hai theme; README, hướng dẫn, PRODUCT khớp sản phẩm.
 
-### 10.5 Câu hỏi Trung cần chốt
+### 10.5 Đã chốt (11/11/2026)
 
-1. **Liên kết giữa ghi chú:** chọn tay "Liên quan tới" *(đề xuất)*, hay gõ `[[tên]]` trong Tóm tắt.
-2. **Lĩnh vực:** danh sách riêng ở Cài đặt *(đề xuất)*, hay gõ tự do.
-3. **Calendar:** OAuth từng người như 10.3 *(đề xuất)*, hay bỏ hẳn khỏi project.
-4. **Tên menu:** giữ Dashboard / Today / Tasks / Goal *(đề xuất)*, hay Việt hoá hết.
-5. **"Đã xong" ở Tasks:** chỉ tải 30 ngày gần nhất, có nút "Xem cũ hơn" *(đề xuất)*, hay tải hết như hiện nay.
+1. **Liên kết giữa ghi chú:** chọn tay ở ô "Liên quan tới" (không dùng cú pháp `[[tên]]`).
+2. **Lĩnh vực:** danh sách riêng từng người ở Cài đặt (không gõ tự do).
+3. **Calendar:** làm theo 10.3, có đường lui (không ổn định kịp thì bỏ khỏi bản cuối).
+4. **"Đã xong" ở Tasks:** giữ như hiện nay, tải hết (không giới hạn 30 ngày).
+5. **Tên menu:** giữ Dashboard / Today / Tasks / Goal (chưa có yêu cầu Việt hoá).
 
 ## 11. Nhật ký quyết định
 
@@ -259,4 +260,5 @@ kéo thả sắp xếp mục tiêu, mục tiêu dạng số đo · export báo c
 | 10/11/2026 | Bước 5: giữ email + mật khẩu (bỏ Google), Cài đặt, dự án riêng, chống dò mật khẩu, xoá tài khoản | như trên |
 | 10/11/2026 | Redesign "Nhật ký kỹ thuật"; xoá task có Hoàn tác (thay "xoá hẳn, không hoàn tác") | `DESIGN.md`, `docs/audits/2026-11-audit.md` |
 | 11/11/2026 | Xoá hẳn thói quen có Hoàn tác; thẻ quý có dòng "+N mục tiêu ở các tháng"; bộ lọc Tasks trong URL | file này |
+| 11/11/2026 | Duyệt v1.1: liên kết ghi chú chọn tay, Lĩnh vực ở Cài đặt, làm Calendar có đường lui, "Đã xong" tải hết | mục 10.5 |
 | 11/11/2026 | Gộp SPEC thành một file; Trung muốn hoàn thành cả v1.1 trong tuần 11–18/11 | file này, `docs/plans/active/v1.1.md` |
