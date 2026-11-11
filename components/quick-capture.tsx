@@ -96,6 +96,7 @@ function DailyLogForm({ todayLog, open, showExercise, day }: { todayLog: DailyLo
       // eslint-disable-next-line react-hooks/set-state-in-effect
       setValues(d);
       setRestored(true);
+      setExpanded(true); // mở sẵn để thấy bản nháp vừa khôi phục (rà soát 11/2026 P2)
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);

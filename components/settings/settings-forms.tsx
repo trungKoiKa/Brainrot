@@ -13,6 +13,7 @@ import {
 import { Status, fieldClass, primaryButtonClass } from "@/components/form-bits";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { DeadlineField } from "@/components/tasks/deadline-field";
 
 // Trùng MIN_PASSWORD_LENGTH ở lib/password.ts (file đó dùng node:crypto nên không import vào bundle trình duyệt)
 const MIN_PASSWORD_LENGTH = 8;
@@ -22,6 +23,7 @@ const hint = "text-xs text-muted-foreground";
 /** Tên hiển thị + hạn / nhãn thẻ đếm ngược. Hạn để trống → ẩn thẻ. Email chỉ đọc (đổi email nhờ Trung). */
 export function ProfileForm({ email, name, targetDate, targetLabel }: { email: string | null; name: string; targetDate: string; targetLabel: string }) {
   const [state, action, pending] = useActionState<AccountState, FormData>(updateProfileAction, {});
+  const [date, setDate] = useState(targetDate);
   return (
     <form action={action} className="grid gap-4 md:grid-cols-2">
       <label className={`${label} md:col-span-2`}>
@@ -33,11 +35,12 @@ export function ProfileForm({ email, name, targetDate, targetLabel }: { email: s
         <input name="name" defaultValue={name} maxLength={60} required autoComplete="name" className={fieldClass} />
         <span className={hint}>Từ cuối của tên dùng trong lời chào (vd. “Anh Trung” → “Chào buổi sáng, Trung”).</span>
       </label>
-      <label className={label}>
+      {/* Lịch chọn ngày của app (dd/mm/yyyy) thay <input type="date"> hiện theo locale trình duyệt — rà soát 11/2026 P2 */}
+      <div className={label}>
         <span className="text-muted-foreground">Hạn cần nhớ (đếm ngược)</span>
-        <input name="targetDate" type="date" defaultValue={targetDate} className={fieldClass} />
+        <DeadlineField name="targetDate" label="Hạn" value={date} onChange={setDate} triggerClass={`${fieldClass} justify-between text-left`} />
         <span className={hint}>Để trống nếu không cần thẻ đếm ngược.</span>
-      </label>
+      </div>
       <label className={label}>
         <span className="text-muted-foreground">Tên của hạn đó</span>
         <input name="targetLabel" defaultValue={targetLabel} maxLength={40} placeholder="vd. hạn nộp đồ án" className={fieldClass} />

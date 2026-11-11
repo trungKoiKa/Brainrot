@@ -68,6 +68,9 @@ export function WeekCards({
   /** Một dòng việc (thẻ ngày và khay "Chưa xếp ngày"): tích xong, nhãn mục tiêu, nhãn hạn, Dời sang… */
   function renderTask(t: Task & { dueOnly?: boolean }, past: boolean) {
     const done = t.status === "Xong";
+    // Chỉ cho dời sang hôm nay hoặc ngày sau đó (rà soát 11/2026 P2: không dời về ngày đã qua)
+    const targets = days.filter((d) => d >= today && d !== t.plannedOn);
+    const canMove = targets.length > 0 || t.plannedOn !== null;
     return (
       <li key={t.id} className="space-y-1">
         <div className="flex gap-2">
@@ -91,6 +94,7 @@ export function WeekCards({
               // đỏ chỉ khi đã quá hạn; hạn hôm nay / sắp tới là nhãn trung tính
               past ? <StatusPill tone="danger">quá hạn</StatusPill> : <StatusPill tone="muted">hạn</StatusPill>
             )}
+            {canMove && (
             <button
               type="button"
               aria-expanded={moving === t.id}
@@ -101,20 +105,19 @@ export function WeekCards({
               <CalendarDaysIcon aria-hidden="true" className="size-3" />
               Dời sang…
             </button>
+            )}
             {moving === t.id && (
               <div role="group" aria-label={`Chọn ngày mới cho “${t.title}”`} className="flex w-full flex-wrap gap-1 pt-1">
-                {days.map((d, k) =>
-                  d === t.plannedOn ? null : (
-                    <button
-                      key={d}
-                      type="button"
-                      onClick={() => move(t, d)}
-                      className="inline-flex min-h-10 items-center rounded-md border border-line px-2 py-0.5 text-xs tabular-nums md:min-h-0 md:px-1.5 outline-none hover:border-primary focus-visible:ring-3 focus-visible:ring-ring"
-                    >
-                      {SHORT[k]} {formatDay(d, true)}
-                    </button>
-                  ),
-                )}
+                {targets.map((d) => (
+                  <button
+                    key={d}
+                    type="button"
+                    onClick={() => move(t, d)}
+                    className="inline-flex min-h-10 items-center rounded-md border border-line px-2 py-0.5 text-xs tabular-nums md:min-h-0 md:px-1.5 outline-none hover:border-primary focus-visible:ring-3 focus-visible:ring-ring"
+                  >
+                    {SHORT[days.indexOf(d)]} {formatDay(d, true)}
+                  </button>
+                ))}
                 {t.plannedOn && (
                   <button
                     type="button"

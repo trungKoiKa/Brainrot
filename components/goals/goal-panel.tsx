@@ -20,6 +20,7 @@ import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { carryOverGoalsAction, createGoalAction, linkTaskAction, trashGoalAction, updateGoalAction } from "@/app/actions/goals";
 import { formatDay } from "@/lib/date";
+import { fold } from "@/lib/graph-search";
 import { fieldClass, primaryButtonClass } from "@/components/form-bits";
 import { Badge } from "@/components/reui/badge";
 import { ErrorNotice } from "@/components/tasks/task-row";
@@ -632,8 +633,8 @@ function TaskPicker({
   const [busy, setBusy] = useState<string | null>(null);
   const [last, setLast] = useState<string | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
-  const q = query.trim().toLowerCase();
-  const shown = openTasks.filter((t) => t.title.toLowerCase().includes(q));
+  const q = fold(query); // bỏ dấu: "don" khớp "Dọn" (rà soát 11/2026 P2)
+  const shown = openTasks.filter((t) => fold(t.title).includes(q));
   return (
     <Popover
       open={open}
