@@ -4,6 +4,8 @@ import {
   carryOverGoals,
   createGoal,
   createHabit,
+  deleteHabit,
+  restoreHabit,
   createIdea,
   createTask,
   deleteTask,
@@ -29,7 +31,8 @@ import {
   updateTask,
 } from "./mutations";
 import { getProfileRow, listProjectsWithCounts, listDailyLogsBetween, listGoals, listHabits, listProjectNames, listRecentDailyLogs, listReflections, listTasks } from "./queries";
-import { DEFAULT_USER_ID, users } from "./schema";
+import { DEFAULT_USER_ID, habits, users } from "./schema";
+import { eq } from "drizzle-orm";
 import { createTestDb } from "./test-db";
 
 let db: Db;
@@ -301,6 +304,35 @@ describe("goals và nhìn lại", () => {
     expect(made).toHaveLength(1);
     const next = (await listGoals(db, ME)).filter((g) => g.start === "2027-06-01").map((g) => g.title);
     expect(next).toEqual(["Chưa xong thật"]);
+  });
+
+  it("xoá hẳn thói quen rồi hoàn tác: ngày đã tích và liên kết mục tiêu quay lại; không đụng người khác", async () => {
+    await createHabit(db, ME, "Thiền", "2027-01-01", 1);
+    await createHabit(db, other, "Thiền của bạn", "2027-01-01", 1);
+    const mine = (await listHabits(db, ME)).find((h) => h.name === "Thiền")!;
+    const theirs = (await listHabits(db, other)).find((h) => h.name === "Thiền của bạn")!;
+    await setDayHabits(db, ME, "2027-01-05", ["Thiền"]);
+    const goalId = await createGoal(db, ME, "month", "2027-01-01", "Thiền đều", "Thường");
+    await updateGoal(db, ME, goalId, { habitId: mine.id, threshold: 60 });
+
+    expect(await deleteHabit(db, ME, theirs.id)).toBeNull(); // không xoá được của người khác
+    expect((await listHabits(db, other)).some((h) => h.id === theirs.id)).toBe(true);
+
+    const snap = (await deleteHabit(db, ME, mine.id))!;
+    expect(snap.days).toEqual(["2027-01-05"]);
+    expect(snap.goals).toEqual([{ id: goalId, threshold: 60 }]);
+    expect((await listHabits(db, ME)).some((h) => h.id === mine.id)).toBe(false);
+    expect((await listGoals(db, ME)).find((g) => g.id === goalId)?.habitId ?? null).toBeNull();
+
+    await restoreHabit(db, other, snap); // người khác "hoàn tác" hộ → thói quen sang tài khoản họ, mục tiêu của tôi không bị gắn
+    expect((await listGoals(db, ME)).find((g) => g.id === goalId)?.habitId ?? null).toBeNull();
+    await db.delete(habits).where(eq(habits.id, mine.id));
+
+    await restoreHabit(db, ME, snap);
+    expect((await listHabits(db, ME)).find((h) => h.id === mine.id)?.name).toBe("Thiền");
+    expect((await listGoals(db, ME)).find((g) => g.id === goalId)).toMatchObject({ habitId: mine.id, threshold: 60 });
+    const logs = await listDailyLogsBetween(db, ME, "2027-01-05", "2027-01-05");
+    expect(logs[0]?.habits ?? []).toContain("Thiền");
   });
 
   it("gắn việc từ dòng mục tiêu: thay liên kết cũ, bỏ gắn, không chạm đồ của người khác", async () => {

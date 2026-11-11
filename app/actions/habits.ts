@@ -4,7 +4,7 @@ import { todayVN } from "@/lib/date";
 import { habitsForMonth, MAX_HABIT_NAME } from "@/lib/habits";
 import { dbScope } from "@/lib/db/actions-db";
 import { getHabits } from "@/lib/db/data";
-import { createHabit, setDayHabits, setHabitEnd, setHabitOrder } from "@/lib/db/mutations";
+import { createHabit, deleteHabit, restoreHabit, setDayHabits, setHabitEnd, setHabitOrder, type HabitSnapshot } from "@/lib/db/mutations";
 import { refreshData } from "@/lib/db/revalidate";
 import { isMonthKey, monthOf } from "@/lib/period";
 import { SESSION_EXPIRED, isSignedIn } from "@/lib/session";
@@ -111,4 +111,56 @@ export async function stopHabitAction(month: string, id: string): Promise<HabitR
   }
   refreshData();
   return { ok: true };
+}
+
+const MONTH = /^\d{4}-\d{2}-01$/;
+
+/** Xoá hẳn thói quen (SPEC-v1.0, Trung chốt 11/11/2026); trả ảnh chụp để Hoàn tác. */
+export async function deleteHabitAction(id: string): Promise<{ ok: true; snapshot: HabitSnapshot } | { ok: false; error: string }> {
+  if (!(await isSignedIn())) return { ok: false, error: SESSION_EXPIRED };
+  if (typeof id !== "string" || !PAGE_ID.test(id)) return { ok: false, error: "Yêu cầu không hợp lệ." };
+  try {
+    const { db, userId } = await dbScope();
+    const snapshot = await deleteHabit(db, userId, id);
+    if (!snapshot) return { ok: false, error: "Không tìm thấy thói quen." };
+    refreshData();
+    return { ok: true, snapshot };
+  } catch (e) {
+    console.error("deleteHabit failed:", e instanceof Error ? e.message : e);
+    return { ok: false, error: WRITE_FAILED };
+  }
+}
+
+/** Hoàn tác xoá thói quen: kiểm tra kỹ ảnh chụp do trình duyệt gửi lại rồi chèn vào tài khoản đang đăng nhập. */
+export async function restoreHabitAction(snap: HabitSnapshot): Promise<HabitResult> {
+  const denied = await guard();
+  if (denied) return denied;
+  const h = snap?.habit;
+  const valid =
+    h &&
+    typeof h.id === "string" &&
+    PAGE_ID.test(h.id) &&
+    typeof h.name === "string" &&
+    h.name.trim().length > 0 &&
+    h.name.length <= MAX_HABIT_NAME &&
+    typeof h.fromMonth === "string" &&
+    MONTH.test(h.fromMonth) &&
+    (h.toMonth === null || (typeof h.toMonth === "string" && MONTH.test(h.toMonth))) &&
+    Number.isInteger(h.sort) &&
+    Array.isArray(snap.days) &&
+    snap.days.length <= 4000 &&
+    snap.days.every((d) => typeof d === "string" && DAY.test(d)) &&
+    Array.isArray(snap.goals) &&
+    snap.goals.length <= 200 &&
+    snap.goals.every((g) => g && typeof g.id === "string" && PAGE_ID.test(g.id) && (g.threshold === null || (Number.isInteger(g.threshold) && g.threshold >= 1 && g.threshold <= 100)));
+  if (!valid) return { ok: false, error: "Yêu cầu không hợp lệ." };
+  try {
+    const { db, userId } = await dbScope();
+    await restoreHabit(db, userId, snap);
+    refreshData();
+    return { ok: true };
+  } catch (e) {
+    console.error("restoreHabit failed:", e instanceof Error ? e.message : e);
+    return { ok: false, error: WRITE_FAILED };
+  }
 }
