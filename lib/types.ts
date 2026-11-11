@@ -34,6 +34,8 @@ export type Knowledge = {
   /** YYYY-MM-DD theo giờ Việt Nam */
   learnedOn: string | null;
   createdTime: string;
+  /** id các ghi chú "liên quan tới" (hai chiều) — SPEC.md mục 10.1 */
+  related: string[];
 };
 
 export type DailyLog = {

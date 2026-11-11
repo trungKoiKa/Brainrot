@@ -8,6 +8,7 @@ export const taskStatus = pgEnum("task_status", ["Chưa làm", "Đang làm", "Xo
 export const priority = pgEnum("priority", ["Cao", "Vừa", "Thấp"]);
 export const level = pgEnum("level", ["year", "quarter", "month", "week"]);
 export const goalType = pgEnum("goal_type", ["Ưu tiên", "Thường"]);
+export const knowledgeLevel = pgEnum("knowledge_level", ["Mới học", "Hiểu", "Áp dụng được"]);
 
 const id = () => uuid("id").primaryKey().defaultRandom();
 const owner = () =>
@@ -162,6 +163,50 @@ export const ideas = pgTable(
     createdAt: createdAt(),
   },
   (t) => [index("ideas_user_idx").on(t.userId)],
+);
+
+// ---------- Knowledge (SPEC.md mục 10.1, v1.1) ----------
+
+/** Lĩnh vực của ghi chú kiến thức: danh sách riêng từng người, quản lý ở Cài đặt (như `projects`). */
+export const fields = pgTable(
+  "fields",
+  {
+    id: id(),
+    userId: owner(),
+    name: text("name").notNull(),
+    sort: integer("sort").notNull().default(0),
+  },
+  (t) => [unique().on(t.userId, t.name)],
+);
+
+export const knowledge = pgTable(
+  "knowledge",
+  {
+    id: id(),
+    userId: owner(),
+    title: text("title").notNull(),
+    fieldId: uuid("field_id").references(() => fields.id, { onDelete: "set null" }),
+    level: knowledgeLevel("level").notNull().default("Mới học"),
+    summary: text("summary").notNull().default(""),
+    sourceUrl: text("source_url"),
+    learnedOn: date("learned_on"),
+    createdAt: createdAt(),
+  },
+  (t) => [index("knowledge_user_idx").on(t.userId)],
+);
+
+/** "Liên quan tới": cặp ghi chú không có hướng, luôn lưu `from_id < to_id` để mỗi cặp chỉ một dòng. */
+export const knowledgeLinks = pgTable(
+  "knowledge_links",
+  {
+    fromId: uuid("from_id")
+      .notNull()
+      .references(() => knowledge.id, { onDelete: "cascade" }),
+    toId: uuid("to_id")
+      .notNull()
+      .references(() => knowledge.id, { onDelete: "cascade" }),
+  },
+  (t) => [primaryKey({ columns: [t.fromId, t.toId] })],
 );
 
 /**

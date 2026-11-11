@@ -3,6 +3,7 @@ import { useEffect } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
+  BookOpenIcon,
   LayoutDashboardIcon,
   ListChecksIcon,
   SettingsIcon,
@@ -28,6 +29,7 @@ export const NAV: readonly { href: string; label: string; icon: LucideIcon }[] =
   { href: "/today", label: "Today", icon: SunIcon },
   { href: "/tasks", label: "Tasks", icon: ListChecksIcon },
   { href: "/goals", label: "Goal", icon: TargetIcon },
+  { href: "/knowledge", label: "Knowledge", icon: BookOpenIcon },
 ];
 
 export const isActive = (href: string, pathname: string) => (href === "/" ? pathname === "/" : pathname.startsWith(href));

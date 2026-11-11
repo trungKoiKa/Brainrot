@@ -10,6 +10,7 @@ import {
   updateProfileAction,
   type AccountState,
 } from "@/app/actions/account";
+import { createFieldAction, deleteFieldAction, renameFieldAction } from "@/app/actions/knowledge";
 import { Status, fieldClass, primaryButtonClass } from "@/components/form-bits";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -120,15 +121,42 @@ export function PasswordForm() {
   );
 }
 
-/** Quản lý dự án của riêng mình (SPEC-v1.0 bước 5B): thêm, đổi tên tại chỗ, xoá khi không còn việc. */
-export function ProjectManager({ projects }: { projects: { id: string; name: string; tasks: number }[] }) {
-  const [state, action, pending] = useActionState<AccountState, FormData>(createProjectAction, {});
-  const [note, setNote] = useState<AccountState>({});
+type ListState = { ok?: boolean; message?: string };
+type ListItem = { id: string; name: string; count: number };
+
+/**
+ * Danh sách tên của riêng mình: thêm, đổi tên tại chỗ, xoá khi không còn mục nào gắn.
+ * Dùng cho Dự án (SPEC.md mục 5.5) và Lĩnh vực (mục 10.1).
+ */
+function NameListManager({
+  items,
+  noun,
+  countNoun,
+  emptyText,
+  colored = true,
+  createAction,
+  renameAction,
+  deleteAction,
+}: {
+  items: ListItem[];
+  /** "dự án" / "lĩnh vực" */
+  noun: string;
+  /** "việc" / "ghi chú" */
+  countNoun: string;
+  emptyText: string;
+  /** 4 mục đầu có màu riêng (docs/decisions/0003) */
+  colored?: boolean;
+  createAction: (prev: ListState, form: FormData) => Promise<ListState>;
+  renameAction: (id: string, name: string) => Promise<ListState>;
+  deleteAction: (id: string) => Promise<ListState>;
+}) {
+  const [state, action, pending] = useActionState<ListState, FormData>(createAction, {});
+  const [note, setNote] = useState<ListState>({});
   const [editing, setEditing] = useState<string | null>(null);
   const [draft, setDraft] = useState("");
   const [busy, startTransition] = useTransition();
 
-  const run = (fn: () => Promise<AccountState>) =>
+  const run = (fn: () => Promise<ListState>) =>
     startTransition(async () => {
       setNote(await fn());
     });
@@ -136,26 +164,28 @@ export function ProjectManager({ projects }: { projects: { id: string; name: str
   return (
     <div className="space-y-4">
       <form action={action} className="flex flex-wrap gap-2" key={state.ok ? `ok-${state.message}` : "form"}>
-        <input name="name" aria-label="Tên dự án mới" placeholder="Thêm dự án…" maxLength={40} autoComplete="off" className={`${fieldClass} min-w-48 flex-1`} />
+        <input name="name" aria-label={`Tên ${noun} mới`} placeholder={`Thêm ${noun}…`} maxLength={40} autoComplete="off" className={`${fieldClass} min-w-48 flex-1`} />
         <button type="submit" disabled={pending} className={primaryButtonClass}>
           {pending ? "Đang thêm…" : "Thêm"}
         </button>
       </form>
       <Status state={note.message ? note : state} />
-      {projects.length === 0 ? (
-        <p className="text-sm text-muted-foreground">Chưa có dự án nào. Thêm một dự án để nhóm việc ở Tasks.</p>
+      {items.length === 0 ? (
+        <p className="text-sm text-muted-foreground">{emptyText}</p>
       ) : (
         <ul className="divide-y divide-line">
-          {projects.map((p, i) => (
+          {items.map((p, i) => (
             <li key={p.id} className="flex flex-wrap items-center gap-x-3 gap-y-1 py-2">
-              <span aria-hidden="true" className="size-2.5 shrink-0" style={{ background: `var(${i < 4 ? `--field-${i + 1}` : "--field-neutral"})` }} />
+              {colored && (
+                <span aria-hidden="true" className="size-2.5 shrink-0" style={{ background: `var(${i < 4 ? `--field-${i + 1}` : "--field-neutral"})` }} />
+              )}
               {editing === p.id ? (
                 <form
                   className="flex min-w-0 flex-1 gap-2"
                   onSubmit={(e) => {
                     e.preventDefault();
                     run(async () => {
-                      const res = await renameProjectAction(p.id, draft);
+                      const res = await renameAction(p.id, draft);
                       if (res.ok) setEditing(null);
                       return res;
                     });
@@ -163,7 +193,7 @@ export function ProjectManager({ projects }: { projects: { id: string; name: str
                 >
                   <input
                     autoFocus
-                    aria-label={`Đổi tên dự án ${p.name}`}
+                    aria-label={`Đổi tên ${noun} ${p.name}`}
                     value={draft}
                     maxLength={40}
                     onChange={(e) => setDraft(e.target.value)}
@@ -180,7 +210,9 @@ export function ProjectManager({ projects }: { projects: { id: string; name: str
               ) : (
                 <>
                   <span className="min-w-0 flex-1 truncate">{p.name}</span>
-                  <span className="text-xs text-muted-foreground tabular-nums">{p.tasks} việc</span>
+                  <span className="text-xs text-muted-foreground tabular-nums">
+                    {p.count} {countNoun}
+                  </span>
                   <button
                     type="button"
                     onClick={() => {
@@ -188,17 +220,17 @@ export function ProjectManager({ projects }: { projects: { id: string; name: str
                       setDraft(p.name);
                       setNote({});
                     }}
-                    aria-label={`Đổi tên dự án ${p.name}`}
+                    aria-label={`Đổi tên ${noun} ${p.name}`}
                     className="min-h-10 rounded-md px-2 text-sm text-muted-foreground outline-none hover:text-foreground focus-visible:ring-3 focus-visible:ring-ring md:min-h-0"
                   >
                     Đổi tên
                   </button>
                   <button
                     type="button"
-                    disabled={busy || p.tasks > 0}
-                    title={p.tasks > 0 ? "Còn việc trong dự án này" : undefined}
-                    aria-label={p.tasks > 0 ? `Xóa dự án ${p.name} (còn ${p.tasks} việc nên chưa xóa được)` : `Xóa dự án ${p.name}`}
-                    onClick={() => run(() => deleteProjectAction(p.id))}
+                    disabled={busy || p.count > 0}
+                    title={p.count > 0 ? `Còn ${countNoun} trong ${noun} này` : undefined}
+                    aria-label={p.count > 0 ? `Xóa ${noun} ${p.name} (còn ${p.count} ${countNoun} nên chưa xóa được)` : `Xóa ${noun} ${p.name}`}
+                    onClick={() => run(() => deleteAction(p.id))}
                     className="min-h-10 rounded-md px-2 text-sm text-danger outline-none hover:underline focus-visible:ring-3 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-40 disabled:no-underline md:min-h-0"
                   >
                     Xóa
@@ -210,6 +242,36 @@ export function ProjectManager({ projects }: { projects: { id: string; name: str
         </ul>
       )}
     </div>
+  );
+}
+
+/** Dự án của riêng mình: xoá chỉ khi không còn việc. */
+export function ProjectManager({ projects }: { projects: { id: string; name: string; tasks: number }[] }) {
+  return (
+    <NameListManager
+      items={projects.map((p) => ({ id: p.id, name: p.name, count: p.tasks }))}
+      noun="dự án"
+      countNoun="việc"
+      emptyText="Chưa có dự án nào. Thêm một dự án để nhóm việc ở Tasks."
+      createAction={createProjectAction}
+      renameAction={renameProjectAction}
+      deleteAction={deleteProjectAction}
+    />
+  );
+}
+
+/** Lĩnh vực của ghi chú kiến thức (SPEC.md mục 10.1): xoá chỉ khi không còn ghi chú. */
+export function FieldManager({ fields }: { fields: { id: string; name: string; notes: number }[] }) {
+  return (
+    <NameListManager
+      items={fields.map((f) => ({ id: f.id, name: f.name, count: f.notes }))}
+      noun="lĩnh vực"
+      countNoun="ghi chú"
+      emptyText="Chưa có lĩnh vực nào. Thêm lĩnh vực để nhóm ghi chú ở Knowledge."
+      createAction={createFieldAction}
+      renameAction={renameFieldAction}
+      deleteAction={deleteFieldAction}
+    />
   );
 }
 

@@ -58,6 +58,8 @@ await sql`delete from daily_logs where user_id = ${uid}`;
 await sql`delete from reflections where user_id = ${uid}`;
 await sql`delete from ideas where user_id = ${uid}`;
 await sql`delete from projects where user_id = ${uid}`;
+await sql`delete from knowledge where user_id = ${uid}`; // knowledge_links đi theo nhờ ON DELETE CASCADE
+await sql`delete from fields where user_id = ${uid}`;
 await sql`delete from login_attempts where email = ${DEMO_EMAIL}`;
 await sql`update users set name = ${"Bạn Demo"}, target_date = ${addDays(today, 26)}, target_label = ${"hạn nộp đồ án"} where id = ${uid}`;
 
@@ -182,4 +184,40 @@ for (const text of ["Thử dùng deep sleep + wake on GPIO cho node cảm biến
   await sql`insert into ideas (user_id, text) values (${uid}, ${text})`;
 }
 
-console.log(`Đã ghi dữ liệu demo cho ${DEMO_EMAIL}: ${taskRows.length} việc, ${projectNames.length} dự án, ${habitDefs.length} thói quen, ${logs.length} Daily Log, 7 mục tiêu.`);
+// ---------- kiến thức (SPEC.md mục 10.1) ----------
+const fieldNames = ["Computer Vision", "Embedded / Edge AI", "AI Agent", "Đồ án"];
+const fieldId = {};
+for (const [i, name] of fieldNames.entries()) {
+  const [f] = await sql`insert into fields (user_id, name, sort) values (${uid}, ${name}, ${i}) returning id`;
+  fieldId[name] = f.id;
+}
+// [tên, lĩnh vực, mức hiểu, ngày học (lệch ngày), tóm tắt, nguồn, liên quan tới (tên)]
+const N = (title, field, level, learned, summary = "", source = null, related = []) => ({ title, field, level, learned, summary, source, related });
+const noteRows = [
+  N("YOLOv8: decoupled head", "Computer Vision", "Hiểu", -1, "Tách nhánh phân loại và nhánh hộp; không dùng anchor nên bớt siêu tham số.", "https://docs.ultralytics.com/models/yolov8/"),
+  N("Anchor-free so với anchor-based", "Computer Vision", "Mới học", -2, "Anchor-free dự đoán tâm và kích thước trực tiếp trên từng điểm của feature map.", null, ["YOLOv8: decoupled head"]),
+  N("Fine-tune với ít dữ liệu", "Computer Vision", "Mới học", -6, "Đóng băng backbone vài epoch đầu, tăng cường dữ liệu mạnh, theo dõi mAP trên tập val.", null, ["YOLOv8: decoupled head"]),
+  N("ESP32 deep sleep và wake on GPIO", "Embedded / Edge AI", "Áp dụng được", -3, "Deep sleep còn khoảng 10 µA; đánh thức bằng ext0 / ext1 hoặc timer. RTC memory giữ được biến qua các lần ngủ."),
+  N("MQTT QoS 0 / 1 / 2", "Embedded / Edge AI", "Hiểu", -8, "QoS 1 đủ cho cảm biến: gửi lại tới khi có PUBACK, chấp nhận trùng bản tin.", null, ["ESP32 deep sleep và wake on GPIO"]),
+  N("Lượng tử hoá int8 cho mô hình nhỏ", "Embedded / Edge AI", "Mới học", -12, "Post-training quantization cần tập calibration đại diện; kiểm lại độ chính xác sau khi chuyển.", null, ["Fine-tune với ít dữ liệu"]),
+  N("Vòng lặp tool-use của agent", "AI Agent", "Hiểu", -4, "Mô hình chọn công cụ, chương trình chạy công cụ, kết quả quay lại làm ngữ cảnh cho lượt sau."),
+  N("Đo dòng tiêu thụ bằng điện trở shunt", "Đồ án", "Áp dụng được", -5, "Shunt 1 Ω nối tiếp nguồn, đo sụt áp bằng oscilloscope để thấy cả xung lúc phát Wi-Fi.", null, ["ESP32 deep sleep và wake on GPIO"]),
+  N("Cấu trúc chương thiết kế phần cứng", "Đồ án", "Hiểu", -9, "Yêu cầu → sơ đồ khối → chọn linh kiện (kèm lý do) → sơ đồ nguyên lý → mạch in."),
+  N("Cách đọc paper nhanh", null, "Áp dụng được", -15, "Đọc abstract, hình và kết luận trước; chỉ đọc phương pháp khi đã biết paper đáng đọc."),
+];
+const noteId = {};
+for (const n of noteRows) {
+  const [row] = await sql`
+    insert into knowledge (user_id, title, field_id, level, summary, source_url, learned_on, created_at)
+    values (${uid}, ${n.title}, ${n.field ? fieldId[n.field] : null}, ${n.level}, ${n.summary}, ${n.source}, ${addDays(today, n.learned)}, ${`${addDays(today, n.learned)}T03:00:00Z`})
+    returning id`;
+  noteId[n.title] = row.id;
+}
+for (const n of noteRows) {
+  for (const r of n.related) {
+    const [a, b] = [noteId[n.title], noteId[r]].sort();
+    await sql`insert into knowledge_links (from_id, to_id) values (${a}, ${b}) on conflict do nothing`;
+  }
+}
+
+console.log(`Đã ghi dữ liệu demo cho ${DEMO_EMAIL}: ${taskRows.length} việc, ${projectNames.length} dự án, ${habitDefs.length} thói quen, ${logs.length} Daily Log, 7 mục tiêu, ${noteRows.length} ghi chú kiến thức.`);
