@@ -1,11 +1,11 @@
 import type { Metadata } from "next";
-import { IBM_Plex_Mono, IBM_Plex_Sans } from "next/font/google";
+import { Be_Vietnam_Pro, IBM_Plex_Mono } from "next/font/google";
 import { THEME_INIT_SCRIPT } from "@/lib/theme";
 import "./globals.css";
 
-// Hướng "Nhật ký kỹ thuật" (DESIGN.md): Plex Sans cho chữ đọc, Plex Mono cho số liệu. Ít trọng lượng để nhẹ (rà soát A4).
-const plexSans = IBM_Plex_Sans({
-  variable: "--font-plex-sans",
+// Be Vietnam Pro cho chữ đọc (Trung đổi 11/11/2026: Plex Sans trông cứng), Plex Mono chỉ cho số và nhãn IN HOA ngắn.
+const sans = Be_Vietnam_Pro({
+  variable: "--font-sans-main",
   subsets: ["latin", "vietnamese"],
   weight: ["400", "500", "600"],
 });
@@ -26,7 +26,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html
       lang="vi"
-      className={`${plexSans.variable} ${plexMono.variable} h-full antialiased`}
+      className={`${sans.variable} ${plexMono.variable} h-full antialiased`}
       suppressHydrationWarning
     >
       <head>

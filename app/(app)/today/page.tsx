@@ -125,7 +125,7 @@ function TodayPlanCard({ today, tasks, projects, weekGoals }: { today: string; t
   const rows = planToday(today, tasks);
   const count = rows.planned.length + rows.late.length + rows.due.length;
   return (
-    <Card title="Hôm nay làm" focal flush action={<span className="font-mono text-xs text-muted-foreground">{count} dòng</span>}>
+    <Card title="Hôm nay làm" focal flush action={<span className="text-xs text-muted-foreground tabular-nums">{count} dòng</span>}>
       <TodayPlan today={today} tasks={tasks} projects={projects} />
       {weekGoals.length > 0 && (
         <div className="border-t border-line px-4 py-3">

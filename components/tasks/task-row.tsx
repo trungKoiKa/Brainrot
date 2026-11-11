@@ -49,13 +49,13 @@ function TaskTags({ task, today, projects }: { task: Task; today: string; projec
       {!done && daysLeft !== null && daysLeft < 0 && <StatusPill tone="danger">quá {-daysLeft} ngày</StatusPill>}
       {!done && daysLeft === 0 && <StatusPill tone="danger">hạn hôm nay</StatusPill>}
       {task.deadline && daysLeft !== null && daysLeft > 0 && !done && (
-        <span className="font-mono text-xs whitespace-nowrap text-muted-foreground">
+        <span className="text-xs whitespace-nowrap text-muted-foreground tabular-nums">
           hạn {formatDay(task.deadline, true)} · {daysLeft}n
         </span>
       )}
       {done && task.doneOn && <span className="font-mono text-xs whitespace-nowrap text-muted-foreground">{formatDay(task.doneOn, true)}</span>}
       {task.plannedOn && !done && (
-        <span className={`font-mono text-xs whitespace-nowrap ${task.plannedOn < today ? "text-warning" : task.plannedOn === today ? "text-primary" : "text-muted-foreground"}`}>
+        <span className={`text-xs whitespace-nowrap tabular-nums ${task.plannedOn < today ? "text-warning" : task.plannedOn === today ? "text-primary" : "text-muted-foreground"}`}>
           làm {weekdayShort(task.plannedOn)} {formatDay(task.plannedOn, true)}
         </span>
       )}
