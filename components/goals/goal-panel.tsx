@@ -1,7 +1,6 @@
 "use client";
 
 import { useRef, useState, useTransition } from "react";
-import { useRouter } from "next/navigation";
 import {
   ArrowDownUpIcon,
   EllipsisIcon,
@@ -71,9 +70,8 @@ export function GoalPanel({
   /** Việc chưa xong, chưa gắn mục tiêu nào — chọn được ở "Gắn việc" (SPEC-v1.0, Goal đợt 3) */
   openTasks: { id: string; title: string }[];
 }) {
-  const router = useRouter();
   const [goals, setGoals] = useState(initial);
-  // Dữ liệu server mới (sau router.refresh) thay danh sách, không dựng lại cả khối → popover / focus / thông báo còn nguyên
+  // Dữ liệu server mới (sau mỗi Server Action) thay danh sách, không dựng lại cả khối → popover / focus / thông báo còn nguyên
   const [seen, setSeen] = useState(initial);
   // Đang có lưu dở (`saving`) thì giữ bản lạc quan; lưu xong sẽ refresh lại và bản server mới vào sau
   const [saving, setSaving] = useState(0);
@@ -100,7 +98,7 @@ export function GoalPanel({
       setError(res.error ?? "Không lưu được.");
       return;
     }
-    router.refresh(); // chip tuần, danh sách việc, % tự xong đều do server tính → làm mới sau mỗi lần lưu
+    // Server Action đã gọi refreshData() → trang nhận dữ liệu mới trong cùng phản hồi; không router.refresh() thêm (rà soát A4)
   }
 
   const patch = (id: string, change: Partial<Pick<Goal, "title" | "type" | "done">>) =>
@@ -114,7 +112,6 @@ export function GoalPanel({
     setError(null);
     const res = await updateGoalAction(id, { habitId, threshold });
     if (!res.ok) return setError(res.error);
-    router.refresh();
   }
 
   /** Gắn / bỏ gắn việc: danh sách việc do server tính → xong thì tải lại dữ liệu trang. */
@@ -125,7 +122,6 @@ export function GoalPanel({
       setError(res.error);
       return false;
     }
-    router.refresh();
     return true;
   }
 
@@ -134,7 +130,6 @@ export function GoalPanel({
     setError(null);
     const res = t.done ? await reopenTaskAction(t.id) : await completeTask(t.id);
     if (!res.ok) return setError(res.error);
-    router.refresh();
   }
 
   // Xoá mềm + toast Hoàn tác (sonner, xếp chồng; thay dải hoàn tác tự viết — rà soát 11/2026)
@@ -149,7 +144,7 @@ export function GoalPanel({
         label: "Hoàn tác",
         onClick: () => {
           setError(null);
-          trashGoalAction(goal.id, false).then((res) => (res.ok ? router.refresh() : setError(res.error)));
+          trashGoalAction(goal.id, false).then((res) => !res.ok && setError(res.error));
         },
       },
     });
@@ -231,7 +226,6 @@ export function GoalPanel({
         periodKey={periodKey}
         onAdded={(goal) => {
           setGoals((list) => [...list, goal]);
-          router.refresh();
         }}
         onError={setError}
       />
@@ -572,7 +566,6 @@ function CarryOver({
   label: string;
   onError: (message: string) => void;
 }) {
-  const router = useRouter();
   const [pending, start] = useTransition();
   const [carried, setCarried] = useState<string | null>(null);
   const key = goalIds.join(",");
@@ -603,12 +596,10 @@ function CarryOver({
                       const failed = results.find((r) => !r.ok);
                       if (failed && !failed.ok) return onError(failed.error);
                       setCarried(null);
-                      router.refresh();
                     },
                   }
                 : undefined,
             });
-            router.refresh();
           })
         }
       >

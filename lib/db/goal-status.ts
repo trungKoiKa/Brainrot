@@ -3,6 +3,7 @@ import { todayVN } from "@/lib/date";
 import { autoStatus, type Goal } from "@/lib/goals";
 import { doneHabits } from "@/lib/habits";
 import { periodOf } from "@/lib/period";
+import type { DailyLog } from "@/lib/types";
 import { getDailyLogsBetween, getHabits, getTasks, type Loaded } from "./data";
 
 /**
@@ -10,7 +11,14 @@ import { getDailyLogsBetween, getHabits, getTasks, type Loaded } from "./data";
  * gắn thói quen cần (một truy vấn, có cache), và Tasks (đã cache cho các trang khác).
  * Trả kèm các `Loaded` đã dùng để trang tính cờ dữ liệu cũ (stale).
  */
-export async function resolveGoals(goals: Goal[]): Promise<{ goals: Goal[]; loaded: Loaded<unknown>[] }> {
+export async function resolveGoals(
+  goals: Goal[],
+  /**
+   * Daily Log trang đã tải sẵn cho khoảng [from, to] → nếu phủ đủ khoảng cần thì không truy vấn thêm một vòng (rà soát A4).
+   * Khoảng không phủ đủ → vẫn tự đọc, nên truyền sai chỉ làm chậm chứ không làm sai số.
+   */
+  prefetched?: { logs: Loaded<DailyLog[]>; from: string; to: string },
+): Promise<{ goals: Goal[]; loaded: Loaded<unknown>[] }> {
   const today = todayVN();
   const periodFor = (g: Goal) => periodOf(g.level, g.start);
   const withHabit = goals.filter((g) => g.habitId && g.threshold !== null);
@@ -28,7 +36,7 @@ export async function resolveGoals(goals: Goal[]): Promise<{ goals: Goal[]; load
 
   const [habits, logs, tasks] = await Promise.all([
     withHabit.length ? getHabits() : null,
-    start ? getDailyLogsBetween(start, end) : null,
+    start ? (prefetched && prefetched.from <= start && end <= prefetched.to ? prefetched.logs : getDailyLogsBetween(start, end)) : null,
     withTasks ? getTasks() : null,
   ]);
 

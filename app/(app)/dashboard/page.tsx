@@ -39,7 +39,15 @@ async function DashboardContent() {
   // Châm ngôn năm (SPEC-v0.4 mục 5) dưới tiêu đề
   const motto = reflectionOf(reflections.data, periodOf("year", today))?.motto.trim() || null;
   const month = periodOf("month", today);
-  const monthGoals = await resolveGoals(goals.data.filter((g) => g.level === "month" && g.start === month.start));
+  const monthGoals = await resolveGoals(
+    goals.data.filter((g) => g.level === "month" && g.start === month.start),
+    // 90 bản ghi gần nhất: chưa đủ 90 thì là toàn bộ lịch sử; đủ 90 thì phủ từ bản ghi cũ nhất tới hôm nay
+    {
+      logs,
+      from: logs.data.length < 90 ? "0000-01-01" : logs.data.reduce((m, l) => (l.date && l.date < m ? l.date : m), today),
+      to: today,
+    },
+  );
 
   const real: DashInput = {
     today,

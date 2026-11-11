@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useTransition } from "react";
-import { useRouter } from "next/navigation";
 import { ArrowDownIcon, ArrowUpIcon, CircleStopIcon } from "lucide-react";
 import { addHabitAction, moveHabitAction, stopHabitAction, type HabitResult } from "@/app/actions/habits";
 import { fieldClass, primaryButtonClass } from "@/components/form-bits";
@@ -26,7 +25,6 @@ const iconButton =
 
 /** Thêm / sắp xếp / ngừng thói quen của tháng đang xem (SPEC-v0.4 3.3). */
 export function HabitManager({ month, habits }: { month: string; habits: Habit[] }) {
-  const router = useRouter();
   const [name, setName] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [pending, start] = useTransition();
@@ -37,7 +35,6 @@ export function HabitManager({ month, habits }: { month: string; habits: Habit[]
       const res = await action();
       if (!res.ok) return setError(res.error);
       after?.();
-      router.refresh();
     });
 
   return (
