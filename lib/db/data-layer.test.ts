@@ -72,6 +72,9 @@ describe("tasks", () => {
     await reopenTask(db, ME, t.id); // hoàn tác tích xong (SPEC-v1.0, 07/11/2026)
     expect((await listTasks(db, ME)).find((x) => x.id === t.id)).toMatchObject({ status: "Chưa làm", doneOn: null, plannedOn: "2026-10-30" });
     await markTaskDone(db, ME, t.id);
+    await reopenTask(db, ME, t.id, "Đang làm"); // Hoàn tác việc đang làm giữ "Đang làm" (rà soát cuối 11/2026)
+    expect((await listTasks(db, ME)).find((x) => x.id === t.id)?.status).toBe("Đang làm");
+    await markTaskDone(db, ME, t.id);
 
     await updateTask(db, ME, t.id, update("Mở lại")); // mở lại → bỏ Ngày xong
     expect((await listTasks(db, ME)).find((x) => x.id === t.id)?.doneOn).toBeNull();

@@ -19,6 +19,9 @@ const NO_PROJECT = "Không có dự án";
 const UNDO_MS = 8000;
 
 const projectOf = (t: Task) => t.project ?? NO_PROJECT;
+/** Sau khi dòng biến mất: focus sang nút "Hoàn tác" của toast mới nhất (rà soát cuối A3, WCAG 2.4.3). */
+const focusUndo = () =>
+  requestAnimationFrame(() => requestAnimationFrame(() => document.querySelector<HTMLElement>("[data-sonner-toast] [data-button]")?.focus()));
 
 /** Đưa con trỏ bàn phím tới phần tử đầu tiên khớp `selector` sau khi React vẽ lại (không để rơi về đầu trang). */
 const focusSoon = (selector: string) => requestAnimationFrame(() => document.querySelector<HTMLElement>(selector)?.focus());
@@ -74,6 +77,7 @@ export function TaskBoard({
         },
       },
     });
+    focusUndo();
   }
 
   function onDelete(t: Task) {
@@ -88,6 +92,7 @@ export function TaskBoard({
         },
       },
     });
+    focusUndo();
   }
 
   function closeEdit(id: string) {

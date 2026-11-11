@@ -50,6 +50,7 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
 > **v1.0 (Postgres, bỏ Notion)**: `SPEC-v1.0.md` đã duyệt 27/10/2026, **lên production 05/11/2026** (tag `v1.0.0`),
 > đăng nhập email + mật khẩu. Plan `docs/plans/active/v1.0.md`. **Bước 5 xong 10/11/2026** (giữ email + mật khẩu, không Google): đăng xuất, Cài đặt
 > (tên, hạn đếm ngược, dự án riêng, đổi mật khẩu, xoá tài khoản), chống dò mật khẩu; Trung tạo tài khoản bạn bằng `npm run user:password`.
+> **Redesign 11/2026** (nhánh `redesign`, chờ Trung duyệt merge): rà soát `docs/audits/2026-11-audit.md`, hướng nhìn `DESIGN.md`.
 > Yêu cầu mới → ghi vào "Follow-ups" của plan đang chạy, chốt SPEC trước khi code.
 
 ## Thứ tự ưu tiên khi hướng dẫn mâu thuẫn
@@ -106,6 +107,9 @@ Next.js (App Router) + TypeScript (strict) · Tailwind CSS · Drizzle ORM + Neon
 - Không cache dữ liệu dùng chung; sau khi ghi thì `refreshData()` (`lib/db/revalidate.ts`).
 - Graph 3D: dynamic import, `ssr: false`.
 - Màu dùng CSS variables cho cả theme sáng và tối; không hard-code màu trong component.
+- Giao diện theo `DESIGN.md` (hướng "Nhật ký kỹ thuật", redesign 11/2026): dùng component thư viện trong `components/ui/`,
+  `components/reui/` (Button, Input, Checkbox, Select, Collapsible, ToggleGroup, AlertDialog, Skeleton, toast `sonner`…),
+  khung `components/card.tsx`, nhãn `components/pill.tsx`; không tự viết lại nút/ô nhập/dải hoàn tác.
 - Ngày giờ tính theo múi giờ Asia/Ho_Chi_Minh.
 - Ưu tiên đơn giản, ít dependency. Không thêm database, auth library hay state library ở v0.1.
 

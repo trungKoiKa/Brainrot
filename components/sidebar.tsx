@@ -40,7 +40,7 @@ export const isActive = (href: string, pathname: string) => (href === "/" ? path
 /** Thanh bên theo mẫu ReUI c-sidebar-2 (Icon Rail): thu gọn còn cột icon, mobile mở dạng ngăn kéo. */
 export function AppSidebar({ account }: { account?: React.ReactNode }) {
   const pathname = usePathname();
-  const { setOpenMobile } = useSidebar();
+  const { setOpenMobile, isMobile } = useSidebar();
   // Mobile: đổi trang thì đóng ngăn kéo (rà soát A3 mục 1)
   useEffect(() => setOpenMobile(false), [pathname, setOpenMobile]);
 
@@ -49,7 +49,7 @@ export function AppSidebar({ account }: { account?: React.ReactNode }) {
       <SidebarHeader>
         <SidebarMenu>
           <SidebarMenuItem>
-            <SidebarMenuButton size="lg" tooltip="Brainrot" render={<Link href="/" />}>
+            <SidebarMenuButton size="lg" tooltip={isMobile ? undefined : "Brainrot"} render={<Link href="/" />}>
               <span
                 aria-hidden="true"
                 className="flex size-8 shrink-0 items-center justify-center bg-sidebar-primary text-sidebar-primary-foreground"
@@ -77,7 +77,7 @@ export function AppSidebar({ account }: { account?: React.ReactNode }) {
                     <SidebarMenuButton
                       render={<Link href={href} aria-current={active ? "page" : undefined} />}
                       isActive={active}
-                      tooltip={label}
+                      tooltip={isMobile ? undefined : label}
                     >
                       <Icon aria-hidden="true" />
                       <span lang="en" className="flex-1">

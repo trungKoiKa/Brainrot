@@ -11,7 +11,8 @@ import { HabitManager } from "./habit-manager";
 import { useHabitDays } from "./use-habit-days";
 
 // Ngưỡng màu giống chấm trạng thái Dashboard: ≥ 70% ổn, 40–69% cần để ý, < 40% cần xử lý (SPEC-v0.4 3.3)
-const tone = (pct: number) => (pct >= 70 ? "var(--good)" : pct >= 40 ? "var(--warning)" : "var(--danger)");
+// Redesign 11/2026: thói quen chưa đạt là "cần để ý" (vàng), không phải lỗi (đỏ) — DESIGN.md → Colors
+const tone = (pct: number) => (pct >= 70 ? "var(--good)" : "var(--warning)");
 const WEEKDAY = ["CN", "T2", "T3", "T4", "T5", "T6", "T7"];
 const weekday = (day: string) => WEEKDAY[new Date(`${day}T00:00:00Z`).getUTCDay()];
 

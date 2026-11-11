@@ -6,6 +6,7 @@ import { useState } from "react";
 import { CalendarDaysIcon, ChevronDownIcon } from "lucide-react";
 import { Empty } from "@/components/card";
 import { Badge } from "@/components/reui/badge";
+import { StatusPill } from "@/components/pill";
 import { ErrorNotice, TaskCheckbox } from "@/components/tasks/task-row";
 import { usePlanTasks } from "@/components/tasks/use-plan-tasks";
 import { addDays, formatDay } from "@/lib/date";
@@ -88,7 +89,7 @@ export function WeekCards({
           <div className="flex flex-wrap items-center gap-1.5 pl-6">
             {t.dueOnly && (
               // đỏ chỉ khi đã quá hạn; hạn hôm nay / sắp tới là nhãn trung tính
-              <Badge variant={past ? "destructive-light" : "outline"}>{past ? "quá hạn" : "hạn"}</Badge>
+              past ? <StatusPill tone="danger">quá hạn</StatusPill> : <StatusPill tone="muted">hạn</StatusPill>
             )}
             <button
               type="button"

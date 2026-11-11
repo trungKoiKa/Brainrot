@@ -1,5 +1,6 @@
 "use client";
 
+import { StatusPill } from "@/components/pill";
 import { useSyncExternalStore } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -331,9 +332,7 @@ export function DueSoonList({ items, more }: { items: (DashTask & { deadline: st
           >
             {t.title || "(Chưa đặt tên)"}
           </Link>
-          <Badge variant={t.daysLeft < 0 ? "destructive-light" : t.daysLeft <= 3 ? "warning-light" : "outline"} className="shrink-0 tabular-nums">
-            {deadlineLabel(t.daysLeft)}
-          </Badge>
+          <StatusPill tone={t.daysLeft <= 0 ? "danger" : t.daysLeft <= 3 ? "warning" : "muted"}>{deadlineLabel(t.daysLeft)}</StatusPill>
         </li>
       ))}
       {more > 0 && <li className="pt-2 text-muted-foreground">+{more} task</li>}

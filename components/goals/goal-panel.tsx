@@ -373,7 +373,7 @@ function GoalRow({
         {tasks.length > 0 && (
           <ul className="space-y-0.5" aria-label={`Việc của mục tiêu: ${goal.title}`}>
             {tasks.map((t) => (
-              <li key={t.id} className="flex flex-wrap items-center gap-x-2">
+              <li key={t.id} className="flex items-center gap-x-2">
                 <span className="flex size-10 shrink-0 items-center justify-center md:size-6">
                   <Checkbox
                     checked={t.done}
@@ -381,7 +381,7 @@ function GoalRow({
                     aria-label={t.done ? `Bỏ đánh dấu xong: ${t.title}` : `Đánh dấu xong: ${t.title}`}
                   />
                 </span>
-                <MaybeLink href={t.url} className={`min-w-0 flex-1 basis-40 break-words hover:text-primary ${t.done ? "text-muted-foreground line-through" : ""}`}>
+                <MaybeLink href={t.url} className={`min-w-0 flex-1 break-words hover:text-primary ${t.done ? "text-muted-foreground line-through" : ""}`}>
                   {t.title || "(Chưa đặt tên)"}
                 </MaybeLink>
                 <span className="shrink-0 text-xs text-muted-foreground tabular-nums">
@@ -652,7 +652,7 @@ function TaskPicker({
       >
         {trigger}
       </PopoverTrigger>
-      <PopoverContent align="start" className="w-80 gap-2 p-2">
+      <PopoverContent align="start" className="w-80 gap-2 p-2" aria-label={`Gắn việc vào mục tiêu: ${goalTitle}`}>
         <input
           autoFocus
           type="search"

@@ -143,8 +143,9 @@ export function ProjectManager({ projects }: { projects: { id: string; name: str
         <p className="text-sm text-muted-foreground">Chưa có dự án nào. Thêm một dự án để nhóm việc ở Tasks.</p>
       ) : (
         <ul className="divide-y divide-line">
-          {projects.map((p) => (
+          {projects.map((p, i) => (
             <li key={p.id} className="flex flex-wrap items-center gap-x-3 gap-y-1 py-2">
+              <span aria-hidden="true" className="size-2.5 shrink-0" style={{ background: `var(${i < 4 ? `--field-${i + 1}` : "--field-neutral"})` }} />
               {editing === p.id ? (
                 <form
                   className="flex min-w-0 flex-1 gap-2"
