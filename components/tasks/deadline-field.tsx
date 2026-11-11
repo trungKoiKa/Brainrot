@@ -56,7 +56,7 @@ export function DeadlineField({
         <span className={value ? "" : "text-muted-foreground"}>{value ? `${label === "Deadline" ? "" : `${label}: `}${formatDay(value)}` : label}</span>
         <CalendarIcon aria-hidden="true" className="size-4 opacity-60" />
       </PopoverTrigger>
-      <PopoverContent align="start" className="w-auto p-0">
+      <PopoverContent align="start" className="w-auto p-0" aria-label={`Chọn ${label === "Deadline" ? "hạn chót" : label.toLowerCase()}`}>
         <Calendar
           mode="single"
           locale={vi}

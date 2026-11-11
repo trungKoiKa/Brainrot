@@ -8,7 +8,20 @@ describe("safeNextPath", () => {
   });
 
   it("chặn chuyển hướng ra ngoài và giá trị lạ", () => {
-    for (const bad of ["https://evil.example", "//evil.example", "/\\evil.example", "tasks", "", null, undefined, 42]) {
+    for (const bad of [
+      "https://evil.example",
+      "//evil.example",
+      "/\\evil.example",
+      "/\t/evil.example",
+      "/\n/evil.example",
+      "/ /evil.example",
+      "/%09/evil.example".replace("%09", "\t"),
+      "tasks",
+      "",
+      null,
+      undefined,
+      42,
+    ]) {
       expect(safeNextPath(bad)).toBe(HOME_PATH);
     }
   });

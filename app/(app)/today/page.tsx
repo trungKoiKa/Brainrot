@@ -78,7 +78,7 @@ async function TodayContent() {
       <Readouts
         className="mb-6"
         items={[
-          { label: "Việc hôm nay", value: progress ? `${progress.done}/${progress.total}` : "0/0", note: "đã xong / tổng" },
+          { label: "Việc hôm nay", value: progress ? `${progress.done}/${progress.total}` : "0/0", note: "việc xếp hôm nay (không tính trễ)" },
           { label: "Trễ lịch", value: String(plan.late.length).padStart(2, "0"), note: "việc có Ngày làm đã qua" },
           { label: "Thói quen", value: `${habitsDone}/${habits.length}`, note: "đã tích hôm nay" },
           target

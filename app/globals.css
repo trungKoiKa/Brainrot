@@ -202,6 +202,16 @@
     outline: 2px solid var(--ring);
     outline-offset: 2px;
   }
+  /* Nút trong toast sonner tự đặt viền focus mờ → dùng viền chung (A3 cuối: 1,07:1 ở nền tối) */
+  [data-sonner-toast] button:focus-visible {
+    outline: 2px solid var(--ring) !important;
+    outline-offset: 2px;
+    box-shadow: none !important;
+  }
+  /* Mục đang chọn trong menu: nền accent chỉ 1,1:1 → thêm viền trong màu ring (≥ 3:1, WCAG 1.4.11) */
+  [data-slot^="dropdown-menu"][data-highlighted] {
+    box-shadow: inset 0 0 0 2px var(--ring);
+  }
   /* Header dính 48px trên mobile không che phần tử đang focus (A3 mục 3) */
   html {
     scroll-padding-top: 4rem;

@@ -51,6 +51,7 @@ function Row({
       ) : (
         <>
           {state === "late" && <StatusPill tone="warning">trễ {late} ngày</StatusPill>}
+          {task.deadline && task.deadline < today && <StatusPill tone="danger">quá {daysBetween(task.deadline, today)} ngày</StatusPill>}
           {(state === "due" || (state === "plan" && task.deadline === today)) && <StatusPill tone="danger">hạn hôm nay</StatusPill>}
           {state === "plan" && task.deadline && task.deadline !== today && (
             <span className="font-mono text-xs whitespace-nowrap text-muted-foreground">hạn {formatDay(task.deadline, true)}</span>

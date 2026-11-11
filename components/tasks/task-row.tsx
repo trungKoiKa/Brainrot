@@ -53,7 +53,7 @@ function TaskTags({ task, today, projects }: { task: Task; today: string; projec
           hạn {formatDay(task.deadline, true)} · {daysLeft}n
         </span>
       )}
-      {done && task.doneOn && <span className="font-mono text-xs whitespace-nowrap text-muted-foreground">xong {formatDay(task.doneOn, true)}</span>}
+      {done && task.doneOn && <span className="font-mono text-xs whitespace-nowrap text-muted-foreground">{formatDay(task.doneOn, true)}</span>}
       {task.plannedOn && !done && (
         <span className={`font-mono text-xs whitespace-nowrap ${task.plannedOn < today ? "text-warning" : task.plannedOn === today ? "text-primary" : "text-muted-foreground"}`}>
           làm {weekdayShort(task.plannedOn)} {formatDay(task.plannedOn, true)}
