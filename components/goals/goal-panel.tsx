@@ -648,6 +648,7 @@ function TaskPicker({
         render={
           <button
             type="button"
+            aria-label={`Gắn việc vào mục tiêu: ${goalTitle}`}
             className="mt-0.5 inline-flex min-h-10 items-center rounded-md text-left text-muted-foreground underline-offset-4 md:min-h-0 outline-none hover:text-foreground hover:underline focus-visible:ring-3 focus-visible:ring-ring"
           />
         }

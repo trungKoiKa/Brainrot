@@ -4,7 +4,7 @@ import { LoginForm } from "./login-form";
 
 export const metadata: Metadata = { title: "Đăng nhập · Brainrot" };
 
-type Search = Promise<{ next?: string }>;
+type Search = Promise<{ next?: string; out?: string }>;
 
 export default function LoginPage({ searchParams }: { searchParams: Search }) {
   return (
@@ -27,6 +27,15 @@ export default function LoginPage({ searchParams }: { searchParams: Search }) {
 }
 
 async function LoginWithNext({ searchParams }: { searchParams: Search }) {
-  const { next } = await searchParams;
-  return <LoginForm next={next ?? ""} />;
+  const { next, out } = await searchParams;
+  return (
+    <>
+      {out === "1" && (
+        <p role="status" className="mb-4 text-sm text-muted-foreground">
+          ✓ Đã đăng xuất.
+        </p>
+      )}
+      <LoginForm next={next ?? ""} />
+    </>
+  );
 }

@@ -29,7 +29,7 @@ const WRITE_FAILED = "Không lưu được, thử lại sau.";
 /** Đăng xuất: xoá cookie phiên rồi về trang đăng nhập. */
 export async function logoutAction(): Promise<void> {
   (await cookies()).delete(SESSION_COOKIE);
-  redirect("/login");
+  redirect("/login?out=1"); // trang đăng nhập hiện "Đã đăng xuất." (rà soát A2)
 }
 
 /** Tên hiển thị + hạn / nhãn thẻ đếm ngược (SPEC-v1.0 bước 5). Hạn để trống = ẩn thẻ. */
