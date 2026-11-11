@@ -72,10 +72,17 @@ function DailyLogForm({ todayLog, open, showExercise, day }: { todayLog: DailyLo
     exercised: todayLog?.exercised ?? false,
   });
   const draftKey = `daily-log-draft:${day}`;
+  // Mở / thu gọn có kiểm soát: lưu xong thì thu gọn lại
+  const [expanded, setExpanded] = useState(open);
+  const [savedAt, setSavedAt] = useState<number | null>(null);
   const [state, action, pending] = useActionState(
     async (prev: Parameters<typeof saveDailyLogAction>[0], form: FormData) => {
       const next = await saveDailyLogAction(prev, form);
-      if (next.ok) writeDraft(draftKey, null);
+      if (next.ok) {
+        writeDraft(draftKey, null);
+        setExpanded(false);
+        setSavedAt(Date.now());
+      }
       return next;
     },
     {},
@@ -107,10 +114,15 @@ function DailyLogForm({ todayLog, open, showExercise, day }: { todayLog: DailyLo
   ];
 
   return (
-    <details className="group" open={open}>
-      <summary className="cursor-pointer rounded-md py-2.5 text-sm font-medium outline-none focus-visible:ring-3 focus-visible:ring-ring">
+    <details className="group" open={expanded} onToggle={(e) => setExpanded(e.currentTarget.open)}>
+      <summary className="cursor-pointer py-2.5 text-sm font-medium">
         Daily Log hôm nay{" "}
-        <span className="font-normal text-muted-foreground">{todayLog ? "· đã ghi, bấm để sửa" : "· chưa ghi"}</span>
+        <span className="font-normal text-muted-foreground">{todayLog || savedAt ? "· đã ghi, bấm để sửa" : "· chưa ghi"}</span>
+        {savedAt && (
+          <span role="status" className="ml-2 font-normal text-good">
+            ✓ Đã lưu
+          </span>
+        )}
       </summary>
       <form action={action} className="mt-3 grid gap-3 md:grid-cols-3">
         {fields.map(({ key, label, hint, placeholder }) => (

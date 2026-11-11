@@ -399,7 +399,8 @@ export function HabitBars({
   return (
     <ul className="space-y-4">
       {rows.map((r) => {
-        const tone = pctTone(r.pct);
+        // Thói quen chưa đạt: "cần để ý" (vàng), không phải lỗi (đỏ) — DESIGN.md → Colors
+        const tone = pctTone(r.pct) === "bad" ? "warn" : pctTone(r.pct);
         return (
           <li key={r.name}>
             <div className="flex items-center gap-2 text-sm">
