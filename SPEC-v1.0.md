@@ -59,6 +59,9 @@
 > việc thật: ô tích xong / bỏ tích, tên mở trang Tasks, nút bỏ gắn ≥ 28px. Dải "Tập trung tuần này" thành các chip
 > "mục tiêu · xong/tổng việc", bấm nhảy tới dòng mục tiêu. "Chuyển … sang kỳ sau" là nút phụ có viền.
 >
+> **Goal, thẻ quý ở Năm (Trung chốt 11/11/2026):** % và "x/y mục tiêu" của thẻ quý vẫn chỉ tính mục tiêu của chính quý;
+> nếu các tháng trong quý có mục tiêu thì thêm dòng phụ "+N mục tiêu ở các tháng" (không cộng vào %).
+>
 > **Goal, đợt 5 (Trung chốt 07/11/2026, critique lần 4, 27/40):** khối mục tiêu **không dựng lại** sau khi gắn việc / tích
 > việc (popover, ô tìm kiếm, thông báo còn nguyên; dữ liệu mới vào qua props). Gắn xong, focus về ô tìm kiếm và trình đọc
 > màn hình nghe "Đã gắn: …". Tên mục tiêu chỉ là chữ (sửa bằng nút bút, không còn hai cách). Ô tích việc vùng bấm 24px, dòng

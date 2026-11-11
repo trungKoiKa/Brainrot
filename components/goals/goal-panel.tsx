@@ -12,7 +12,7 @@ import {
   Trash2Icon,
 } from "lucide-react";
 import { completeTask, reopenTaskAction } from "@/app/actions/tasks";
-import { MaybeLink } from "@/components/tasks/maybe-link";
+import Link from "next/link";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { toast } from "sonner";
@@ -382,9 +382,10 @@ function GoalRow({
                     aria-label={t.done ? `Bỏ đánh dấu xong: ${t.title}` : `Đánh dấu xong: ${t.title}`}
                   />
                 </span>
-                <MaybeLink href={t.url} className={`min-w-0 flex-1 break-words hover:text-primary ${t.done ? "text-muted-foreground line-through" : ""}`}>
+                {/* Tên việc mở trang Tasks (SPEC-v1.0, Goal đợt 4) */}
+                <Link href="/tasks" className={`min-w-0 flex-1 break-words outline-none hover:text-primary focus-visible:ring-3 focus-visible:ring-ring ${t.done ? "text-muted-foreground line-through" : ""}`}>
                   {t.title || "(Chưa đặt tên)"}
-                </MaybeLink>
+                </Link>
                 <span className="shrink-0 text-xs text-muted-foreground tabular-nums">
                   {t.done ? "xong" : t.plannedOn ? formatDay(t.plannedOn, true) : "chưa xếp ngày"}
                 </span>

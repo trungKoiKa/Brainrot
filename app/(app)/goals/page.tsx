@@ -223,7 +223,15 @@ async function GoalsContent({ searchParams }: Pick<PageProps<"/goals">, "searchP
           {children
             .filter((p) => p.level === (level === "year" ? "quarter" : "month"))
             .map((p) => (
-              <ChildCard key={p.key} period={p} goals={goalsOf(goals, p)} current={p.start <= today && today <= p.end} today={today} />
+              <ChildCard
+                key={p.key}
+                period={p}
+                goals={goalsOf(goals, p)}
+                // Thẻ quý: đếm thêm mục tiêu đặt ở các tháng của quý (dòng phụ, không cộng vào % — Trung chốt 11/11/2026)
+                monthGoals={p.level === "quarter" ? childPeriods(p).reduce((n, m) => n + goalCounts(goalsOf(goals, m)).total, 0) : 0}
+                current={p.start <= today && today <= p.end}
+                today={today}
+              />
             ))}
         </div>
       )}
@@ -247,7 +255,7 @@ async function GoalsContent({ searchParams }: Pick<PageProps<"/goals">, "searchP
 }
 
 /** Thẻ quý (trong Năm) / tháng (trong Quý): % + mục tiêu Ưu tiên, bấm để mở (SPEC-v0.4 6.3). */
-function ChildCard({ period, goals, current, today }: { period: Period; goals: Goal[]; current: boolean; today: string }) {
+function ChildCard({ period, goals, monthGoals, current, today }: { period: Period; goals: Goal[]; monthGoals: number; current: boolean; today: string }) {
   const c = goalCounts(goals);
   const priority = goals.filter((g) => g.type === "Ưu tiên" && g.title.trim());
   return (
@@ -264,6 +272,7 @@ function ChildCard({ period, goals, current, today }: { period: Period; goals: G
             <p className="text-xs text-muted-foreground">
               {c.completed}/{c.total} mục tiêu
             </p>
+            {monthGoals > 0 && <p className="text-xs text-muted-foreground tabular-nums">+{monthGoals} mục tiêu ở các tháng</p>}
           </div>
         </div>
         <ul className="mt-4 space-y-1.5 text-sm">
