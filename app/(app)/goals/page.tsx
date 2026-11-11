@@ -109,6 +109,16 @@ async function GoalsContent({ searchParams }: Pick<PageProps<"/goals">, "searchP
   // Biểu đồ kỳ con chỉ hiện khi có từ hai kỳ con có mục tiêu (một cột giữa dãy vạch gạch ngang thì không so sánh được gì)
   const showBars = children.filter((p) => goalCounts(goalsOf(goals, p)).total > 0).length >= 2;
   const ended = period.end < today;
+  // Thẻ kỳ con: quý (trong Năm) / tháng (trong Quý). Thẻ quý đếm thêm mục tiêu đặt ở các tháng của quý
+  // (dòng phụ, không cộng vào % — Trung chốt 11/11/2026)
+  const childCards = children
+    .filter((p) => p.level === (level === "year" ? "quarter" : "month"))
+    .map((p) => ({
+      period: p,
+      goals: goalsOf(goals, p),
+      monthGoals: p.level === "quarter" ? childPeriods(p).reduce((n, m) => n + goalCounts(goalsOf(goals, m)).total, 0) : 0,
+      current: p.start <= today && today <= p.end,
+    }));
 
   return (
     <div className="space-y-5">
@@ -218,23 +228,34 @@ async function GoalsContent({ searchParams }: Pick<PageProps<"/goals">, "searchP
           )}
         </div>
 
-      {(level === "year" || level === "quarter") && (
-        <div className={`grid gap-5 sm:grid-cols-2 ${level === "year" ? "xl:grid-cols-4" : "lg:grid-cols-3"}`}>
-          {children
-            .filter((p) => p.level === (level === "year" ? "quarter" : "month"))
-            .map((p) => (
-              <ChildCard
-                key={p.key}
-                period={p}
-                goals={goalsOf(goals, p)}
-                // Thẻ quý: đếm thêm mục tiêu đặt ở các tháng của quý (dòng phụ, không cộng vào % — Trung chốt 11/11/2026)
-                monthGoals={p.level === "quarter" ? childPeriods(p).reduce((n, m) => n + goalCounts(goalsOf(goals, m)).total, 0) : 0}
-                current={p.start <= today && today <= p.end}
-                today={today}
-              />
+      {(level === "year" || level === "quarter") &&
+        (childCards.every((c) => goalCounts(c.goals).total === 0 && c.monthGoals === 0) ? (
+          // Mọi kỳ con còn trống: một dòng link thay cho 3–4 vòng "–" giống hệt nhau (rà soát 11/2026 P3)
+          <Card>
+            <p className="text-sm text-muted-foreground">
+              Chưa {level === "year" ? "quý" : "tháng"} nào có mục tiêu. Mở một {level === "year" ? "quý" : "tháng"} để đặt:
+            </p>
+            <ul className="mt-3 flex flex-wrap gap-2">
+              {childCards.map((c) => (
+                <li key={c.period.key}>
+                  <Link
+                    href={href(c.period)}
+                    aria-current={c.current ? "true" : undefined}
+                    className={`inline-flex min-h-10 items-center border px-3 text-sm tabular-nums outline-none hover:border-primary focus-visible:ring-3 focus-visible:ring-ring md:min-h-8 ${c.current ? "border-primary text-primary" : "border-line"}`}
+                  >
+                    {periodLabel(c.period)}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </Card>
+        ) : (
+          <div className={`grid gap-5 sm:grid-cols-2 ${level === "year" ? "xl:grid-cols-4" : "lg:grid-cols-3"}`}>
+            {childCards.map((c) => (
+              <ChildCard key={c.period.key} period={c.period} goals={c.goals} monthGoals={c.monthGoals} current={c.current} today={today} />
             ))}
-        </div>
-      )}
+          </div>
+        ))}
 
       {level === "month" && logs && (
           <HabitMonth

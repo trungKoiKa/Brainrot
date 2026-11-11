@@ -57,7 +57,7 @@ function Row({
             <span className="text-xs whitespace-nowrap text-muted-foreground tabular-nums">hạn {formatDay(task.deadline, true)}</span>
           )}
           {state !== "plan" && (
-            <Button variant="outline" size="xs" className="rounded-full" onClick={() => onPlan(task)}>
+            <Button variant="outline" size="xs" className="rounded-full" aria-label={`Làm hôm nay: ${task.title || "(Chưa đặt tên)"}`} onClick={() => onPlan(task)}>
               Làm hôm nay
             </Button>
           )}

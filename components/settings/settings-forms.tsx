@@ -188,6 +188,7 @@ export function ProjectManager({ projects }: { projects: { id: string; name: str
                       setDraft(p.name);
                       setNote({});
                     }}
+                    aria-label={`Đổi tên dự án ${p.name}`}
                     className="min-h-10 rounded-md px-2 text-sm text-muted-foreground outline-none hover:text-foreground focus-visible:ring-3 focus-visible:ring-ring md:min-h-0"
                   >
                     Đổi tên
@@ -196,6 +197,7 @@ export function ProjectManager({ projects }: { projects: { id: string; name: str
                     type="button"
                     disabled={busy || p.tasks > 0}
                     title={p.tasks > 0 ? "Còn việc trong dự án này" : undefined}
+                    aria-label={p.tasks > 0 ? `Xóa dự án ${p.name} (còn ${p.tasks} việc nên chưa xóa được)` : `Xóa dự án ${p.name}`}
                     onClick={() => run(() => deleteProjectAction(p.id))}
                     className="min-h-10 rounded-md px-2 text-sm text-danger outline-none hover:underline focus-visible:ring-3 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-40 disabled:no-underline md:min-h-0"
                   >

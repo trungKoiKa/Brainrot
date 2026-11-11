@@ -71,6 +71,7 @@ Mỗi ô văn bản ≤ 2000 ký tự.
 - **Email + mật khẩu** lưu trong database (Trung chốt 10/11/2026: không làm Google OAuth, không `ALLOWED_EMAILS`).
   Trung tạo tài khoản cho từng bạn bằng `npm run user:password -- <email> "Tên"`; tài khoản mới có sẵn dự án "Chung".
   Không có trang tự đăng ký.
+- Đăng xuất về trang đăng nhập kèm dòng "Đã đăng xuất".
 - Cookie phiên `sb_session` = `<userId>.<hạn>.<chữ ký HMAC>`, sống 30 ngày, ký bằng `AUTH_SECRET`.
 - Sai mật khẩu **5 lần trong 15 phút** → email đó bị khoá tạm 15 phút; email lạ cũng được ghi nên không lộ email nào có
   tài khoản; lỗi ở bước kiểm tra thì bỏ qua để không khoá cả ứng dụng.
@@ -129,7 +130,7 @@ Màn nào chưa có dữ liệu thì hiện một câu hướng dẫn kèm đư�
 - **Việc dưới mục tiêu:** "Gắn việc" mở popover có ô tìm (không phân biệt dấu), gắn liên tiếp được; mỗi việc đã gắn là
   dòng việc thật (ô tích, tên mở trang Tasks, Ngày làm hoặc "chưa xếp ngày", nút bỏ gắn có Hoàn tác).
 - **Kỳ con:** Năm có biểu đồ 4 quý + 12 tháng và 4 thẻ quý; Quý có 3 thẻ tháng; Tháng có biểu đồ các tuần. Biểu đồ chỉ
-  hiện khi từ hai kỳ con có mục tiêu. Thẻ quý ở Năm: % chỉ tính mục tiêu của quý, kèm dòng phụ "+N mục tiêu ở các tháng".
+  hiện khi từ hai kỳ con có mục tiêu. Mọi kỳ con còn trống thì thay các thẻ bằng một dòng link tới từng kỳ. Thẻ quý ở Năm: % chỉ tính mục tiêu của quý, kèm dòng phụ "+N mục tiêu ở các tháng".
 - **Tháng — bảng thói quen × ngày:** ô tích cho hôm nay và ngày đã qua; % mỗi thói quen = ngày đã tích / ngày đã qua;
   quản lý thói quen tại chỗ: thêm, đổi thứ tự, **Ngừng theo dõi** từ tháng sau (giữ lịch sử), **Xoá hẳn** (xoá cả
   ngày đã tích, gỡ liên kết mục tiêu, có Hoàn tác).
