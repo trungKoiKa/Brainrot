@@ -9,6 +9,7 @@ import { StaleBanner } from "@/components/stale-banner";
 import type { GoalOption } from "@/components/tasks/task-forms";
 import { getGoals, getTaskProjects, getTasks } from "@/lib/db/data";
 import { periodLabel, periodOf } from "@/lib/period";
+import { PRIORITIES } from "@/lib/task-form";
 
 export default function TasksPage({ searchParams }: PageProps<"/tasks">) {
   return (
@@ -32,7 +33,7 @@ export default function TasksPage({ searchParams }: PageProps<"/tasks">) {
 async function TasksContent({ searchParams }: Pick<PageProps<"/tasks">, "searchParams">) {
   await connection(); // nhãn "Quá hạn / Còn N ngày" phụ thuộc ngày hôm nay
   // ?project= từ Dashboard (SPEC-v0.3 4.2) → lọc sẵn theo dự án
-  const { project } = await searchParams;
+  const { project, priority } = await searchParams;
   const today = todayVN();
   // Một tầng truy vấn song song (rà soát A4: getTaskProjects từng chạy nối sau)
   const [{ data, stale }, goals, projects] = await Promise.all([getTasks(), getGoals(), getTaskProjects()]);
@@ -68,6 +69,7 @@ async function TasksContent({ searchParams }: Pick<PageProps<"/tasks">, "searchP
         projects={projects}
         today={today}
         initialProject={typeof project === "string" ? project : null}
+        initialPriority={PRIORITIES.find((p) => p === priority) ?? null}
         goals={goalOptions}
       />
     </>

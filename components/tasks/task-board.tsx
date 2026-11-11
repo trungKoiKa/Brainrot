@@ -31,18 +31,44 @@ export function TaskBoard({
   projects: allProjects,
   today,
   initialProject = null,
+  initialPriority = null,
   goals = null,
 }: {
   tasks: Task[];
   projects: string[];
   today: string;
   initialProject?: string | null;
+  initialPriority?: Priority | null;
   goals?: GoalOption[] | null;
 }) {
   const { tasks, complete, reopen, remove, restore, error, dismissError } = useTaskCompletion(initial);
   const [editing, setEditing] = useState<string | null>(null);
-  const [project, setProject] = useState<string | null>(initialProject);
-  const [priority, setPriority] = useState<Priority | null>(null);
+  const [project, setProjectState] = useState<string | null>(initialProject);
+  const [priority, setPriorityState] = useState<Priority | null>(initialPriority);
+  // Bộ lọc nằm trong URL (?project=&priority=) → tải lại / gửi link vẫn giữ; "Tất cả" thì gỡ tham số (rà soát 11/2026 P2).
+  // replaceState: Next đồng bộ với router, không thêm mục vào lịch sử trình duyệt.
+  const syncUrl = (next: { project: string | null; priority: Priority | null }) => {
+    const params = new URLSearchParams(window.location.search);
+    for (const [k, v] of Object.entries(next)) {
+      if (v) params.set(k, v);
+      else params.delete(k);
+    }
+    const qs = params.toString();
+    window.history.replaceState(null, "", qs ? `?${qs}` : window.location.pathname);
+  };
+  const setProject = (v: string | null) => {
+    setProjectState(v);
+    syncUrl({ project: v, priority });
+  };
+  const setPriority = (v: Priority | null) => {
+    setPriorityState(v);
+    syncUrl({ project, priority: v });
+  };
+  const clearFilters = () => {
+    setProjectState(null);
+    setPriorityState(null);
+    syncUrl({ project: null, priority: null });
+  };
 
   // Thứ tự nhóm theo danh sách dự án của người dùng (không cứng theo dự án của một người)
   const projectRank = (p: string) => {
@@ -123,10 +149,7 @@ export function TaskBoard({
             {filtering && (
               <button
                 type="button"
-                onClick={() => {
-                  setProject(null);
-                  setPriority(null);
-                }}
+                onClick={clearFilters}
                 className="font-medium text-primary underline-offset-4 hover:underline"
               >
                 Bỏ lọc
