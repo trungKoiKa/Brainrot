@@ -56,11 +56,14 @@ async function GoalsContent({ searchParams }: Pick<PageProps<"/goals">, "searchP
   const current = periodOf(level, today);
 
   const children = childPeriods(period);
+  // Một lần đọc Daily Log phủ cả kỳ đang xem lẫn các kỳ con (tuần lấn sang tháng bên cạnh) → resolveGoals dùng lại (rà soát A4)
+  const logFrom = [period, ...children].reduce((m, p) => (p.start < m ? p.start : m), period.start);
+  const logTo = [period, ...children].reduce((m, p) => (p.end > m ? p.end : m), period.end);
   const [goalsLoaded, habits, reflections, logs, weekTasks] = await Promise.all([
     getGoals(),
     getHabits(),
     getReflections(),
-    level === "month" || level === "week" ? getDailyLogsBetween(period.start, period.end) : null,
+    level === "month" || level === "week" ? getDailyLogsBetween(logFrom, logTo) : null,
     getTasks(), // việc gắn dưới mỗi mục tiêu (mọi cấp) + thẻ ngày / khay ở Tuần
   ]);
   const reflection = reflectionOf(reflections.data, period);
@@ -68,7 +71,10 @@ async function GoalsContent({ searchParams }: Pick<PageProps<"/goals">, "searchP
   const motto = reflectionOf(reflections.data, periodOf("year", period.start))?.motto.trim() || null;
   // Trạng thái tự xong cho mục tiêu của kỳ đang xem + các kỳ con (cột %, thẻ quý/tháng)
   const shown = [period, ...children];
-  const resolved = await resolveGoals(goalsLoaded.data.filter((g) => shown.some((p) => p.level === g.level && p.start === g.start)));
+  const resolved = await resolveGoals(
+    goalsLoaded.data.filter((g) => shown.some((p) => p.level === g.level && p.start === g.start)),
+    logs ? { logs, from: logFrom, to: logTo } : undefined,
+  );
   const goals = resolved.goals;
   // Thói quen gắn được: được theo dõi ở ít nhất một tháng của kỳ
   const linkable = habits.data.filter(
