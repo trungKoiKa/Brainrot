@@ -55,7 +55,7 @@ Thao tác:
 - Thẻ **Thói quen hôm nay**: bấm từng thói quen đã làm → ghi vào Daily Log của hôm nay (tự tạo nếu chưa có).
 
 Các phần khác chỉ để xem: dòng đếm ngược dưới lời chào và thẻ **Hạn · 14 ngày** (không lặp việc đã nằm trong "Hôm nay làm").
-Next up (Google Calendar) và "kiến thức mới" đang ẩn từ v1.0.
+Thẻ **Kiến thức mới** liệt kê 5 ghi chú mới nhất (bấm tên mở Knowledge). Next up (Google Calendar) không có trong sản phẩm.
 
 ### 2.3 Buổi tối → Today, khối Ghi nhanh
 
