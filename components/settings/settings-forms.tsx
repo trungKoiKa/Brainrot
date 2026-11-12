@@ -11,46 +11,50 @@ import {
   type AccountState,
 } from "@/app/actions/account";
 import { createFieldAction, deleteFieldAction, renameFieldAction } from "@/app/actions/knowledge";
-import { Status, fieldClass, primaryButtonClass } from "@/components/form-bits";
+import { Status, fieldClass } from "@/components/form-bits";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { DeadlineField } from "@/components/tasks/deadline-field";
 
 // Trùng MIN_PASSWORD_LENGTH ở lib/password.ts (file đó dùng node:crypto nên không import vào bundle trình duyệt)
 const MIN_PASSWORD_LENGTH = 8;
-const label = "space-y-1 text-sm";
+// Một trường: nhãn → ô nhập → gợi ý, xếp dọc cách nhau 8px. Giữa các trường cách 20px (gap-y-5 ở form).
+const label = "flex flex-col gap-2 text-sm";
+const labelText = "font-medium";
 const hint = "text-xs text-muted-foreground";
+// Ô nhập / nút cao 40px trên màn cảm ứng
+const touch = "max-md:h-10";
 
 /** Tên hiển thị + hạn / nhãn thẻ đếm ngược. Hạn để trống → ẩn thẻ. Email chỉ đọc (đổi email nhờ Trung). */
 export function ProfileForm({ email, name, targetDate, targetLabel }: { email: string | null; name: string; targetDate: string; targetLabel: string }) {
   const [state, action, pending] = useActionState<AccountState, FormData>(updateProfileAction, {});
   const [date, setDate] = useState(targetDate);
   return (
-    <form action={action} className="grid gap-4 md:grid-cols-2">
+    <form action={action} className="grid gap-x-4 gap-y-5 md:grid-cols-2">
       <label className={`${label} md:col-span-2`}>
-        <span className="text-muted-foreground">Email đăng nhập</span>
-        <input value={email ?? "(chưa gắn email)"} readOnly aria-readonly="true" className={`${fieldClass} text-muted-foreground`} />
+        <span className={labelText}>Email đăng nhập</span>
+        <Input value={email ?? "(chưa gắn email)"} readOnly aria-readonly="true" className={`${touch} bg-surface-muted text-muted-foreground dark:bg-surface-muted`} />
       </label>
       <label className={`${label} md:col-span-2`}>
-        <span className="text-muted-foreground">Tên hiển thị</span>
-        <input name="name" defaultValue={name} maxLength={60} required autoComplete="name" className={fieldClass} />
+        <span className={labelText}>Tên hiển thị</span>
+        <Input name="name" defaultValue={name} maxLength={60} required autoComplete="name" className={touch} />
         <span className={hint}>Từ cuối của tên dùng trong lời chào (vd. “Anh Trung” → “Chào buổi sáng, Trung”).</span>
       </label>
       {/* Lịch chọn ngày của app (dd/mm/yyyy) thay <input type="date"> hiện theo locale trình duyệt — rà soát 11/2026 P2 */}
       <div className={label}>
-        <span className="text-muted-foreground">Hạn cần nhớ (đếm ngược)</span>
-        <DeadlineField name="targetDate" label="Hạn" value={date} onChange={setDate} triggerClass={`${fieldClass} justify-between text-left`} />
+        <span className={labelText}>Hạn cần nhớ (đếm ngược)</span>
+        <DeadlineField name="targetDate" label="Hạn" value={date} onChange={setDate} triggerClass={`${fieldClass} ${touch} justify-between text-left`} />
         <span className={hint}>Để trống nếu không cần thẻ đếm ngược.</span>
       </div>
       <label className={label}>
-        <span className="text-muted-foreground">Tên của hạn đó</span>
-        <input name="targetLabel" defaultValue={targetLabel} maxLength={40} placeholder="vd. hạn nộp đồ án" className={fieldClass} />
+        <span className={labelText}>Tên của hạn đó</span>
+        <Input name="targetLabel" defaultValue={targetLabel} maxLength={40} placeholder="vd. hạn nộp đồ án" className={touch} />
       </label>
       <div className="flex flex-wrap items-center gap-3 md:col-span-2">
         <Status state={state} />
-        <button type="submit" disabled={pending} className={`ml-auto ${primaryButtonClass}`}>
+        <Button type="submit" disabled={pending} className={`ml-auto ${touch}`}>
           {pending ? "Đang lưu…" : "Lưu"}
-        </button>
+        </Button>
       </div>
     </form>
   );
@@ -73,13 +77,13 @@ export function PasswordForm() {
   const short = v.next.length > 0 && v.next.length < MIN_PASSWORD_LENGTH;
   const mismatch = v.confirm.length > 0 && v.confirm !== v.next;
   return (
-    <form action={action} className="grid gap-4 md:grid-cols-3">
+    <form action={action} className="grid gap-x-4 gap-y-5 md:grid-cols-3">
       <label className={label}>
-        <span className="text-muted-foreground">Mật khẩu hiện tại</span>
-        <Input name="current" type="password" required autoComplete="current-password" value={v.current} onChange={set("current")} />
+        <span className={labelText}>Mật khẩu hiện tại</span>
+        <Input name="current" type="password" required autoComplete="current-password" value={v.current} onChange={set("current")} className={touch} />
       </label>
       <label className={label}>
-        <span className="text-muted-foreground">Mật khẩu mới</span>
+        <span className={labelText}>Mật khẩu mới</span>
         <Input
           name="next"
           type="password"
@@ -90,13 +94,14 @@ export function PasswordForm() {
           onChange={set("next")}
           aria-invalid={short || undefined}
           aria-describedby="pw-next-hint"
+          className={touch}
         />
         <span id="pw-next-hint" className={short ? "text-xs text-danger" : hint}>
           Tối thiểu {MIN_PASSWORD_LENGTH} ký tự{short ? ` (mới ${v.next.length})` : ""}.
         </span>
       </label>
       <label className={label}>
-        <span className="text-muted-foreground">Nhập lại mật khẩu mới</span>
+        <span className={labelText}>Nhập lại mật khẩu mới</span>
         <Input
           name="confirm"
           type="password"
@@ -106,6 +111,7 @@ export function PasswordForm() {
           onChange={set("confirm")}
           aria-invalid={mismatch || undefined}
           aria-describedby="pw-confirm-hint"
+          className={touch}
         />
         <span id="pw-confirm-hint" role={mismatch ? "alert" : undefined} className="text-xs text-danger empty:hidden">
           {mismatch ? "Chưa khớp với mật khẩu mới." : ""}
@@ -113,7 +119,7 @@ export function PasswordForm() {
       </label>
       <div className="flex flex-wrap items-center gap-3 md:col-span-3">
         <Status state={state} />
-        <Button type="submit" className="ml-auto" disabled={pending || short || mismatch}>
+        <Button type="submit" className={`ml-auto ${touch}`} disabled={pending || short || mismatch}>
           {pending ? "Đang đổi…" : "Đổi mật khẩu"}
         </Button>
       </div>
@@ -164,10 +170,10 @@ function NameListManager({
   return (
     <div className="space-y-4">
       <form action={action} className="flex flex-wrap gap-2" key={state.ok ? `ok-${state.message}` : "form"}>
-        <input name="name" aria-label={`Tên ${noun} mới`} placeholder={`Thêm ${noun}…`} maxLength={40} autoComplete="off" className={`${fieldClass} min-w-48 flex-1`} />
-        <button type="submit" disabled={pending} className={primaryButtonClass}>
+        <Input name="name" aria-label={`Tên ${noun} mới`} placeholder={`Thêm ${noun}…`} maxLength={40} autoComplete="off" className={`${touch} min-w-48 flex-1`} />
+        <Button type="submit" disabled={pending} className={touch}>
           {pending ? "Đang thêm…" : "Thêm"}
-        </button>
+        </Button>
       </form>
       <Status state={note.message ? note : state} />
       {items.length === 0 ? (
@@ -175,9 +181,9 @@ function NameListManager({
       ) : (
         <ul className="divide-y divide-line-soft">
           {items.map((p, i) => (
-            <li key={p.id} className="flex flex-wrap items-center gap-x-3 gap-y-1 py-2">
+            <li key={p.id} className="flex min-h-12 flex-wrap items-center gap-x-3 gap-y-1 py-2">
               {colored && (
-                <span aria-hidden="true" className="size-2.5 shrink-0" style={{ background: `var(${i < 4 ? `--field-${i + 1}` : "--field-neutral"})` }} />
+                <span aria-hidden="true" className="size-2.5 shrink-0 rounded-full" style={{ background: `var(${i < 4 ? `--field-${i + 1}` : "--field-neutral"})` }} />
               )}
               {editing === p.id ? (
                 <form
@@ -191,21 +197,21 @@ function NameListManager({
                     });
                   }}
                 >
-                  <input
+                  <Input
                     autoFocus
                     aria-label={`Đổi tên ${noun} ${p.name}`}
                     value={draft}
                     maxLength={40}
                     onChange={(e) => setDraft(e.target.value)}
                     onKeyDown={(e) => e.key === "Escape" && setEditing(null)}
-                    className={`${fieldClass} py-1`}
+                    className={touch}
                   />
-                  <button type="submit" disabled={busy} className={`${primaryButtonClass} py-1`}>
+                  <Button type="submit" disabled={busy} className={touch}>
                     Lưu
-                  </button>
-                  <button type="button" onClick={() => setEditing(null)} className="text-sm text-muted-foreground hover:text-foreground">
+                  </Button>
+                  <Button type="button" variant="ghost" onClick={() => setEditing(null)} className={touch}>
                     Hủy
-                  </button>
+                  </Button>
                 </form>
               ) : (
                 <>
@@ -213,28 +219,32 @@ function NameListManager({
                   <span className="text-xs text-muted-foreground tabular-nums">
                     {p.count} {countNoun}
                   </span>
-                  <button
+                  <Button
                     type="button"
+                    variant="ghost"
+                    size="sm"
                     onClick={() => {
                       setEditing(p.id);
                       setDraft(p.name);
                       setNote({});
                     }}
                     aria-label={`Đổi tên ${noun} ${p.name}`}
-                    className="min-h-10 rounded-md px-2 text-sm text-muted-foreground outline-none hover:text-foreground focus-visible:ring-3 focus-visible:ring-ring md:min-h-0"
+                    className={`${touch} text-muted-foreground`}
                   >
                     Đổi tên
-                  </button>
-                  <button
+                  </Button>
+                  <Button
                     type="button"
+                    variant="ghost"
+                    size="sm"
                     disabled={busy || p.count > 0}
                     title={p.count > 0 ? `Còn ${countNoun} trong ${noun} này` : undefined}
                     aria-label={p.count > 0 ? `Xóa ${noun} ${p.name} (còn ${p.count} ${countNoun} nên chưa xóa được)` : `Xóa ${noun} ${p.name}`}
                     onClick={() => run(() => deleteAction(p.id))}
-                    className="min-h-10 rounded-md px-2 text-sm text-danger outline-none hover:underline focus-visible:ring-3 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-40 disabled:no-underline md:min-h-0"
+                    className={`${touch} text-danger hover:bg-danger-soft hover:text-danger`}
                   >
                     Xóa
-                  </button>
+                  </Button>
                 </>
               )}
             </li>
@@ -283,23 +293,23 @@ export function DeleteAccountForm() {
       <summary className="cursor-pointer py-2.5 text-sm font-medium text-danger">
         Xoá tài khoản…
       </summary>
-      <form action={action} className="mt-3 grid gap-4 md:grid-cols-2">
+      <form action={action} className="mt-3 grid gap-x-4 gap-y-5 md:grid-cols-2">
         <p className="text-sm text-muted-foreground md:col-span-2">
           Xoá vĩnh viễn tài khoản và <strong className="font-medium text-foreground">toàn bộ</strong> việc, mục tiêu, thói quen, nhật ký của bạn.
           Không hoàn tác được.
         </p>
         <label className={label}>
-          <span className="text-muted-foreground">Gõ lại email để xác nhận</span>
-          <Input name="email" type="email" required autoComplete="off" placeholder="email của bạn" />
+          <span className={labelText}>Gõ lại email để xác nhận</span>
+          <Input name="email" type="email" required autoComplete="off" placeholder="email của bạn" className={touch} />
         </label>
         <label className={label}>
-          <span className="text-muted-foreground">Mật khẩu</span>
-          <Input name="password" type="password" required autoComplete="current-password" />
+          <span className={labelText}>Mật khẩu</span>
+          <Input name="password" type="password" required autoComplete="current-password" className={touch} />
         </label>
         <div className="flex flex-wrap items-center gap-3 md:col-span-2">
           <Status state={state} />
           {/* Nút "nguy hiểm" của thư viện: chữ đỏ trên nền đỏ nhạt, đủ tương phản ở cả hai theme (rà soát A3: 2,3:1 ở nền tối) */}
-          <Button type="submit" variant="destructive" className="ml-auto" disabled={pending}>
+          <Button type="submit" variant="destructive" className={`ml-auto ${touch}`} disabled={pending}>
             {pending ? "Đang xoá…" : "Xoá tài khoản vĩnh viễn"}
           </Button>
         </div>

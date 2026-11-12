@@ -6,7 +6,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { DeleteAccountForm, FieldManager, PasswordForm, ProfileForm, ProjectManager } from "@/components/settings/settings-forms";
 import { getFieldsWithCounts, getProfile, getProjectsWithCounts } from "@/lib/db/data";
 
-// SPEC-v1.0 bước 5: tên hiển thị, hạn + nhãn thẻ đếm ngược, dự án, đổi mật khẩu xoá tài khoản.
+// SPEC.md mục 5.5: tên hiển thị, hạn + nhãn thẻ đếm ngược, dự án, lĩnh vực, đổi mật khẩu, xoá tài khoản.
 export default function SettingsPage() {
   return (
     <div className="max-w-3xl">
@@ -22,7 +22,7 @@ async function SettingsContent() {
   await connection();
   const [profile, projects, fields] = await Promise.all([getProfile(), getProjectsWithCounts(), getFieldsWithCounts()]);
   return (
-    <div className="space-y-5">
+    <div className="space-y-6">
       <Card title="Hồ sơ">
         <ProfileForm
           email={profile.email}
