@@ -212,6 +212,39 @@
   }
 }
 
+/* ---------- BẢN THỬ: nền khung Brain (components/brain/brain-view.tsx) ---------- */
+/* 1. Không gian sâu: luôn tối, xanh đêm sáng ở giữa, tối dần ra mép */
+@utility brain-bg-space {
+  background: radial-gradient(ellipse 75% 70% at 50% 42%, #18213b 0%, #0c1020 52%, #05060c 100%);
+}
+/* 2. Tinh vân: luôn tối, ba vệt màu mờ (tím, xanh ngọc, hồng) trên nền đen xanh */
+@utility brain-bg-nebula {
+  background:
+    radial-gradient(42% 52% at 20% 28%, rgb(124 92 255 / 0.3), transparent 72%),
+    radial-gradient(46% 56% at 80% 70%, rgb(20 184 166 / 0.24), transparent 72%),
+    radial-gradient(36% 42% at 62% 16%, rgb(240 90 160 / 0.17), transparent 72%),
+    #070912;
+}
+/* 3. Lưới chấm: theo theme, chấm nhỏ đều 22px, mờ dần ra mép */
+@utility brain-bg-dots {
+  background:
+    radial-gradient(ellipse 80% 75% at 50% 45%, transparent 35%, var(--surface) 100%),
+    radial-gradient(color-mix(in srgb, var(--muted-foreground) 42%, transparent) 1px, transparent 1.6px) 0 0 / 22px 22px,
+    var(--surface);
+}
+/* 4. Đèn rọi: theo theme, sáng ở giữa, sẫm dần ra mép */
+@utility brain-bg-spot {
+  background: radial-gradient(ellipse 70% 65% at 50% 44%, var(--surface) 0%, var(--background) 58%, color-mix(in srgb, var(--background) 86%, var(--foreground)) 100%);
+}
+/* 5. Bình minh: theo theme, ba vệt màu rất nhạt (cam, tím, xanh ngọc) */
+@utility brain-bg-dawn {
+  background:
+    radial-gradient(48% 58% at 16% 22%, color-mix(in srgb, var(--primary) 20%, transparent), transparent 72%),
+    radial-gradient(50% 60% at 84% 74%, color-mix(in srgb, var(--field-4) 20%, transparent), transparent 72%),
+    radial-gradient(40% 46% at 70% 14%, color-mix(in srgb, var(--field-3) 16%, transparent), transparent 72%),
+    var(--surface);
+}
+
 /* Ô chọn gốc của trình duyệt: bỏ mũi tên mặc định, dùng chevron theo theme (--chevron) */
 @utility select-chevron {
   appearance: none;
