@@ -16,7 +16,7 @@ import { pctTone, type DashTask, type KpiTone, type Tone } from "@/lib/dashboard
 import { deadlineLabel } from "@/lib/today";
 import { goalCounts, isGoalDone, type Goal } from "@/lib/goals";
 
-// Màu (SPEC-v0.3 mục 7, critique lần 3): trạng thái dùng token ngữ nghĩa --good / --warning / --danger;
+// Màu (SPEC.md mục 5.4, critique lần 3): trạng thái dùng token ngữ nghĩa --good / --warning / --danger;
 // màu Lĩnh vực (--chart-1..5) chỉ để phân loại; sparkline màu trung tính.
 
 /** Mốc trục Y "tròn" (bước 1/2/5/10/20…), chừa ~15% phía trên để đỉnh không bị cắt. */
@@ -217,7 +217,7 @@ const weeklyConfig = {
   learned: { label: "Ghi chú mới", color: "var(--chart-3)" },
 } satisfies ChartConfig;
 
-/** Dưới số tuần/ngày có dữ liệu này thì biểu đồ chỉ toàn số 0 → thu thành một dòng (SPEC-v1.0, critique lần 2). */
+/** Dưới số tuần/ngày có dữ liệu này thì biểu đồ chỉ toàn số 0 → thu thành một dòng (SPEC.md mục 5.4, critique lần 2). */
 export const MIN_ACTIVE_WEEKS = 3;
 
 /** Trang gọi chỉ vẽ khi đã có từ MIN_ACTIVE_WEEKS tuần có hoạt động (dashboard-view.tsx). */
@@ -335,7 +335,7 @@ export function DueSoonList({ items, more }: { items: (DashTask & { deadline: st
   );
 }
 
-// ---------- mục tiêu tháng này (SPEC-v0.4 mục 7) ----------
+// ---------- mục tiêu tháng này (SPEC.md mục 5.4) ----------
 
 export function MonthGoals({ goals }: { goals: Goal[] }) {
   const c = goalCounts(goals);
@@ -384,7 +384,7 @@ export function MonthGoals({ goals }: { goals: Goal[] }) {
   );
 }
 
-// ---------- thói quen (SPEC-v0.4 3.3) ----------
+// ---------- thói quen (SPEC.md mục 5.4) ----------
 
 export function HabitBars({
   rows,

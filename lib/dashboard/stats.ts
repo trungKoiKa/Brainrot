@@ -1,4 +1,4 @@
-// Tính số liệu cho Dashboard (SPEC-v0.3 mục 4). Hàm thuần: ngày là chuỗi YYYY-MM-DD theo giờ VN.
+// Tính số liệu cho Dashboard (SPEC.md mục 5.4). Hàm thuần: ngày là chuỗi YYYY-MM-DD theo giờ VN.
 import { addDays, daysBetween, mondayOf } from "@/lib/date";
 import { isHabitActive, streaks } from "@/lib/habits";
 import { goalCounts, type Goal } from "@/lib/goals";
@@ -14,7 +14,7 @@ export type DashTask = {
   status: TaskStatus | null;
   deadline: string | null;
   doneOn: string | null;
-  /** Ngày làm (SPEC-v0.5) */
+  /** Ngày làm (SPEC.md mục 5.4) */
   plannedOn: string | null;
   createdOn: string;
 };
@@ -33,15 +33,17 @@ export type Tally = { done: number; total: number };
 export type DashInput = {
   today: string;
   tasks: DashTask[];
+  /** Dự án của người dùng theo thứ tự ở Cài đặt — thứ tự cột "Việc theo dự án" */
+  projects: string[];
   logs: DashLog[];
   /** Ngày của từng ghi chú kiến thức (Ngày học, không có thì ngày tạo) — SPEC.md mục 5.6 */
   knowledge: string[];
   thesisDeadline: string | null;
   /** Nhãn thẻ đếm ngược trong Cài đặt (vd. "hạn nộp đồ án"); thiếu → "Hạn chót" */
   thesisLabel?: string;
-  /** Database Habits (SPEC-v0.4); rỗng khi chưa kết nối */
+  /** Thói quen của người dùng (SPEC.md mục 5.4) */
   habits: Habit[];
-  /** Mục tiêu tháng này, đã gắn trạng thái tự xong (SPEC-v0.4 mục 7); rỗng khi chưa kết nối / chưa đặt */
+  /** Mục tiêu tháng này, đã gắn trạng thái tự xong (SPEC.md mục 5.4); rỗng khi chưa đặt */
   monthGoals: Goal[];
 };
 
@@ -49,8 +51,6 @@ export type Tone = "good" | "warn" | "bad";
 /** Chấm của KPI: thêm "none" = chưa đủ dữ liệu để phán xét (chấm trung tính) */
 export type KpiTone = Tone | "none";
 
-// Thứ tự như select "Dự án" trong Notion (giống trang Tasks)
-export const PROJECT_ORDER = ["Đồ án", "Học AI", "Sản phẩm", "Sức khỏe", "Thực tập", "Khác"];
 export const NO_PROJECT = "Không có dự án";
 
 /** `n` ngày kết thúc ở `end`, cũ → mới. */
@@ -107,7 +107,7 @@ export function doneKpi({ today, tasks }: DashInput, period: Period) {
 
 export const pctTone = (p: number): Tone => (p >= 70 ? "good" : p >= 40 ? "warn" : "bad");
 
-/** "Tuần này" (SPEC-v0.5 4.4): % task có Ngày làm trong tuần đã xong; 12 tuần; so điểm % với tuần trước. */
+/** "Tuần này" (SPEC.md mục 5.4): % task có Ngày làm trong tuần đã xong; 12 tuần; so điểm % với tuần trước. */
 export function weekKpi({ today, tasks }: DashInput) {
   const monday = mondayOf(today);
   const tallyOf = (start: string): Tally => {
@@ -146,10 +146,11 @@ export function thesisKpi({ today, logs, thesisDeadline }: DashInput, period: Pe
 
 // ---------- 4.2 task theo dự án ----------
 
-export function tasksByProject(tasks: DashTask[]) {
+/** Việc chưa xong theo dự án, xếp theo thứ tự dự án của người dùng (`order`); dự án lạ sau đó, "Không có dự án" cuối. */
+export function tasksByProject(tasks: DashTask[], order: readonly string[]) {
   const rank = (p: string) => {
-    const i = PROJECT_ORDER.indexOf(p);
-    return i === -1 ? (p === NO_PROJECT ? PROJECT_ORDER.length + 1 : PROJECT_ORDER.length) : i;
+    const i = order.indexOf(p);
+    return i === -1 ? (p === NO_PROJECT ? order.length + 1 : order.length) : i;
   };
   const groups = new Map<string, { project: string; doing: number; todo: number }>();
   for (const t of tasks) {
@@ -203,7 +204,7 @@ export function dailyRhythm({ today, logs }: DashInput, period: number) {
   };
 }
 
-// ---------- thói quen (SPEC-v0.4 3.3) ----------
+// ---------- thói quen (SPEC.md mục 5.4) ----------
 
 /**
  * % từng thói quen trong kỳ: số ngày đã làm / số ngày thói quen **được theo dõi** trong kỳ (thói quen mới thêm
@@ -232,7 +233,7 @@ export function habitKpis({ today, logs, habits }: DashInput, period: number) {
   return { rows, average };
 }
 
-// ---------- sắp đến hạn (SPEC-v0.5 4.4, câu 10.3a) ----------
+// ---------- sắp đến hạn (SPEC.md mục 5.4) ----------
 
 /** Task chưa xong có Hạn ≤ hôm nay + `horizon` (gồm quá hạn), gần nhất trước; tối đa `max`, còn lại đếm vào `more`. */
 export function dueSoon({ today, tasks }: DashInput, horizon = 14, max = 5) {
@@ -243,7 +244,7 @@ export function dueSoon({ today, tasks }: DashInput, horizon = 14, max = 5) {
   return { items: list.slice(0, max), more: Math.max(0, list.length - max) };
 }
 
-// ---------- tóm tắt tuần: thẻ tiêu điểm đầu Dashboard (SPEC-v1.0, Trung chốt 07/11/2026) ----------
+// ---------- tóm tắt tuần: thẻ tiêu điểm đầu Dashboard (SPEC.md mục 5.4, Trung chốt 07/11/2026) ----------
 
 export type SummaryTone = Tone | "none";
 
@@ -292,7 +293,7 @@ export const daysThisWeek = (today: string) => daysBetween(mondayOf(today), toda
 const earlyCap = (tone: Tone, days: number): Tone => (days < 3 && tone === "bad" ? "warn" : tone);
 
 /**
- * Ba tín hiệu (SPEC-v1.0, critique lần 2–3): việc theo lịch tuần này · thói quen từ thứ Hai · ghi log x/n ngày từ thứ Hai.
+ * Ba tín hiệu (SPEC.md mục 5.4, critique lần 2–3): việc theo lịch tuần này · thói quen từ thứ Hai · ghi log x/n ngày từ thứ Hai.
  * Mỗi cái chỉ tính khi đo được. Có việc quá hạn → nói quá hạn trước; còn lại nói tín hiệu yếu nhất.
  */
 export function weekSignals(input: DashInput): WeekSignal[] {

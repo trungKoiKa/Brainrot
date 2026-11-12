@@ -10,7 +10,7 @@ const log = (date: string, done: string, dropped = ""): DailyLog => ({
   id: date, title: "", date, done, dropped, learned: "", tomorrowTop3: "", exercised: false, habits: [],
 });
 
-describe("Thẻ ngày chế độ Tuần (SPEC-v0.5 4.3)", () => {
+describe("Thẻ ngày chế độ Tuần (SPEC.md mục 5.3)", () => {
   it("task thuộc ngày theo Ngày làm / Ngày xong / Hạn, không lặp, Hạn chỉ khi chưa xếp ngày khác", () => {
     const list = [
       task("lam", { plannedOn: "2026-10-27" }),

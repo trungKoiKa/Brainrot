@@ -7,7 +7,7 @@ const habit = (name: string, o: Partial<Habit> = {}): Habit => ({
   id: name, name, from: "2026-10-01", to: null, order: 1, ...o,
 });
 
-describe("lịch (SPEC-v0.4 mục 9)", () => {
+describe("lịch (SPEC.md mục 5.3)", () => {
   it("tháng 2/2026 có 28 ngày, tháng 10 có 31", () => {
     expect(daysOfMonth("2026-02")).toHaveLength(28);
     expect(daysOfMonth("2026-10")).toHaveLength(31);

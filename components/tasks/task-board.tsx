@@ -15,7 +15,7 @@ import { ErrorNotice, TaskRow } from "./task-row";
 import { useTaskCompletion } from "./use-task-completion";
 
 const NO_PROJECT = "Không có dự án";
-/** Toast "Hoàn tác" hiện 8 giây (SPEC-v1.0, 07/11/2026); sonner tạm dừng khi rê chuột/focus và xếp chồng nhiều toast. */
+/** Toast "Hoàn tác" hiện 8 giây (SPEC.md mục 5.2, 07/11/2026); sonner tạm dừng khi rê chuột/focus và xếp chồng nhiều toast. */
 const UNDO_MS = 8000;
 
 const projectOf = (t: Task) => t.project ?? NO_PROJECT;

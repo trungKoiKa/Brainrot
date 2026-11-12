@@ -91,7 +91,7 @@ const EMPTY_TEXT: Record<TodayEmptyKind, { text: string; link: string }> = {
   "scheduled-later": { text: "Hôm nay chưa xếp việc nào; các việc còn lại đã có lịch ngày khác.", link: "Xem ở Tasks" },
 };
 
-/** "Hôm nay làm" trống: nói đúng lý do và chỉ đường sang Tasks (SPEC-v1.0 "Người mới"). */
+/** "Hôm nay làm" trống: nói đúng lý do và chỉ đường sang Tasks (SPEC.md mục 5.1 "Người mới"). */
 function EmptyPlan({ kind }: { kind: TodayEmptyKind }) {
   const { text, link } = EMPTY_TEXT[kind];
   return (
@@ -107,7 +107,7 @@ function EmptyPlan({ kind }: { kind: TodayEmptyKind }) {
 }
 
 /**
- * Khối "Hôm nay làm" trên Today (SPEC-v0.5 4.2): trễ · hạn hôm nay · Ngày làm hôm nay · gợi ý khi trống.
+ * Khối "Hôm nay làm" trên Today (SPEC.md mục 5.1): trễ · hạn hôm nay · Ngày làm hôm nay · gợi ý khi trống.
  * Redesign 11/2026 (P0): việc tích xong trong ngày ở nguyên chỗ, gạch ngang, bỏ tích được; toast có nút Hoàn tác.
  */
 export function TodayPlan({ today, tasks: initial, projects }: { today: string; tasks: Task[]; projects: readonly string[] }) {
@@ -168,7 +168,7 @@ export function TodayPlan({ today, tasks: initial, projects }: { today: string; 
   );
 }
 
-/** "Ngày mai làm" trong Ghi nhanh (SPEC-v0.5 câu 10.2a): tích task → Ngày làm = ngày mai, bỏ tích → bỏ lịch. */
+/** "Ngày mai làm" trong Ghi nhanh (SPEC.md mục 5.1): tích task → Ngày làm = ngày mai, bỏ tích → bỏ lịch. */
 export function TomorrowPicker({
   today,
   tasks: initial,
@@ -221,7 +221,7 @@ export function TomorrowPicker({
 }
 
 /**
- * Thêm việc thẳng vào hôm nay (SPEC-v1.0, Today đợt 3): chỉ cần tên, Ngày làm = ngày làm việc hiện tại.
+ * Thêm việc thẳng vào hôm nay (SPEC.md mục 5.1): chỉ cần tên, Ngày làm = ngày làm việc hiện tại.
  * Dự án, ưu tiên, deadline vẫn đặt ở Tasks.
  */
 function TodayAdd({ today }: { today: string }) {

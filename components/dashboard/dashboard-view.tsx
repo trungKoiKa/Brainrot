@@ -82,7 +82,7 @@ export function DashboardView({ real }: { real: DashInput }) {
     store(MODE_KEY, m);
   };
 
-  // "Thật là thật" (Trung chốt 07/11/2026, thay SPEC-v0.3 mục 5): chế độ Thật không bao giờ lấp bằng mẫu;
+  // "Thật là thật" (Trung chốt 07/11/2026, thay SPEC.md mục 5.4): chế độ Thật không bao giờ lấp bằng mẫu;
   // khối thiếu dữ liệu nói rõ và chỉ chỗ thêm. Dữ liệu mẫu chỉ hiện khi bật "Mẫu".
   const all = mode === "sample";
   const src: DashInput = all ? { ...sample, thesisDeadline: real.thesisDeadline, thesisLabel: real.thesisLabel } : real;
@@ -96,7 +96,7 @@ export function DashboardView({ real }: { real: DashInput }) {
   const daily = dailyRhythm(src, period);
   const habitStats = habitKpis(src, period);
   const due = dueSoon(src);
-  const projects = tasksByProject(src.tasks);
+  const projects = tasksByProject(src.tasks, src.projects);
   // Biểu đồ Nhịp hằng ngày cần ít nhất ngần này ngày có log (7 ngày → 3, 30/90 ngày → 5)
   const minLoggedDays = Math.min(5, Math.ceil(period / 3));
   const weeklyDone = weekly.rows.reduce((s, r) => s + r.done, 0);
@@ -300,7 +300,7 @@ export function DashboardView({ real }: { real: DashInput }) {
         </div>
       )}
 
-      {/* Câu kết luận là chữ to nhất thẻ; nhãn "Tuần này" chỉ là nhãn nhỏ (SPEC-v1.0, critique lần 2–3) */}
+      {/* Câu kết luận là chữ to nhất thẻ; nhãn "Tuần này" chỉ là nhãn nhỏ (SPEC.md mục 5.4, critique lần 2–3) */}
       <Card>
         <h2 className="text-sm font-medium text-muted-foreground">Tuần này · từ {formatDay(summary.monday, true)}</h2>
         <p className="mt-3 flex items-start gap-3 text-2xl leading-snug font-semibold text-pretty md:text-3xl">

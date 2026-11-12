@@ -9,7 +9,7 @@ import { SESSION_EXPIRED, isSignedIn } from "@/lib/session";
 
 export type ReflectionResult = { ok: true; message: string } | { ok: false; error: string };
 
-/** Lưu Nhìn lại của kỳ `key` (SPEC-v0.4 mục 5); "Kỳ" do server tính từ key. */
+/** Lưu Nhìn lại của kỳ `key` (SPEC.md mục 5.3); "Kỳ" do server tính từ key. */
 export async function saveReflectionAction(
   level: Level,
   key: string,

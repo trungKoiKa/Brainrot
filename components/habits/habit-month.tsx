@@ -10,13 +10,13 @@ import type { Habit } from "@/lib/types";
 import { HabitManager } from "./habit-manager";
 import { useHabitDays } from "./use-habit-days";
 
-// Ngưỡng màu giống chấm trạng thái Dashboard: ≥ 70% ổn, 40–69% cần để ý, < 40% cần xử lý (SPEC-v0.4 3.3)
+// Ngưỡng màu giống chấm trạng thái Dashboard: ≥ 70% ổn, 40–69% cần để ý, < 40% cần xử lý (SPEC.md mục 5.3)
 // Redesign 11/2026: thói quen chưa đạt là "cần để ý" (vàng), không phải lỗi (đỏ) — DESIGN.md → Colors
 const tone = (pct: number) => (pct >= 70 ? "var(--good)" : "var(--warning)");
 const WEEKDAY = ["CN", "T2", "T3", "T4", "T5", "T6", "T7"];
 const weekday = (day: string) => WEEKDAY[new Date(`${day}T00:00:00Z`).getUTCDay()];
 
-/** Bảng thói quen × ngày của một tháng (SPEC-v0.4 3.3). */
+/** Bảng thói quen × ngày của một tháng (SPEC.md mục 5.3). */
 export function HabitMonth({
   month,
   today,

@@ -27,7 +27,7 @@ export async function setDayHabitsAction(day: string, names: string[]): Promise<
   if (typeof day !== "string" || !DAY.test(day) || day > todayVN()) return { ok: false, error: "Ngày không hợp lệ." };
   if (!Array.isArray(names)) return { ok: false, error: "Danh sách thói quen không hợp lệ." };
 
-  const allowed = new Set(habitsForMonth((await getHabits()).data, monthOf(day)).map((h) => h.name));
+  const allowed = new Set(habitsForMonth((await getHabits()), monthOf(day)).map((h) => h.name));
   const clean = [...new Set(names)].filter((n) => typeof n === "string" && allowed.has(n));
 
   try {
@@ -49,7 +49,7 @@ export async function addHabitAction(month: string, rawName: string): Promise<Ha
   if (!name) return { ok: false, error: "Nhập tên thói quen." };
   if (name.length > MAX_HABIT_NAME) return { ok: false, error: `Tên tối đa ${MAX_HABIT_NAME} ký tự.` };
 
-  const habits = (await getHabits()).data;
+  const habits = (await getHabits());
   if (habitsForMonth(habits, month).some((h) => h.name.toLowerCase() === name.toLowerCase())) {
     return { ok: false, error: "Thói quen này đã có trong tháng." };
   }
@@ -71,7 +71,7 @@ export async function moveHabitAction(month: string, id: string, direction: -1 |
   if (!isMonthKey(month) || !PAGE_ID.test(id) || (direction !== -1 && direction !== 1)) {
     return { ok: false, error: "Yêu cầu không hợp lệ." };
   }
-  const list = habitsForMonth((await getHabits()).data, month);
+  const list = habitsForMonth((await getHabits()), month);
   const i = list.findIndex((h) => h.id === id);
   const j = i + direction;
   if (i === -1 || j < 0 || j >= list.length) return { ok: true };
@@ -98,7 +98,7 @@ export async function stopHabitAction(month: string, id: string): Promise<HabitR
   const denied = await guard();
   if (denied) return denied;
   if (!isMonthKey(month) || !PAGE_ID.test(id)) return { ok: false, error: "Yêu cầu không hợp lệ." };
-  const habit = (await getHabits()).data.find((h) => h.id === id);
+  const habit = (await getHabits()).find((h) => h.id === id);
   if (!habit) return { ok: false, error: "Không tìm thấy thói quen." };
   if (monthOf(habit.from) > month) return { ok: false, error: "Thói quen này chưa bắt đầu." };
 
@@ -115,7 +115,7 @@ export async function stopHabitAction(month: string, id: string): Promise<HabitR
 
 const MONTH = /^\d{4}-\d{2}-01$/;
 
-/** Xoá hẳn thói quen (SPEC-v1.0, Trung chốt 11/11/2026); trả ảnh chụp để Hoàn tác. */
+/** Xoá hẳn thói quen (SPEC.md mục 5.3, Trung chốt 11/11/2026); trả ảnh chụp để Hoàn tác. */
 export async function deleteHabitAction(id: string): Promise<{ ok: true; snapshot: HabitSnapshot } | { ok: false; error: string }> {
   if (!(await isSignedIn())) return { ok: false, error: SESSION_EXPIRED };
   if (typeof id !== "string" || !PAGE_ID.test(id)) return { ok: false, error: "Yêu cầu không hợp lệ." };

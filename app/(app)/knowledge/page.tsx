@@ -4,7 +4,6 @@ import type { Metadata } from "next";
 import { KnowledgeBoard } from "@/components/knowledge/knowledge-board";
 import { PageHeader } from "@/components/page-header";
 import { Readouts } from "@/components/readout";
-import { StaleBanner } from "@/components/stale-banner";
 import { Skeleton } from "@/components/ui/skeleton";
 import { addDays, todayVN } from "@/lib/date";
 import { getKnowledge, getKnowledgeFields } from "@/lib/db/data";
@@ -37,11 +36,10 @@ async function KnowledgeContent({ searchParams }: Pick<PageProps<"/knowledge">, 
   const { field, level } = await searchParams;
   const today = todayVN();
   const weekAgo = addDays(today, -6);
-  const [{ data, stale }, fields] = await Promise.all([getKnowledge(), getKnowledgeFields()]);
+  const [data, fields] = await Promise.all([getKnowledge(), getKnowledgeFields()]);
 
   return (
     <>
-      <StaleBanner show={stale} />
       <Readouts
         className="mb-6"
         items={[

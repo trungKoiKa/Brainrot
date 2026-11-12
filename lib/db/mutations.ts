@@ -1,5 +1,5 @@
 // Ghi dữ liệu (thay lib/notion/mutations.ts). Mọi hàm nhận `userId` và mọi UPDATE/DELETE đều kèm
-// `user_id = ?` — đoán được id của người khác cũng không sửa được (SPEC-v1.0 mục 6).
+// `user_id = ?` — đoán được id của người khác cũng không sửa được (SPEC.md mục 3).
 
 import { and, eq, inArray, isNull, sql } from "drizzle-orm";
 import type { Db } from "./client";
@@ -21,14 +21,14 @@ async function projectId(db: Db, userId: string, name: string | null): Promise<s
 
 const ownTask = (userId: string, id: string) => and(eq(tasks.id, id), eq(tasks.userId, userId));
 
-/** Tích xong task: Trạng thái = Xong, Ngày xong = hôm nay (SPEC-v0.3 mục 6). */
+/** Tích xong task: Trạng thái = Xong, Ngày xong = hôm nay (SPEC.md mục 3). */
 export async function markTaskDone(db: Db, userId: string, id: string): Promise<void> {
   const res = await db.update(tasks).set({ status: "Xong", doneOn: todayVN() }).where(ownTask(userId, id)).returning({ id: tasks.id });
   if (!res.length) throw new Error("Không tìm thấy task");
 }
 
 /**
- * Bỏ tích xong (SPEC-v1.0, 07/11/2026): về Chưa làm (hoặc trạng thái trước khi tích, khi Hoàn tác), xoá Ngày xong;
+ * Bỏ tích xong (SPEC.md mục 3, 07/11/2026): về Chưa làm (hoặc trạng thái trước khi tích, khi Hoàn tác), xoá Ngày xong;
  * liên kết mục tiêu giữ nguyên.
  */
 export async function reopenTask(db: Db, userId: string, id: string, status: "Chưa làm" | "Đang làm" = "Chưa làm"): Promise<void> {
@@ -36,13 +36,13 @@ export async function reopenTask(db: Db, userId: string, id: string, status: "Ch
   if (!res.length) throw new Error("Không tìm thấy task");
 }
 
-/** Xóa hẳn task (SPEC-v1.0, 05/11/2026); goal_tasks tự xóa theo (ON DELETE CASCADE). */
+/** Xóa hẳn task (SPEC.md mục 3, 05/11/2026); goal_tasks tự xóa theo (ON DELETE CASCADE). */
 export async function deleteTask(db: Db, userId: string, id: string): Promise<void> {
   const res = await db.delete(tasks).where(ownTask(userId, id)).returning({ id: tasks.id });
   if (!res.length) throw new Error("Không tìm thấy task");
 }
 
-/** Đặt / bỏ Ngày làm (SPEC-v0.5). */
+/** Đặt / bỏ Ngày làm (SPEC.md mục 3). */
 export async function setTaskPlannedOn(db: Db, userId: string, id: string, day: string | null): Promise<void> {
   const res = await db.update(tasks).set({ plannedOn: day }).where(ownTask(userId, id)).returning({ id: tasks.id });
   if (!res.length) throw new Error("Không tìm thấy task");
@@ -59,7 +59,7 @@ export async function createTask(db: Db, userId: string, input: TaskInput): Prom
   });
 }
 
-/** Form sửa chỉ cho Chưa làm / Đang làm → task mở lại thì bỏ Ngày xong (SPEC-v0.3 mục 6). `goalId` undefined = không đụng tới. */
+/** Form sửa chỉ cho Chưa làm / Đang làm → task mở lại thì bỏ Ngày xong (SPEC.md mục 3). `goalId` undefined = không đụng tới. */
 export async function updateTask(db: Db, userId: string, id: string, input: TaskUpdate): Promise<void> {
   const res = await db
     .update(tasks)
@@ -98,7 +98,7 @@ async function upsertDay(db: Db, userId: string, day: string, values: Partial<ty
   return "created";
 }
 
-/** Mỗi ngày 1 bản ghi (SPEC-v0.2 4.1). Ô "Tập thể dục" cũ (nếu form có) bật/tắt cột `exercised`. */
+/** Mỗi ngày 1 bản ghi (SPEC.md mục 3). Ô "Tập thể dục" cũ (nếu form có) bật/tắt cột `exercised`. */
 export async function saveDailyLog(db: Db, userId: string, day: string, input: DailyLogInput): Promise<"created" | "updated"> {
   return upsertDay(db, userId, day, {
     done: input.done,
@@ -121,7 +121,7 @@ export async function setDayHabits(db: Db, userId: string, day: string, names: s
 }
 
 /** Thêm thói quen, theo dõi từ tháng `from` (YYYY-MM-01). */
-/** Ảnh chụp một thói quen trước khi xoá — đủ để Hoàn tác (SPEC-v1.0, Trung chốt 11/11/2026). */
+/** Ảnh chụp một thói quen trước khi xoá — đủ để Hoàn tác (SPEC.md mục 3, Trung chốt 11/11/2026). */
 export type HabitSnapshot = {
   habit: { id: string; name: string; fromMonth: string; toMonth: string | null; sort: number };
   days: string[];
@@ -238,7 +238,7 @@ export async function saveReflection(db: Db, userId: string, level: Level, start
 }
 
 /**
- * Chuyển mục tiêu chưa xong sang kỳ sau (SPEC-v1.0, Goal đợt 2): bản sao giữ loại, không sao thói quen / việc gắn;
+ * Chuyển mục tiêu chưa xong sang kỳ sau (SPEC.md mục 3): bản sao giữ loại, không sao thói quen / việc gắn;
  * bỏ qua tên đã có ở kỳ sau. Trả về id các mục tiêu đã tạo (để hoàn tác bằng xoá mềm).
  * `onlyIds`: chỉ chuyển đúng các mục tiêu màn hình đang coi là chưa xong (kể cả "tự xong" theo thói quen/việc,
  * thứ chỉ tính được ở lớp trên) → số trên nút khớp số đã chuyển (rà soát 11/2026, A2 lỗi 2).
@@ -261,7 +261,7 @@ export async function carryOverGoals(db: Db, userId: string, level: Level, from:
 }
 
 /**
- * Gắn việc vào mục tiêu từ dòng mục tiêu (SPEC-v1.0, Goal đợt 3): mỗi việc một mục tiêu → thay liên kết cũ;
+ * Gắn việc vào mục tiêu từ dòng mục tiêu (SPEC.md mục 3): mỗi việc một mục tiêu → thay liên kết cũ;
  * `goalId` null = bỏ gắn. Việc và mục tiêu đều phải của người dùng.
  */
 export async function setTaskGoal(db: Db, userId: string, taskId: string, goalId: string | null): Promise<void> {
@@ -275,7 +275,7 @@ export async function setTaskGoal(db: Db, userId: string, taskId: string, goalId
   if (goalId) await db.insert(goalTasks).values({ goalId, taskId });
 }
 
-/** Ảnh chụp một task để hoàn tác xoá (SPEC-v1.0, Tasks đợt 3): chèn lại **đúng id**, giữ cả liên kết mục tiêu. */
+/** Ảnh chụp một task để hoàn tác xoá (SPEC.md mục 3): chèn lại **đúng id**, giữ cả liên kết mục tiêu. */
 export type TaskSnapshot = {
   id: string;
   title: string;
@@ -316,7 +316,7 @@ export async function restoreTask(db: Db, userId: string, s: TaskSnapshot): Prom
   }
 }
 
-// ---------- Hồ sơ (Cài đặt, SPEC-v1.0 bước 5) ----------
+// ---------- Hồ sơ (Cài đặt, SPEC.md mục 3) ----------
 
 export type ProfilePatch = { name: string; targetDate: string | null; targetLabel: string };
 
@@ -340,7 +340,7 @@ export async function setPasswordHash(db: Db, userId: string, hash: string): Pro
   if (!res.length) throw new Error("Không tìm thấy tài khoản");
 }
 
-// ---------- Dự án (Cài đặt, SPEC-v1.0 bước 5B) ----------
+// ---------- Dự án (Cài đặt, SPEC.md mục 3B) ----------
 
 export const MAX_PROJECT_NAME = 40;
 
@@ -378,7 +378,7 @@ export async function deleteProject(db: Db, userId: string, id: string): Promise
   await db.delete(projects).where(and(eq(projects.id, id), eq(projects.userId, userId)));
 }
 
-// ---------- Xoá tài khoản (SPEC-v1.0 bước 5C) ----------
+// ---------- Xoá tài khoản (SPEC.md mục 3C) ----------
 
 /** Xoá người dùng; mọi bảng dữ liệu có ON DELETE CASCADE nên đi theo. */
 export async function deleteUser(db: Db, userId: string): Promise<void> {

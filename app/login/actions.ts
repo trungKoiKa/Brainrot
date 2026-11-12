@@ -26,7 +26,7 @@ export async function login(_prev: LoginState, formData: FormData): Promise<Logi
 
   let userId: string | null = null;
   const db = getDb();
-  // Khoá tạm sau nhiều lần sai (SPEC-v1.0 bước 5C). Lỗi bảng/kết nối ở bước này thì bỏ qua (mở) để không khoá cả ứng dụng.
+  // Khoá tạm sau nhiều lần sai (SPEC.md mục 4C). Lỗi bảng/kết nối ở bước này thì bỏ qua (mở) để không khoá cả ứng dụng.
   let locked = false;
   if (email) {
     try {

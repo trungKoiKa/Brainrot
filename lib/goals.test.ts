@@ -53,7 +53,7 @@ describe("kỳ Năm / Quý / Tháng / Tuần", () => {
   });
 });
 
-describe("bộ đếm mục tiêu (SPEC-v0.4 mục 9)", () => {
+describe("bộ đếm mục tiêu (SPEC.md mục 5.3)", () => {
   it("tích 4/10 → Xong 4 · Đang làm 6 · Tổng 10 · 40%", () => {
     const goals = Array.from({ length: 10 }, (_, i) => goal(`M${i}`, { done: i < 4 }));
     expect(goalCounts(goals)).toEqual({ total: 10, completed: 4, inProgress: 6, progress: 40 });
@@ -70,7 +70,7 @@ describe("bộ đếm mục tiêu (SPEC-v0.4 mục 9)", () => {
   });
 });
 
-describe("tự xong (SPEC-v0.4 4.3)", () => {
+describe("tự xong (SPEC.md mục 5.3)", () => {
   const habits = [{ id: "h1", name: "Đọc sách", from: "2026-10-01", to: null, order: 1 }];
   const month = parsePeriod("month", "2026-10")!;
   const ctx = (doneByDay: Record<string, string[]>, taskDone = new Map<string, boolean>()) => ({

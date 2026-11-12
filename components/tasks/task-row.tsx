@@ -9,7 +9,7 @@ import { daysBetween, formatDay, weekdayShort } from "@/lib/date";
 import type { Task } from "@/lib/types";
 
 /**
- * Ô tích xong (Checkbox thư viện). Có `onReopen` → việc đã xong bỏ tích được (về Chưa làm, SPEC-v1.0 07/11/2026);
+ * Ô tích xong (Checkbox thư viện). Có `onReopen` → việc đã xong bỏ tích được (về Chưa làm, SPEC.md mục 5.2/11/2026);
  * không có → việc đã xong khoá ô.
  */
 export function TaskCheckbox({
@@ -77,7 +77,7 @@ export function TaskRow({
   /** Việc đã xong: bỏ tích → về Chưa làm */
   onReopen?: (t: Task) => void;
   onEdit?: () => void;
-  /** Có → hiện nút thùng rác; xoá ngay, toast "Hoàn tác" (SPEC-v1.0, Tasks đợt 3). */
+  /** Có → hiện nút thùng rác; xoá ngay, toast "Hoàn tác" (SPEC.md mục 5.2). */
   onDelete?: (t: Task) => void;
   /** Có → hiện pill dự án (danh sách không nhóm theo dự án, vd. "Đã xong"). */
   projects?: readonly string[];

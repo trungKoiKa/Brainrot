@@ -8,7 +8,7 @@ import { useHabitDays } from "./use-habit-days";
 
 /**
  * Thói quen trên Today dạng lưới 7 ngày như phương án C (Trung chọn 11/11/2026): mỗi hàng một thói quen, 7 ô vuông
- * cho 6 ngày trước + hôm nay; bấm ô để tích / bỏ tích ngày đó (lưu ngay, như bảng tháng ở Goal — SPEC-v0.4 3.3).
+ * cho 6 ngày trước + hôm nay; bấm ô để tích / bỏ tích ngày đó (lưu ngay, như bảng tháng ở Goal — SPEC.md mục 5.3).
  */
 export function HabitToday({ habits, doneByDay, today }: { habits: string[]; doneByDay: Record<string, string[]>; today: string }) {
   const { days, toggle, error, dismissError } = useHabitDays(doneByDay);

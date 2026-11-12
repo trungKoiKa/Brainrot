@@ -1,4 +1,4 @@
-// Kiểm tra dữ liệu form "Ghi nhanh" (SPEC-v0.2 mục 4.1). Hàm thuần, không gọi Notion → test được.
+// Kiểm tra dữ liệu form "Ghi nhanh" (SPEC.md mục 5.1). Hàm thuần, không gọi Notion → test được.
 
 /** Notion giới hạn 2000 ký tự cho một đoạn text trong rich_text. */
 export const MAX_TEXT = 2000;
@@ -7,7 +7,7 @@ export type DailyLogInput = {
   done: string;
   dropped: string;
   learned: string;
-  /** null = form không có ô này (thẻ Thói quen lo phần đó, SPEC-v0.4 3.1) → không đụng tới thói quen */
+  /** null = form không có ô này (thẻ Thói quen lo phần đó, SPEC.md mục 5.1) → không đụng tới thói quen */
   exercised: boolean | null;
 };
 

@@ -38,7 +38,7 @@ export type TodayPlan = {
   suggest: Task[];
 };
 
-/** Khối "Hôm nay làm" (SPEC-v0.5 4.2). Chỉ task chưa xong; mỗi task chỉ thuộc một nhóm. */
+/** Khối "Hôm nay làm" (SPEC.md mục 5.1). Chỉ task chưa xong; mỗi task chỉ thuộc một nhóm. */
 export function planToday(today: string, tasks: Task[]): TodayPlan {
   const open = tasks.filter(isOpen);
   const planned = open.filter((t) => t.plannedOn === today).sort(compareTasks);
@@ -53,7 +53,7 @@ export function planToday(today: string, tasks: Task[]): TodayPlan {
 }
 
 /**
- * Vì sao "Hôm nay làm" trống (khi không có cả gợi ý), để nói đúng câu (SPEC-v1.0, critique 06/11/2026):
+ * Vì sao "Hôm nay làm" trống (khi không có cả gợi ý), để nói đúng câu (SPEC.md mục 5.1, critique 06/11/2026):
  * - `no-tasks`: kho việc trống → hướng dẫn tạo việc đầu tiên ở Tasks
  * - `all-done`: mọi việc đã xong
  * - `scheduled-later`: còn việc nhưng đều đã xếp ngày khác
@@ -72,7 +72,7 @@ export function todayProgress(today: string, tasks: Task[]): { done: number; tot
   return { done: planned.filter((t) => !isOpen(t)).length, total: planned.length };
 }
 
-/** "Ngày mai làm" (SPEC-v0.5 câu 10.2a): task đã xếp ngày mai + task chưa xếp lịch, ưu tiên cao trước. */
+/** "Ngày mai làm" (SPEC.md mục 5.1): task đã xếp ngày mai + task chưa xếp lịch, ưu tiên cao trước. */
 export function tomorrowCandidates(today: string, tasks: Task[], limit = 8): Task[] {
   const tomorrow = addDays(today, 1);
   const open = tasks.filter(isOpen);

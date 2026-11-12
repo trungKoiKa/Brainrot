@@ -1,4 +1,4 @@
-// Kiểm tra dữ liệu form thêm/sửa task (SPEC-v0.2 mục 4.2). Hàm thuần, không gọi Notion → test được.
+// Kiểm tra dữ liệu form thêm/sửa task (SPEC.md mục 5.2). Hàm thuần, không gọi Notion → test được.
 import { MAX_TEXT, type Parsed } from "./quick-capture";
 import type { Priority, TaskStatus } from "./types";
 
@@ -12,7 +12,7 @@ export type TaskInput = {
   project: string | null;
   priority: Priority | null;
   deadline: string | null;
-  /** Ngày làm (SPEC-v0.5) */
+  /** Ngày làm (SPEC.md mục 5.2) */
   plannedOn: string | null;
 };
 

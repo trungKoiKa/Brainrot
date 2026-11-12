@@ -1,4 +1,4 @@
-// Mọi phép tính ngày theo giờ Việt Nam (SPEC mục 2). Ngày biểu diễn bằng chuỗi YYYY-MM-DD.
+// Mọi phép tính ngày theo giờ Việt Nam (SPEC.md mục 3). Ngày biểu diễn bằng chuỗi YYYY-MM-DD.
 
 export const TIME_ZONE = "Asia/Ho_Chi_Minh";
 

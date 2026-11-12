@@ -10,7 +10,7 @@ import type { Level } from "@/lib/period";
 const clean = (line: string) => line.replace(/^[\s\-*•\d.)]+/, "").trim();
 
 /**
- * "Kỳ trước bạn định tập trung" (SPEC-v1.0, Goal đợt 2): mỗi dòng có nút "Thêm làm mục tiêu" (loại Ưu tiên);
+ * "Kỳ trước bạn định tập trung" (SPEC.md mục 5.3): mỗi dòng có nút "Thêm làm mục tiêu" (loại Ưu tiên);
  * dòng trùng tên mục tiêu có sẵn ghi "Đã có".
  */
 export function PrevFocus({ text, level, periodKey, existing }: { text: string; level: Level; periodKey: string; existing: string[] }) {

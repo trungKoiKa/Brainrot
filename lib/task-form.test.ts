@@ -32,7 +32,7 @@ describe("parseTaskInput", () => {
     expect(parseTaskInput(form({ title: "A", priority: "Gấp" }), PROJECTS).ok).toBe(false);
     expect(parseTaskInput(form({ title: "A", deadline: "2026-02-30" }), PROJECTS).ok).toBe(false);
     expect(parseTaskInput(form({ title: "A", deadline: "08/11/2026" }), PROJECTS).ok).toBe(false);
-    // Ngày làm (SPEC-v0.5)
+    // Ngày làm (SPEC.md mục 5.2)
     expect(parseTaskInput(form({ title: "A", plannedOn: "2026-10-28" }), PROJECTS)).toMatchObject({ ok: true, data: { plannedOn: "2026-10-28" } });
     expect(parseTaskInput(form({ title: "A", plannedOn: "2026-13-01" }), PROJECTS).ok).toBe(false);
   });

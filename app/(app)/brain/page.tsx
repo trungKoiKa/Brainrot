@@ -5,7 +5,6 @@ import type { Metadata } from "next";
 import { BrainView } from "@/components/brain/brain-view";
 import { Card, Empty } from "@/components/card";
 import { PageHeader } from "@/components/page-header";
-import { StaleBanner } from "@/components/stale-banner";
 import { Skeleton } from "@/components/ui/skeleton";
 import { getBrainGraph } from "@/lib/db/graph";
 
@@ -27,13 +26,12 @@ export default function BrainPage() {
 
 async function BrainContent() {
   await connection(); // dữ liệu của người đang đăng nhập
-  const { stale, ...graph } = await getBrainGraph();
+  const graph = await getBrainGraph();
   // Chưa có gì để vẽ → không tải three.js, chỉ nói rõ và chỉ chỗ thêm
   const empty = !graph.nodes.some((n) => n.kind === "note" || n.kind === "task");
 
   return (
     <>
-      <StaleBanner show={stale} />
       {empty ? (
         <Card>
           <Empty>

@@ -2,7 +2,7 @@ import "server-only";
 import { cookies } from "next/headers";
 import { SESSION_COOKIE, readSessionToken } from "./auth";
 
-/** userId của người đang đăng nhập, lấy từ cookie đã ký — KHÔNG BAO GIỜ từ form hay URL (SPEC-v1.0 mục 6). */
+/** userId của người đang đăng nhập, lấy từ cookie đã ký — KHÔNG BAO GIỜ từ form hay URL (SPEC.md mục 4). */
 export async function getUserId(): Promise<string | null> {
   return readSessionToken((await cookies()).get(SESSION_COOKIE)?.value);
 }

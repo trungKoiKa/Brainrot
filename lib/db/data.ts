@@ -20,24 +20,21 @@ import type { Reflection } from "@/lib/reflections";
 import type { DailyLog, Habit, Knowledge, Task } from "@/lib/types";
 
 // Lớp đọc mà trang dùng — cùng tên hàm như thời Notion (lib/notion/data.ts) nhưng đọc Postgres, theo người đang đăng nhập.
-// Không còn cache dùng chung giữa người dùng (SPEC-v1.0 mục 4) và không còn `stale`: lỗi database thì ném lỗi, error.tsx hiện.
-
-export type Loaded<T> = { data: T; stale: boolean };
-const fresh = <T>(data: T): Loaded<T> => ({ data, stale: false });
+// Không cache dùng chung giữa người dùng (SPEC.md mục 2). Lỗi database thì ném lỗi, app/(app)/error.tsx hiện.
 
 // React cache(): mỗi getter chỉ chạy một lần trong MỘT request (nhiều thành phần cùng gọi → dùng lại kết quả).
 // Không dùng chung giữa các request hay người dùng, nên vẫn đúng quy tắc "không cache dữ liệu dùng chung" (rà soát A4).
 const scope = cache(async () => ({ db: getDb(), userId: await requireUserId() }));
 
-export const getTasks = cache(async (): Promise<Loaded<Task[]>> => {
+export const getTasks = cache(async (): Promise<Task[]> => {
   const { db, userId } = await scope();
-  return fresh(await listTasks(db, userId));
+  return await listTasks(db, userId);
 });
 
 /** Ghi chú kiến thức của người đang đăng nhập (SPEC.md mục 5.6). */
-export const getKnowledge = cache(async (): Promise<Loaded<Knowledge[]>> => {
+export const getKnowledge = cache(async (): Promise<Knowledge[]> => {
   const { db, userId } = await scope();
-  return fresh(await listKnowledge(db, userId));
+  return await listKnowledge(db, userId);
 });
 
 /** Lĩnh vực chọn được khi thêm / sửa ghi chú. */
@@ -52,35 +49,35 @@ export async function getFieldsWithCounts() {
   return listFieldsWithCounts(db, userId);
 }
 
-export const getRecentDailyLogs = cache(async (): Promise<Loaded<DailyLog[]>> => {
+export const getRecentDailyLogs = cache(async (): Promise<DailyLog[]> => {
   const { db, userId } = await scope();
-  return fresh(await listRecentDailyLogs(db, userId));
+  return await listRecentDailyLogs(db, userId);
 });
 
-export const getDailyLogsBetween = cache(async (start: string, end: string): Promise<Loaded<DailyLog[]>> => {
+export const getDailyLogsBetween = cache(async (start: string, end: string): Promise<DailyLog[]> => {
   const { db, userId } = await scope();
-  return fresh(await listDailyLogsBetween(db, userId, start, end));
+  return await listDailyLogsBetween(db, userId, start, end);
 });
 
-/** 90 bản ghi gần nhất cho Dashboard (SPEC-v0.3 4.4). */
-export const getDailyLogs90 = cache(async (): Promise<Loaded<DailyLog[]>> => {
+/** 90 bản ghi gần nhất cho Dashboard (SPEC.md mục 3). */
+export const getDailyLogs90 = cache(async (): Promise<DailyLog[]> => {
   const { db, userId } = await scope();
-  return fresh(await listRecentDailyLogs(db, userId, 90));
+  return await listRecentDailyLogs(db, userId, 90);
 });
 
-export const getHabits = cache(async (): Promise<Loaded<Habit[]>> => {
+export const getHabits = cache(async (): Promise<Habit[]> => {
   const { db, userId } = await scope();
-  return fresh(await listHabits(db, userId));
+  return await listHabits(db, userId);
 });
 
-export const getGoals = cache(async (): Promise<Loaded<Goal[]>> => {
+export const getGoals = cache(async (): Promise<Goal[]> => {
   const { db, userId } = await scope();
-  return fresh(await listGoals(db, userId));
+  return await listGoals(db, userId);
 });
 
-export const getReflections = cache(async (): Promise<Loaded<Reflection[]>> => {
+export const getReflections = cache(async (): Promise<Reflection[]> => {
   const { db, userId } = await scope();
-  return fresh(await listReflections(db, userId));
+  return await listReflections(db, userId);
 });
 
 /** Dự án chọn được khi thêm/sửa task: danh sách dự án của người dùng. */
@@ -89,13 +86,11 @@ export const getTaskProjects = cache(async (): Promise<string[]> => {
   return listProjectNames(db, userId);
 });
 
-export const anyStale = (...loaded: Loaded<unknown>[]) => loaded.some((l) => l.stale);
-
 export type { Profile } from "./queries";
 
 /**
  * Hồ sơ + đếm ngược của người đang đăng nhập. Thẻ đếm ngược: hạn trong Cài đặt; riêng user mặc định (Trung) chưa đặt thì
- * dùng `THESIS_DEADLINE` như trước (SPEC-v1.0 bước 5). Người khác chưa đặt hạn → không hiện thẻ.
+ * dùng `THESIS_DEADLINE` như trước (SPEC.md mục 3). Người khác chưa đặt hạn → không hiện thẻ.
  */
 export const getProfile = cache(async () => {
   const { db, userId } = await scope();

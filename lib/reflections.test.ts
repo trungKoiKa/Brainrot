@@ -7,7 +7,7 @@ const r = (level: Reflection["level"], start: string, nextFocus: string): Reflec
   id: start, level, start, wentWell: "", lesson: "", grateful: "", nextFocus, motto: "",
 });
 
-describe("Nhìn lại (SPEC-v0.4 mục 5)", () => {
+describe("Nhìn lại (SPEC.md mục 5.3)", () => {
   it("câu 4 đổi chữ theo cấp", () => {
     expect(reflectionQuestions("week")[3].label).toBe("Ba mục tiêu tôi cần tập trung trong tuần tiếp theo là?");
     expect(reflectionQuestions("month")[3].label).toContain("trong tháng tiếp theo");

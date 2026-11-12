@@ -1,4 +1,4 @@
-// Bảng Postgres của v1.0 (SPEC-v1.0 mục 5). Mọi bảng dữ liệu gắn với users.id, ON DELETE CASCADE:
+// Bảng Postgres của v1.0 (SPEC.md mục 3). Mọi bảng dữ liệu gắn với users.id, ON DELETE CASCADE:
 // xóa tài khoản là xóa sạch dữ liệu của người đó.
 // Ngày lưu kiểu `date`, đọc ra chuỗi YYYY-MM-DD (giờ Việt Nam do app tính, như thời Notion).
 
@@ -55,7 +55,7 @@ export const tasks = pgTable(
     status: taskStatus("status").notNull().default("Chưa làm"),
     priority: priority("priority"),
     deadline: date("deadline"),
-    /** "Ngày làm" (SPEC-v0.5): ngày định làm, khác deadline */
+    /** "Ngày làm" (SPEC.md mục 3): ngày định làm, khác deadline */
     plannedOn: date("planned_on"),
     doneOn: date("done_on"),
     note: text("note").notNull().default(""),
@@ -210,14 +210,14 @@ export const knowledgeLinks = pgTable(
 );
 
 /**
- * User mặc định của giai đoạn A (SPEC-v1.0 mục 4): mọi dữ liệu thuộc về Trung tới khi có đăng nhập Google (bước 5).
+ * User mặc định của giai đoạn A (SPEC.md mục 3): mọi dữ liệu thuộc về Trung tới khi có đăng nhập Google (bước 5).
  * Migration `0001` tạo sẵn dòng này (kèm dự án "Chung"); bước 5 gắn nó vào tài khoản Google có email `OWNER_EMAIL`.
  */
 export const DEFAULT_USER_ID = "00000000-0000-4000-8000-000000000001";
 
 
 /**
- * Lần đăng nhập sai (SPEC-v1.0 bước 5C): đếm theo email trong cửa sổ 15 phút để khoá tạm việc dò mật khẩu.
+ * Lần đăng nhập sai (SPEC.md mục 3C): đếm theo email trong cửa sổ 15 phút để khoá tạm việc dò mật khẩu.
  * Không gắn khoá ngoại tới `users` (email lạ cũng được ghi, để không lộ email nào có tài khoản).
  */
 export const loginAttempts = pgTable(

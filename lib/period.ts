@@ -1,4 +1,4 @@
-// Lịch cho trang Mục tiêu (SPEC-v0.4 mục 6.2). Tháng là chuỗi "YYYY-MM", ngày là "YYYY-MM-DD" (giờ VN).
+// Lịch cho trang Mục tiêu (SPEC.md mục 5.3). Tháng là chuỗi "YYYY-MM", ngày là "YYYY-MM-DD" (giờ VN).
 import { addDays, mondayOf } from "./date";
 
 const MONTH = /^(\d{4})-(0[1-9]|1[0-2])$/;
@@ -38,7 +38,7 @@ export function monthLabel(key: string): string {
   return `Tháng ${Number(m)}/${y}`;
 }
 
-// ---------- Kỳ Năm / Quý / Tháng / Tuần (SPEC-v0.4 mục 6.1) ----------
+// ---------- Kỳ Năm / Quý / Tháng / Tuần (SPEC.md mục 5.3) ----------
 
 export type Level = "year" | "quarter" | "month" | "week";
 export const LEVELS: Level[] = ["year", "quarter", "month", "week"];

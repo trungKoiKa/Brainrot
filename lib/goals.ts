@@ -1,4 +1,4 @@
-// Mục tiêu xếp tầng (SPEC-v0.4 mục 4). Hàm thuần.
+// Mục tiêu xếp tầng (SPEC.md mục 5.3). Hàm thuần.
 import { habitPeriodPct } from "./habits";
 import type { Habit } from "./types";
 import type { Level, Period } from "./period";
@@ -15,7 +15,7 @@ export type Goal = {
   type: GoalType;
   /** Cột "Xong" — tích tay */
   done: boolean;
-  /** Relation "Thói quen" + "Ngưỡng %" (SPEC-v0.4 4.3) */
+  /** Relation "Thói quen" + "Ngưỡng %" (SPEC.md mục 5.3) */
   habitId: string | null;
   threshold: number | null;
   /** Relation "Tasks" */
@@ -35,7 +35,7 @@ export const DEFAULT_THRESHOLD = 80;
 export const isGoalDone = (g: Goal) => g.done || g.autoDone === true;
 
 /**
- * Tự xong (SPEC-v0.4 4.3): (a) % thói quen gắn trong kỳ ≥ ngưỡng, hoặc (b) mọi task gắn đã xong.
+ * Tự xong (SPEC.md mục 5.3): (a) % thói quen gắn trong kỳ ≥ ngưỡng, hoặc (b) mọi task gắn đã xong.
  * `taskDone`: id task → đã xong chưa; task đã xóa khỏi Notion (không có trong map) thì bỏ qua.
  */
 export function autoStatus(
@@ -62,12 +62,12 @@ export function autoStatus(
 }
 
 export const MAX_GOAL_TITLE = 300;
-/** Template dùng 3 Ưu tiên + 7 Thường; quá 3 Ưu tiên → nhắc nhẹ, không chặn (SPEC-v0.4 4.2). */
+/** Template dùng 3 Ưu tiên + 7 Thường; quá 3 Ưu tiên → nhắc nhẹ, không chặn (SPEC.md mục 5.3). */
 export const PRIORITY_SOFT_LIMIT = 3;
 
 export const goalsOf = (goals: Goal[], p: Period) => goals.filter((g) => g.level === p.level && g.start === p.start);
 
-/** Bộ đếm SPEC-v0.4 4.2: dòng trống không tính. */
+/** Bộ đếm SPEC.md mục 5.3: dòng trống không tính. */
 export function goalCounts(goals: Goal[]) {
   const named = goals.filter((g) => g.title.trim());
   const completed = named.filter(isGoalDone).length;
@@ -84,5 +84,5 @@ export function groupGoals(goals: Goal[]) {
   return GOAL_TYPES.map((type) => ({ type, goals: goals.filter((g) => g.type === type) }));
 }
 
-/** Câu 4 Nhìn lại đổi chữ theo cấp (SPEC-v0.4 mục 5) — dùng ở bước 5. */
+/** Câu 4 Nhìn lại đổi chữ theo cấp (SPEC.md mục 5.3) — dùng ở bước 5. */
 export const NEXT_LABEL: Record<Level, string> = { year: "năm", quarter: "quý", month: "tháng", week: "tuần" };

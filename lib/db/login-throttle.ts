@@ -1,4 +1,4 @@
-// Chống dò mật khẩu (SPEC-v1.0 bước 5C): khoá tạm một email sau nhiều lần đăng nhập sai trong cửa sổ trượt.
+// Chống dò mật khẩu (SPEC.md mục 4C): khoá tạm một email sau nhiều lần đăng nhập sai trong cửa sổ trượt.
 // Các hàm nhận `db` như phần còn lại của lib/db; nơi gọi tự quyết định "mở" hay "đóng" khi bảng chưa có / lỗi kết nối.
 
 import { and, eq, gte, lt, sql } from "drizzle-orm";

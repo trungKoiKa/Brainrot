@@ -5,7 +5,6 @@ import { Readouts } from "@/components/readout";
 import { Skeleton } from "@/components/ui/skeleton";
 import { TaskBoard } from "@/components/tasks/task-board";
 import { addDays, todayVN } from "@/lib/date";
-import { StaleBanner } from "@/components/stale-banner";
 import type { GoalOption } from "@/components/tasks/task-forms";
 import { getGoals, getTaskProjects, getTasks } from "@/lib/db/data";
 import { periodLabel, periodOf } from "@/lib/period";
@@ -32,19 +31,19 @@ export default function TasksPage({ searchParams }: PageProps<"/tasks">) {
 
 async function TasksContent({ searchParams }: Pick<PageProps<"/tasks">, "searchParams">) {
   await connection(); // nhãn "Quá hạn / Còn N ngày" phụ thuộc ngày hôm nay
-  // ?project= từ Dashboard (SPEC-v0.3 4.2) → lọc sẵn theo dự án
+  // ?project= từ Dashboard (SPEC.md mục 5.2) → lọc sẵn theo dự án
   const { project, priority } = await searchParams;
   const today = todayVN();
   // Một tầng truy vấn song song (rà soát A4: getTaskProjects từng chạy nối sau)
-  const [{ data, stale }, goals, projects] = await Promise.all([getTasks(), getGoals(), getTaskProjects()]);
+  const [data, goals, projects] = await Promise.all([getTasks(), getGoals(), getTaskProjects()]);
   const open = data.filter((t) => t.status !== "Xong");
   const in7 = addDays(today, 7);
   const weekAgo = addDays(today, -6);
 
-  // Mục tiêu gắn được (SPEC-v0.4 4.4): mục tiêu Tháng/Tuần — "open" nếu thuộc tháng/tuần hiện tại và chưa tích xong
+  // Mục tiêu gắn được (SPEC.md mục 5.2): mục tiêu Tháng/Tuần — "open" nếu thuộc tháng/tuần hiện tại và chưa tích xong
   const thisMonth = periodOf("month", today).start;
   const thisWeek = periodOf("week", today).start;
-  const goalOptions: GoalOption[] | null = goals.data
+  const goalOptions: GoalOption[] | null = goals
         .filter((g) => g.level === "month" || g.level === "week")
         .map((g) => ({
           id: g.id,
@@ -54,7 +53,6 @@ async function TasksContent({ searchParams }: Pick<PageProps<"/tasks">, "searchP
 
   return (
     <>
-      <StaleBanner show={stale || goals.stale} />
       <Readouts
         className="mb-6"
         items={[
