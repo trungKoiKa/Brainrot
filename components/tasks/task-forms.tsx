@@ -4,7 +4,7 @@ import { useActionState, useEffect, useRef, useState } from "react";
 import { createTaskAction, updateTaskAction, type TaskFormState } from "@/app/actions/tasks";
 import type { Task } from "@/lib/types";
 import { EDITABLE_STATUSES, PRIORITIES } from "@/lib/task-form";
-import { Status, fieldClass } from "../form-bits";
+import { Status, fieldClass, selectClass } from "@/components/form-bits";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -38,7 +38,7 @@ function Select({
       value={value}
       onChange={(e) => onChange(e.target.value)}
       // Chưa chọn → chữ mờ như ô ngày trống, để không trông như đã chọn
-      className={`${compactField} select-chevron pr-8 ${value ? "" : "text-muted-foreground"}`}
+      className={`${selectClass} ${value ? "" : "text-muted-foreground"}`}
     >
       {empty !== undefined && <option value="">{empty}</option>}
       {options.map((o) => (
@@ -53,8 +53,8 @@ function Select({
 const EMPTY_NEW = { title: "", project: "", priority: "", deadline: "", plannedOn: "" };
 
 /**
- * Hàng "Thêm việc" ở đầu trang Tasks (SPEC-v0.2 4.2). Controlled: lỗi thì nội dung đã gõ vẫn còn.
- * Thêm xong (SPEC-v1.0, 07/11/2026): giữ dự án/ưu tiên vừa chọn, con trỏ về ô tên, dòng "Đã thêm" tự mất sau 3 giây.
+ * Hàng "Thêm việc" ở đầu trang Tasks (SPEC.md mục 5.2). Controlled: lỗi thì nội dung đã gõ vẫn còn.
+ * Thêm xong (SPEC.md mục 5.2, 07/11/2026): giữ dự án/ưu tiên vừa chọn, con trỏ về ô tên, dòng "Đã thêm" tự mất sau 3 giây.
  */
 export function NewTaskForm({ projects, defaultProject = "" }: { projects: string[]; defaultProject?: string }) {
   const [values, setValues] = useState({ ...EMPTY_NEW, project: defaultProject });
@@ -104,7 +104,7 @@ export function NewTaskForm({ projects, defaultProject = "" }: { projects: strin
   );
 }
 
-/** Mục tiêu chọn được khi sửa task (SPEC-v0.4 4.4); `open` = mục tiêu Tháng/Tuần hiện tại chưa xong. */
+/** Mục tiêu chọn được khi sửa task (SPEC.md mục 5.2); `open` = mục tiêu Tháng/Tuần hiện tại chưa xong. */
 export type GoalOption = { id: string; label: string; open: boolean };
 
 /** Form sửa mở tại chỗ thay cho dòng task (bấm ✎). Lưu thành công → đóng. `goals` null = chưa kết nối Goals (ẩn ô Mục tiêu). */

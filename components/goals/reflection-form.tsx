@@ -2,8 +2,10 @@
 
 import { useEffect, useState, useTransition } from "react";
 import { saveReflectionAction } from "@/app/actions/reflections";
-import { Status, fieldClass, primaryButtonClass, type FormStatus } from "@/components/form-bits";
+import { Status, type FormStatus } from "@/components/form-bits";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 import type { Level } from "@/lib/period";
 import { MAX_TEXT } from "@/lib/quick-capture";
 import { MAX_MOTTO, reflectionQuestions, type ReflectionFields } from "@/lib/reflections";
@@ -12,7 +14,7 @@ const EMPTY: ReflectionFields = { wentWell: "", lesson: "", grateful: "", nextFo
 
 const draftKey = (level: Level, periodKey: string) => `reflection-draft:${level}:${periodKey}`;
 
-/** Bản nháp đang gõ (SPEC-v1.0, Goal đợt 2): lưu trong trình duyệt theo kỳ, hỏng/tắt lưu trữ thì bỏ qua. */
+/** Bản nháp đang gõ (SPEC.md mục 5.3): lưu trong trình duyệt theo kỳ, hỏng/tắt lưu trữ thì bỏ qua. */
 function readDraft(key: string): ReflectionFields | null {
   try {
     const raw = localStorage.getItem(key);
@@ -31,7 +33,7 @@ const writeDraft = (key: string, v: ReflectionFields | null) => {
 const same = (a: ReflectionFields, b: ReflectionFields) => (Object.keys(EMPTY) as (keyof ReflectionFields)[]).every((k) => a[k] === b[k]);
 
 /**
- * Nhìn lại của một kỳ (SPEC-v0.4 mục 5): 4 câu (câu 4 theo cấp) + châm ngôn ở cấp Năm.
+ * Nhìn lại của một kỳ (SPEC.md mục 5.3): 4 câu (câu 4 theo cấp) + châm ngôn ở cấp Năm.
  * 1 bản ghi / kỳ — đã có thì mở ra thấy sẵn, lưu = cập nhật. Lỗi → nội dung đã gõ vẫn còn.
  */
 export function ReflectionForm({ level, periodKey, initial }: { level: Level; periodKey: string; initial: ReflectionFields | null }) {
@@ -115,15 +117,15 @@ export function ReflectionForm({ level, periodKey, initial }: { level: Level; pe
       }}
     >
       {level === "year" && (
-        <label className="space-y-1 text-sm md:col-span-2">
-          <span className="text-muted-foreground">Châm ngôn năm — hiện ở đầu trang Mục tiêu và Dashboard</span>
-          <input value={values.motto} onChange={set("motto")} maxLength={MAX_MOTTO} placeholder="Vd: Sống kỷ luật, chăm lo chuyện của mình" className={fieldClass} />
+        <label className="flex flex-col gap-2 text-sm md:col-span-2">
+          <span className="font-medium">Châm ngôn năm — hiện ở đầu trang Mục tiêu và Dashboard</span>
+          <Input value={values.motto} onChange={set("motto")} maxLength={MAX_MOTTO} placeholder="Vd: Sống kỷ luật, chăm lo chuyện của mình" className="max-md:h-10" />
         </label>
       )}
       {questions.map((q) => (
-        <label key={q.key} className="space-y-1 text-sm">
-          <span className="text-muted-foreground">{q.label}</span>
-          <textarea rows={3} value={values[q.key]} onChange={set(q.key)} maxLength={MAX_TEXT} className={fieldClass} />
+        <label key={q.key} className="flex flex-col gap-2 text-sm">
+          <span className="font-medium">{q.label}</span>
+          <Textarea value={values[q.key]} onChange={set(q.key)} maxLength={MAX_TEXT} className="min-h-24 resize-none px-3 py-2.5 leading-relaxed" />
         </label>
       ))}
       <div className="flex flex-wrap items-center gap-3 md:col-span-2">
@@ -141,9 +143,9 @@ export function ReflectionForm({ level, periodKey, initial }: { level: Level; pe
             Huỷ
           </Button>
         )}
-        <button type="submit" disabled={pending} className={`${initial ? "" : "ml-auto"} ${primaryButtonClass}`}>
+        <Button type="submit" disabled={pending} className={initial ? "" : "ml-auto"}>
           {pending ? "Đang lưu…" : initial ? "Cập nhật" : "Lưu nhìn lại"}
-        </button>
+        </Button>
       </div>
     </form>
   );

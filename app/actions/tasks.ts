@@ -30,7 +30,7 @@ export async function completeTask(pageId: string): Promise<CompleteTaskResult> 
   return { ok: true };
 }
 
-/** Hoàn tác tích xong / bỏ tích trong "Đã xong" (SPEC-v1.0, 07/11/2026). */
+/** Hoàn tác tích xong / bỏ tích trong "Đã xong" (SPEC.md mục 5.2, 07/11/2026). */
 export async function reopenTaskAction(pageId: string, status: "Chưa làm" | "Đang làm" = "Chưa làm"): Promise<CompleteTaskResult> {
   if (!(await isSignedIn())) return { ok: false, error: SESSION_EXPIRED };
   if (typeof pageId !== "string" || !PAGE_ID.test(pageId)) return { ok: false, error: "ID task không hợp lệ." };
@@ -69,7 +69,7 @@ export async function updateTaskAction(_prev: TaskFormState, form: FormData): Pr
   if (!(await isSignedIn())) return { ok: false, message: SESSION_EXPIRED };
   const id = form.get("id");
   if (typeof id !== "string" || !PAGE_ID.test(id)) return { ok: false, message: "ID task không hợp lệ." };
-  const parsed = parseTaskUpdate(form, await getTaskProjects(), (await getGoals()).data.map((g) => g.id));
+  const parsed = parseTaskUpdate(form, await getTaskProjects(), (await getGoals()).map((g) => g.id));
   if (!parsed.ok) return { ok: false, message: parsed.error };
 
   try {
@@ -84,7 +84,7 @@ export async function updateTaskAction(_prev: TaskFormState, form: FormData): Pr
   return { ok: true, message: "Đã lưu.", at: Date.now() };
 }
 
-/** Xóa hẳn task (SPEC-v1.0, 05/11/2026). Giao diện đã hỏi xác nhận trước khi gọi. */
+/** Xóa hẳn task (SPEC.md mục 5.2, 05/11/2026). Giao diện đã hỏi xác nhận trước khi gọi. */
 export async function deleteTaskAction(pageId: string): Promise<CompleteTaskResult> {
   if (!(await isSignedIn())) return { ok: false, error: SESSION_EXPIRED };
   if (typeof pageId !== "string" || !PAGE_ID.test(pageId)) return { ok: false, error: "ID task không hợp lệ." };
@@ -103,7 +103,7 @@ export async function deleteTaskAction(pageId: string): Promise<CompleteTaskResu
 
 const DAY = /^\d{4}-\d{2}-\d{2}$/;
 
-/** Đặt / bỏ Ngày làm (SPEC-v0.5): "Làm hôm nay", "Dời sang…", chọn việc ngày mai. `day` null = bỏ lịch. */
+/** Đặt / bỏ Ngày làm (SPEC.md mục 5.2): "Làm hôm nay", "Dời sang…", chọn việc ngày mai. `day` null = bỏ lịch. */
 export async function planTaskAction(pageId: string, day: string | null): Promise<CompleteTaskResult> {
   if (!(await isSignedIn())) return { ok: false, error: SESSION_EXPIRED };
   if (typeof pageId !== "string" || !PAGE_ID.test(pageId)) return { ok: false, error: "ID task không hợp lệ." };
@@ -125,7 +125,7 @@ const STATUS_SET = ["Chưa làm", "Đang làm", "Xong"];
 const PRIORITY_SET = ["Cao", "Vừa", "Thấp"];
 const dayOrNull = (v: unknown) => v === null || (typeof v === "string" && DAY.test(v));
 
-/** Hoàn tác xoá task (SPEC-v1.0, Tasks đợt 3): chèn lại đúng id từ ảnh chụp mà giao diện giữ. */
+/** Hoàn tác xoá task (SPEC.md mục 5.2): chèn lại đúng id từ ảnh chụp mà giao diện giữ. */
 export async function restoreTaskAction(snapshot: TaskSnapshot): Promise<CompleteTaskResult> {
   if (!(await isSignedIn())) return { ok: false, error: SESSION_EXPIRED };
   const s = snapshot as Partial<TaskSnapshot> | null;

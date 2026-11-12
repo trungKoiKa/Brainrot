@@ -1,4 +1,4 @@
-// Dữ liệu mẫu cho Dashboard (SPEC-v0.3 mục 5): seed cố định → cùng ngày luôn ra cùng số liệu.
+// Dữ liệu mẫu cho Dashboard (SPEC.md mục 5.4): seed cố định → cùng ngày luôn ra cùng số liệu.
 // Chỉ để xem/demo; không bao giờ ghi vào Notion.
 import { addDays } from "@/lib/date";
 import type { Goal } from "@/lib/goals";
@@ -94,7 +94,7 @@ export function sampleDashboard(today: string, thesisDeadline = "2026-12-06"): D
   // (không dùng PRNG → số liệu các khối khác không đổi)
   for (const t of tasks) if (t.status !== "Xong" && t.deadline !== null && t.deadline < addDays(today, -7)) t.deadline = null;
 
-  // Tên + Ngày làm (SPEC-v0.5) dùng PRNG riêng → số liệu mẫu các khối có sẵn không đổi
+  // Tên + Ngày làm (SPEC.md mục 5.4) dùng PRNG riêng → số liệu mẫu các khối có sẵn không đổi
   const rp = rng(SEED + 2);
   tasks.forEach((t, i) => {
     const names = SAMPLE_TITLES[t.project ?? "Khác"] ?? SAMPLE_TITLES["Khác"];
@@ -129,5 +129,6 @@ export function sampleDashboard(today: string, thesisDeadline = "2026-12-06"): D
     taskIds: [],
   }));
 
-  return { today, tasks, knowledge, logs, thesisDeadline, habits, monthGoals };
+  // Thứ tự dự án mẫu: như danh sách tên mẫu ở trên ("Khác" đóng vai dự án thứ 6)
+  return { today, tasks, projects: Object.keys(SAMPLE_TITLES), knowledge, logs, thesisDeadline, habits, monthGoals };
 }

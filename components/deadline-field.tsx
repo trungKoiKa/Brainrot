@@ -30,7 +30,7 @@ export function DeadlineField({
   value: string;
   onChange: (v: string) => void;
   triggerClass: string;
-  /** Tên input ẩn gửi kèm form; dùng lại cho "Ngày làm" (SPEC-v0.5) */
+  /** Tên input ẩn gửi kèm form; dùng lại cho "Ngày làm" (SPEC.md mục 5.2) và "Ngày học" (mục 5.6) */
   name?: string;
   label?: string;
 }) {

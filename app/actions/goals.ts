@@ -47,7 +47,7 @@ export async function createGoalAction(level: Level, key: string, rawTitle: stri
   }
 }
 
-/** Sửa tên / đổi Ưu tiên ↔ Thường / tích xong / gắn thói quen + ngưỡng % (SPEC-v0.4 4.3). */
+/** Sửa tên / đổi Ưu tiên ↔ Thường / tích xong / gắn thói quen + ngưỡng % (SPEC.md mục 5.3). */
 export async function updateGoalAction(id: string, patch: GoalPatch): Promise<GoalResult> {
   const denied = await guard();
   if (denied) return denied;
@@ -106,7 +106,7 @@ export async function trashGoalAction(id: string, trashed: boolean): Promise<Goa
 
 export type CarryResult = { ok: true; ids: string[] } | { ok: false; error: string };
 
-/** Chuyển mục tiêu chưa xong của kỳ `key` sang kỳ kế tiếp (SPEC-v1.0, Goal đợt 2). */
+/** Chuyển mục tiêu chưa xong của kỳ `key` sang kỳ kế tiếp (SPEC.md mục 5.3). */
 export async function carryOverGoalsAction(level: Level, key: string, goalIds: string[]): Promise<CarryResult> {
   const denied = await guard();
   if (denied) return denied;

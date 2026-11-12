@@ -4,11 +4,13 @@ import { useActionState, useEffect, useState } from "react";
 import { Textarea } from "@/components/ui/textarea";
 import { addIdeaAction, saveDailyLogAction, type CaptureState } from "@/app/actions/capture";
 import type { DailyLog } from "@/lib/types";
-import { Status, fieldClass, primaryButtonClass } from "./form-bits";
+import { Status } from "./form-bits";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 
 /**
- * Ghi nhanh trên Today (SPEC-v0.2 4.1): ý tưởng → Ideas, Daily Log hôm nay → Daily Log.
- * Hai form tách ra để Today đặt ý tưởng riêng, Daily Log vào cụm "Cuối ngày" (SPEC-v1.0, Trung chốt 06/11/2026).
+ * Ghi nhanh trên Today (SPEC.md mục 5.1): ý tưởng → Ideas, Daily Log hôm nay → Daily Log.
+ * Hai form tách ra để Today đặt ý tưởng riêng, Daily Log vào cụm "Cuối ngày" (SPEC.md mục 5.1, Trung chốt 06/11/2026).
  */
 export function DailyLogCapture({
   todayLog,
@@ -19,7 +21,7 @@ export function DailyLogCapture({
   todayLog: DailyLog | null;
   /** Mở sẵn hay không; Today chỉ mở sau 18:00 khi chưa ghi. */
   open: boolean;
-  /** false khi đã có thẻ Thói quen (SPEC-v0.4): bỏ ô "Tập thể dục" để hai nơi không ghi đè nhau. */
+  /** false khi đã có thẻ Thói quen (SPEC.md mục 5.1): bỏ ô "Tập thể dục" để hai nơi không ghi đè nhau. */
   showExercise?: boolean;
   /** Ngày làm việc (Today: workdayVN) — khoá bản nháp Daily Log đang gõ */
   day: string;
@@ -42,22 +44,18 @@ export function IdeaForm() {
         Ý tưởng
       </label>
       <div className="flex gap-2">
-        <input
+        <Input
           id="idea"
           name="idea"
           value={idea}
           onChange={(e) => setIdea(e.target.value)}
           placeholder="Vd: thử YOLOv8 cho đồ án…"
-          className={fieldClass}
+          className="max-md:h-10"
           autoComplete="off"
         />
-        <button
-          type="submit"
-          disabled={pending || !idea.trim()}
-          className={primaryButtonClass}
-        >
+        <Button type="submit" disabled={pending || !idea.trim()} className="max-md:h-10">
           {pending ? "Đang lưu…" : "Lưu"}
-        </button>
+        </Button>
       </div>
       <Status state={state} />
     </form>
@@ -149,13 +147,9 @@ function DailyLogForm({ todayLog, open, showExercise, day }: { todayLog: DailyLo
               Tập thể dục
             </label>
           )}
-          <button
-            type="submit"
-            disabled={pending}
-            className={`ml-auto ${primaryButtonClass}`}
-          >
+          <Button type="submit" disabled={pending} className="ml-auto max-md:h-10">
             {pending ? "Đang lưu…" : todayLog ? "Cập nhật" : "Lưu Daily Log"}
-          </button>
+          </Button>
         </div>
         <div className="md:col-span-3">
           {restored && !state.message && <p role="status" className="text-sm text-muted-foreground">Đã khôi phục bản nháp chưa lưu.</p>}
@@ -167,7 +161,7 @@ function DailyLogForm({ todayLog, open, showExercise, day }: { todayLog: DailyLo
 }
 
 type DailyDraft = { done: string; dropped: string; learned: string; exercised: boolean };
-/** Bản nháp Daily Log đang gõ (SPEC-v1.0, Today đợt 3): lưu trong trình duyệt theo ngày làm việc; hỏng/tắt lưu trữ thì bỏ qua. */
+/** Bản nháp Daily Log đang gõ (SPEC.md mục 5.1): lưu trong trình duyệt theo ngày làm việc; hỏng/tắt lưu trữ thì bỏ qua. */
 function readDraft(key: string): DailyDraft | null {
   try {
     const raw = localStorage.getItem(key);

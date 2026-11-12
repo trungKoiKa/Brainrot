@@ -1,4 +1,4 @@
-// Đọc dữ liệu (thay lib/notion/queries.ts). Mọi hàm nhận `userId` làm tham số và luôn lọc theo nó (SPEC-v1.0 mục 6);
+// Đọc dữ liệu (thay lib/notion/queries.ts). Mọi hàm nhận `userId` làm tham số và luôn lọc theo nó (SPEC.md mục 3);
 // trả đúng kiểu mà giao diện đã dùng từ thời Notion nên trang không phải đổi.
 
 import { and, asc, count, desc, eq, gte, isNull, lte, inArray } from "drizzle-orm";
@@ -68,7 +68,7 @@ async function withHabits(db: Db, userId: string, logs: (typeof dailyLogs.$infer
     done: l.done,
     dropped: l.dropped,
     learned: l.learned,
-    tomorrowTop3: "", // đã thay bằng "Ngày mai làm" (Ngày làm của task), SPEC-v0.5 10.2a
+    tomorrowTop3: "", // đã thay bằng "Ngày mai làm" (Ngày làm của task), SPEC.md mục 3
     exercised: l.exercised,
     habits: namesOf.get(l.day) ?? [],
   }));

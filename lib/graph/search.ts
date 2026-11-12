@@ -1,4 +1,4 @@
-// Tìm node trên Brain (SPEC-v0.2 mục 4.3). Hàm thuần, chạy phía client → test được.
+// Tìm node trên Brain (SPEC.md mục 5.7). Hàm thuần, chạy phía client → test được.
 import { fold } from "@/lib/text";
 import type { GraphLink, GraphNode } from "./types";
 

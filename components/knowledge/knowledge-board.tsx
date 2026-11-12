@@ -6,7 +6,7 @@ import { toast } from "sonner";
 import { createNoteAction, deleteNoteAction, restoreNoteAction, updateNoteAction, type NoteFormState } from "@/app/actions/knowledge";
 import { Card, Empty } from "@/components/card";
 import { FilterRow } from "@/components/filter-row";
-import { fieldClass } from "@/components/form-bits";
+import { fieldClass, selectClass } from "@/components/form-bits";
 import { Pill } from "@/components/pill";
 import { DeadlineField } from "@/components/deadline-field";
 import { ErrorNotice } from "@/components/tasks/task-row";
@@ -268,7 +268,7 @@ function NativeSelect({
       aria-label={label}
       value={value}
       onChange={(e) => onChange(e.target.value)}
-      className={`${compactField} select-chevron pr-8 ${value ? "" : "text-muted-foreground"}`}
+      className={`${selectClass} ${value ? "" : "text-muted-foreground"}`}
     >
       {empty !== undefined && <option value="">{empty}</option>}
       {options.map((o) => (

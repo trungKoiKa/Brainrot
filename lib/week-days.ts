@@ -1,4 +1,4 @@
-// Thẻ ngày của chế độ Tuần (SPEC-v0.5 4.3). Hàm thuần: chỉ gom dữ liệu đã có, không ghi gì.
+// Thẻ ngày của chế độ Tuần (SPEC.md mục 5.3). Hàm thuần: chỉ gom dữ liệu đã có, không ghi gì.
 import { addDays } from "./date";
 import type { DailyLog, Task } from "./types";
 

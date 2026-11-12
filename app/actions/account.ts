@@ -32,7 +32,7 @@ export async function logoutAction(): Promise<void> {
   redirect("/login?out=1"); // trang đăng nhập hiện "Đã đăng xuất." (rà soát A2)
 }
 
-/** Tên hiển thị + hạn / nhãn thẻ đếm ngược (SPEC-v1.0 bước 5). Hạn để trống = ẩn thẻ. */
+/** Tên hiển thị + hạn / nhãn thẻ đếm ngược (SPEC.md mục 4). Hạn để trống = ẩn thẻ. */
 export async function updateProfileAction(_prev: AccountState, form: FormData): Promise<AccountState> {
   if (!(await isSignedIn())) return { ok: false, message: SESSION_EXPIRED };
   const name = String(form.get("name") ?? "").trim().replace(/\s+/g, " ");
@@ -78,7 +78,7 @@ export async function changePasswordAction(_prev: AccountState, form: FormData):
   return { ok: true, message: "Đã đổi mật khẩu." };
 }
 
-// ---------- Dự án (SPEC-v1.0 bước 5B) ----------
+// ---------- Dự án (SPEC.md mục 4B) ----------
 
 const PAGE_ID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
@@ -139,7 +139,7 @@ export async function deleteProjectAction(id: string): Promise<AccountState> {
 }
 
 /**
- * Xoá tài khoản + toàn bộ dữ liệu (SPEC-v1.0 bước 5C): phải gõ lại đúng email và nhập mật khẩu hiện tại.
+ * Xoá tài khoản + toàn bộ dữ liệu (SPEC.md mục 4C): phải gõ lại đúng email và nhập mật khẩu hiện tại.
  * Không hoàn tác được. Xong thì xoá cookie, về trang đăng nhập.
  */
 export async function deleteAccountAction(_prev: AccountState, form: FormData): Promise<AccountState> {

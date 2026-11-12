@@ -35,7 +35,7 @@ export function useTaskCompletion(tasks: Task[]) {
     });
   }
 
-  /** Hoàn tác tích xong / bỏ tích trong "Đã xong" (SPEC-v1.0, 07/11/2026): về Chưa làm. */
+  /** Hoàn tác tích xong / bỏ tích trong "Đã xong" (SPEC.md mục 5.2, 07/11/2026): về Chưa làm. */
   // Hoàn tác ngay sau khi tích: `task` là bản trước khi tích → giữ "Đang làm" (rà soát cuối A2 N1)
   function reopen(task: Task) {
     const status = task.status === "Đang làm" ? "Đang làm" : "Chưa làm";
@@ -47,7 +47,7 @@ export function useTaskCompletion(tasks: Task[]) {
     });
   }
 
-  /** Xóa hẳn (SPEC-v1.0, 05/11/2026) — dòng task đã hỏi xác nhận trước khi gọi. */
+  /** Xóa hẳn (SPEC.md mục 5.2, 05/11/2026) — dòng task đã hỏi xác nhận trước khi gọi. */
   function remove(task: Task) {
     setError(null);
     startTransition(async () => {
@@ -57,7 +57,7 @@ export function useTaskCompletion(tasks: Task[]) {
     });
   }
 
-  /** Hoàn tác xoá (SPEC-v1.0, Tasks đợt 3): chèn lại đúng id từ ảnh chụp task. */
+  /** Hoàn tác xoá (SPEC.md mục 5.2): chèn lại đúng id từ ảnh chụp task. */
   function restore(task: Task) {
     setError(null);
     startTransition(async () => {

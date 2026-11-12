@@ -12,7 +12,7 @@ export type Task = {
   /** YYYY-MM-DD theo giờ Việt Nam */
   deadline: string | null;
   note: string;
-  /** Cột "Ngày làm" (SPEC-v0.5): ngày định làm, khác Deadline (ngày phải xong) */
+  /** Cột "Ngày làm" (SPEC.md mục 3): ngày định làm, khác Deadline (ngày phải xong) */
   plannedOn: string | null;
   /** Ngày đánh dấu Xong (YYYY-MM-DD), từ v0.3; task xong trước đó để trống */
   doneOn: string | null;
@@ -50,7 +50,7 @@ export type DailyLog = {
   habits: string[];
 };
 
-/** Một dòng database Habits (SPEC-v0.4 mục 3.1). Tháng là ngày 1 của tháng, YYYY-MM-DD. */
+/** Một dòng database Habits (SPEC.md mục 3). Tháng là ngày 1 của tháng, YYYY-MM-DD. */
 export type Habit = {
   id: string;
   name: string;

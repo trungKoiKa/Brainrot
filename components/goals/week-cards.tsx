@@ -14,12 +14,12 @@ import { weekDayCards } from "@/lib/week-days";
 
 const WEEKDAY = ["Thứ Hai", "Thứ Ba", "Thứ Tư", "Thứ Năm", "Thứ Sáu", "Thứ Bảy", "Chủ nhật"];
 const SHORT = ["T2", "T3", "T4", "T5", "T6", "T7", "CN"];
-/** Thời gian hiện "Hoàn tác" sau khi dời ngày (SPEC-v1.0, Goal đợt 1) */
+/** Thời gian hiện "Hoàn tác" sau khi dời ngày (SPEC.md mục 5.3) */
 const UNDO_MS = 8000;
 
 
 /**
- * 7 thẻ ngày (SPEC-v0.5 4.3): task theo Ngày làm / Ngày xong / Hạn + Daily Log của tuần đang xem.
+ * 7 thẻ ngày (SPEC.md mục 5.3): task theo Ngày làm / Ngày xong / Hạn + Daily Log của tuần đang xem.
  * Tích xong và "Dời sang…" (đổi Ngày làm) ngay trên thẻ; dời xong có "Hoàn tác".
  */
 export function WeekCards({

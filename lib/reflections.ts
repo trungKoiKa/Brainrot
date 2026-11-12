@@ -1,4 +1,4 @@
-// Nhìn lại theo kỳ (SPEC-v0.4 mục 5). Hàm thuần.
+// Nhìn lại theo kỳ (SPEC.md mục 5.3). Hàm thuần.
 import { NEXT_LABEL } from "./goals";
 import { MAX_TEXT, type Parsed } from "./quick-capture";
 import { shiftPeriod, type Level, type Period } from "./period";

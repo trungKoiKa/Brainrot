@@ -29,7 +29,7 @@ function DateInfo({ target }: { target: { date: string; label: string } | null }
   );
 }
 
-/** Chân sidebar của từng người: ngày + đếm ngược, tên, Cài đặt, Đăng xuất (SPEC-v1.0 bước 5). */
+/** Chân sidebar của từng người: ngày + đếm ngược, tên, Cài đặt, Đăng xuất (SPEC.md mục 4). */
 export function SidebarAccount({ name, target }: { name: string; target: { date: string; label: string } | null }) {
   const pathname = usePathname();
   return (

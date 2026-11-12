@@ -4,12 +4,11 @@ import { autoStatus, type Goal } from "@/lib/goals";
 import { doneHabits } from "@/lib/habits";
 import { periodOf } from "@/lib/period";
 import type { DailyLog } from "@/lib/types";
-import { getDailyLogsBetween, getHabits, getTasks, type Loaded } from "./data";
+import { getDailyLogsBetween, getHabits, getTasks } from "./data";
 
 /**
- * Gắn trạng thái tự xong (SPEC-v0.4 4.3) cho các mục tiêu: chỉ tải Daily Log cho khoảng thời gian mà các mục tiêu có
+ * Gắn trạng thái tự xong (SPEC.md mục 5.3) cho các mục tiêu: chỉ tải Daily Log cho khoảng thời gian mà các mục tiêu có
  * gắn thói quen cần (một truy vấn, có cache), và Tasks (đã cache cho các trang khác).
- * Trả kèm các `Loaded` đã dùng để trang tính cờ dữ liệu cũ (stale).
  */
 export async function resolveGoals(
   goals: Goal[],
@@ -17,8 +16,8 @@ export async function resolveGoals(
    * Daily Log trang đã tải sẵn cho khoảng [from, to] → nếu phủ đủ khoảng cần thì không truy vấn thêm một vòng (rà soát A4).
    * Khoảng không phủ đủ → vẫn tự đọc, nên truyền sai chỉ làm chậm chứ không làm sai số.
    */
-  prefetched?: { logs: Loaded<DailyLog[]>; from: string; to: string },
-): Promise<{ goals: Goal[]; loaded: Loaded<unknown>[] }> {
+  prefetched?: { logs: DailyLog[]; from: string; to: string },
+): Promise<Goal[]> {
   const today = todayVN();
   const periodFor = (g: Goal) => periodOf(g.level, g.start);
   const withHabit = goals.filter((g) => g.habitId && g.threshold !== null);
@@ -41,14 +40,11 @@ export async function resolveGoals(
   ]);
 
   const doneByDay: Record<string, string[]> = {};
-  for (const l of logs?.data ?? []) if (l.date) doneByDay[l.date] = doneHabits(l);
-  const taskDone = new Map((tasks?.data ?? []).map((t) => [t.id, t.status === "Xong"]));
+  for (const l of logs ?? []) if (l.date) doneByDay[l.date] = doneHabits(l);
+  const taskDone = new Map((tasks ?? []).map((t) => [t.id, t.status === "Xong"]));
 
-  return {
-    goals: goals.map((g) => ({
-      ...g,
-      ...autoStatus(g, { period: periodFor(g), today, habits: habits?.data ?? [], doneByDay, taskDone }),
-    })),
-    loaded: [habits, logs, tasks].filter((l): l is NonNullable<typeof l> => l !== null),
-  };
+  return goals.map((g) => ({
+    ...g,
+    ...autoStatus(g, { period: periodFor(g), today, habits: habits ?? [], doneByDay, taskDone }),
+  }));
 }

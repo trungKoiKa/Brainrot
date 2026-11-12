@@ -4,7 +4,8 @@ import { useState, useTransition } from "react";
 import { ArrowDownIcon, ArrowUpIcon, CircleStopIcon, Trash2Icon } from "lucide-react";
 import { toast } from "sonner";
 import { addHabitAction, deleteHabitAction, moveHabitAction, restoreHabitAction, stopHabitAction, type HabitResult } from "@/app/actions/habits";
-import { fieldClass, primaryButtonClass } from "@/components/form-bits";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { ErrorNotice } from "@/components/tasks/task-row";
 import {
   AlertDialog,
@@ -24,7 +25,7 @@ import { monthLabel, monthOf, shiftMonth } from "@/lib/period";
 const iconButton =
   "flex size-10 md:size-7 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-surface-muted hover:text-foreground disabled:opacity-30 disabled:hover:bg-transparent";
 
-/** Thêm / sắp xếp / ngừng / xoá thói quen của tháng đang xem (SPEC-v0.4 3.3; xoá hẳn: SPEC-v1.0, 11/11/2026). */
+/** Thêm / sắp xếp / ngừng / xoá thói quen của tháng đang xem (SPEC.md mục 5.3; xoá hẳn: SPEC.md mục 5.3, 11/11/2026). */
 export function HabitManager({ month, habits }: { month: string; habits: Habit[] }) {
   const [name, setName] = useState("");
   const [error, setError] = useState<string | null>(null);
@@ -67,17 +68,17 @@ export function HabitManager({ month, habits }: { month: string; habits: Habit[]
           run(() => addHabitAction(month, name), () => setName(""));
         }}
       >
-        <input
+        <Input
           aria-label="Tên thói quen mới"
           placeholder="Thêm thói quen…"
           value={name}
           maxLength={MAX_HABIT_NAME}
           onChange={(e) => setName(e.target.value)}
-          className={`${fieldClass} min-w-0 flex-1`}
+          className="min-w-0 flex-1 max-md:h-10"
         />
-        <button type="submit" disabled={pending || !name.trim()} className={primaryButtonClass}>
+        <Button type="submit" disabled={pending || !name.trim()} className="max-md:h-10">
           Thêm
-        </button>
+        </Button>
       </form>
       <ul className="divide-y divide-line-soft">
         {habits.map((h, i) => {

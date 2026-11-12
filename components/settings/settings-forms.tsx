@@ -285,7 +285,7 @@ export function FieldManager({ fields }: { fields: { id: string; name: string; n
   );
 }
 
-/** Xoá tài khoản + toàn bộ dữ liệu: gõ lại email và nhập mật khẩu; không hoàn tác được (SPEC-v1.0 bước 5C). */
+/** Xoá tài khoản + toàn bộ dữ liệu: gõ lại email và nhập mật khẩu; không hoàn tác được (SPEC.md mục 4C). */
 export function DeleteAccountForm() {
   const [state, action, pending] = useActionState<AccountState, FormData>(deleteAccountAction, {});
   return (

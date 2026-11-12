@@ -217,7 +217,7 @@ khẩu; xoá toàn bộ dữ liệu, không hoàn tác).
   (`docs/decisions/0003-field-colors.md`).
 - **Theme:** mặc định theo hệ điều hành, nhớ lựa chọn, không nhấp nháy khi tải.
 - **Tiếp cận:** vòng focus rõ, tương phản đạt AA, tôn trọng `prefers-reduced-motion`, không tràn ngang ở 320–768px.
-- **Lỗi đọc database:** trang vẫn hiện kèm banner "Không lấy được dữ liệu".
+- **Lỗi đọc database:** trang báo "Không lấy được dữ liệu" kèm nút Thử lại (`app/(app)/error.tsx`); không hiện dữ liệu cũ.
 
 ## 7. Biến môi trường
 

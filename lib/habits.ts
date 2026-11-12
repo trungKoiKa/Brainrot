@@ -1,4 +1,4 @@
-// Thói quen (SPEC-v0.4 mục 3). Hàm thuần; tháng là "YYYY-MM", ngày là "YYYY-MM-DD" (giờ VN).
+// Thói quen (SPEC.md mục 5.3). Hàm thuần; tháng là "YYYY-MM", ngày là "YYYY-MM-DD" (giờ VN).
 import { addDays } from "./date";
 import type { Habit } from "./types";
 import { daysOfMonth, monthOf } from "./period";
@@ -40,7 +40,7 @@ export function streaks(done: Set<string>, today: string): { current: number; be
 export type HabitRow = { habit: Habit; done: Set<string>; count: number; pct: number; streak: number; best: number };
 
 /**
- * Số liệu bảng thói quen của tháng (SPEC-v0.4 3.2).
+ * Số liệu bảng thói quen của tháng (SPEC.md mục 5.3).
  * % thói quen chia cho số ngày **đã qua** của tháng (tháng hiện tại), không chia cả tháng → đầu tháng không bị thấp vô lý.
  * `doneByDay`: ngày → tên thói quen đã làm (đã gộp checkbox cũ bằng `doneHabits`).
  */
@@ -76,7 +76,7 @@ export function toggleHabit(list: string[], name: string, on: boolean): string[]
 }
 
 /**
- * % một thói quen trong khoảng [start, end] tính tới hôm nay (SPEC-v0.4 4.3): số ngày đã làm / số ngày đã qua mà thói
+ * % một thói quen trong khoảng [start, end] tính tới hôm nay (SPEC.md mục 5.3): số ngày đã làm / số ngày đã qua mà thói
  * quen được theo dõi. Chưa có ngày nào được theo dõi (kỳ tương lai, thói quen chưa bắt đầu) → null.
  */
 export function habitPeriodPct(habit: Habit, doneByDay: Record<string, string[]>, start: string, end: string, today: string) {

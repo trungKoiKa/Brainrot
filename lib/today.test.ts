@@ -26,7 +26,7 @@ const tasks = [
   task("khong-uu-tien", { deadline: "2026-10-22" }),
 ];
 
-describe("Hôm nay làm (SPEC-v0.5 4.2)", () => {
+describe("Hôm nay làm (SPEC.md mục 5.1)", () => {
   const ts = [
     task("lam-nay-thap", { plannedOn: today, priority: "Thấp" }),
     task("lam-nay-cao", { plannedOn: today, priority: "Cao" }),

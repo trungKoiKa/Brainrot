@@ -21,7 +21,8 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { carryOverGoalsAction, createGoalAction, linkTaskAction, trashGoalAction, updateGoalAction } from "@/app/actions/goals";
 import { formatDay } from "@/lib/date";
 import { fold } from "@/lib/text";
-import { fieldClass, primaryButtonClass } from "@/components/form-bits";
+import { selectClass } from "@/components/form-bits";
+import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/reui/badge";
 import { ErrorNotice } from "@/components/tasks/task-row";
 import {
@@ -43,9 +44,9 @@ export type LinkedTask = { id: string; title: string; plannedOn: string | null; 
 const UNDO_MS = 8000;
 
 /**
- * Khối mục tiêu của một kỳ (SPEC-v0.4 4.2, 4.4): bộ đếm + vòng tròn %, nhóm Ưu tiên / Thường (Badge),
+ * Khối mục tiêu của một kỳ (SPEC.md mục 5.3): bộ đếm + vòng tròn %, nhóm Ưu tiên / Thường (Badge),
  * thêm nhanh, sửa tên tại chỗ, tích, đổi loại, xóa mềm (hoàn tác trong 8 giây),
- * gắn thói quen + ngưỡng % để tự xong (SPEC-v0.4 4.3). Cập nhật lạc quan; lỗi thì trả về như trước và báo.
+ * gắn thói quen + ngưỡng % để tự xong (SPEC.md mục 5.3). Cập nhật lạc quan; lỗi thì trả về như trước và báo.
  * `habits`: thói quen có thể gắn (đang theo dõi trong kỳ).
  */
 export function GoalPanel({
@@ -64,11 +65,11 @@ export function GoalPanel({
   habits: { id: string; name: string }[];
   /** kỳ đã kết thúc → vòng % mới tô màu theo ngưỡng */
   ended: boolean;
-  /** Việc đã gắn vào từng mục tiêu (SPEC-v1.0, Goal đợt 2) */
+  /** Việc đã gắn vào từng mục tiêu (SPEC.md mục 5.3) */
   linked: Record<string, LinkedTask[]>;
   /** Có mục tiêu chưa xong → nút chuyển sang kỳ sau; null = không hiện */
   next: { label: string } | null;
-  /** Việc chưa xong, chưa gắn mục tiêu nào — chọn được ở "Gắn việc" (SPEC-v1.0, Goal đợt 3) */
+  /** Việc chưa xong, chưa gắn mục tiêu nào — chọn được ở "Gắn việc" (SPEC.md mục 5.3) */
   openTasks: { id: string; title: string }[];
 }) {
   const [goals, setGoals] = useState(initial);
@@ -275,7 +276,7 @@ function GoalRow({
   onRemove: () => void;
 }) {
   const [picking, setPicking] = useState(false);
-  // Bỏ gắn việc → toast "Hoàn tác" 8 giây (SPEC-v1.0, Goal đợt 6; sonner thay dải tự viết)
+  // Bỏ gắn việc → toast "Hoàn tác" 8 giây (SPEC.md mục 5.3; sonner thay dải tự viết)
   async function unlink(t: LinkedTask) {
     if (!(await onLinkTask(t.id, null))) return; // lỗi thì không hiện Hoàn tác
     toast(`Đã bỏ gắn “${t.title || "(Chưa đặt tên)"}”`, {
@@ -316,7 +317,7 @@ function GoalRow({
           {isGoalDone(goal) && <CheckIcon aria-hidden="true" className="size-3.5" strokeWidth={3} />}
         </button>
         {editing ? (
-          <input
+          <Input
             autoFocus
             aria-label="Sửa mục tiêu"
             value={draft}
@@ -330,7 +331,7 @@ function GoalRow({
                 setEditing(false);
               }
             }}
-            className={`${fieldClass} py-1`}
+            className="h-8 flex-1"
           />
         ) : (
           <div className="flex min-w-0 flex-1 items-baseline gap-2 text-sm">
@@ -382,7 +383,7 @@ function GoalRow({
                     aria-label={t.done ? `Bỏ đánh dấu xong: ${t.title}` : `Đánh dấu xong: ${t.title}`}
                   />
                 </span>
-                {/* Tên việc mở trang Tasks (SPEC-v1.0, Goal đợt 4) */}
+                {/* Tên việc mở trang Tasks (SPEC.md mục 5.3) */}
                 <Link href="/tasks" className={`min-w-0 flex-1 break-words outline-none hover:text-primary focus-visible:ring-3 focus-visible:ring-ring ${t.done ? "text-muted-foreground line-through" : ""}`}>
                   {t.title || "(Chưa đặt tên)"}
                 </Link>
@@ -428,7 +429,7 @@ function GoalRow({
   );
 }
 
-/** Gắn một thói quen + ngưỡng %: mục tiêu tự xong khi % thói quen trong kỳ ≥ ngưỡng (SPEC-v0.4 4.3). */
+/** Gắn một thói quen + ngưỡng %: mục tiêu tự xong khi % thói quen trong kỳ ≥ ngưỡng (SPEC.md mục 5.3). */
 function LinkHabit({
   goal,
   habits,
@@ -461,7 +462,7 @@ function LinkHabit({
         aria-label="Thói quen"
         value={habitId}
         onChange={(e) => setHabitId(e.target.value)}
-        className={`${fieldClass.replace("w-full", "w-auto")} select-chevron pr-8`}
+        className={selectClass}
       >
         {habits.map((h) => (
           <option key={h.id} value={h.id}>
@@ -470,27 +471,27 @@ function LinkHabit({
         ))}
       </select>
       <span className="text-muted-foreground">đạt ≥</span>
-      <input
+      <Input
         aria-label="Ngưỡng %"
         type="number"
         min={1}
         max={100}
         value={threshold}
         onChange={(e) => setThreshold(e.target.value)}
-        className={`${fieldClass} w-20 py-1`}
+        className="w-20"
       />
       <span className="text-muted-foreground">%</span>
-      <button type="button" disabled={!valid || saving} onClick={() => save(habitId, value)} className={`${primaryButtonClass} py-1`}>
+      <Button type="button" disabled={!valid || saving} onClick={() => save(habitId, value)}>
         {saving ? "Đang lưu…" : "Lưu"}
-      </button>
+      </Button>
       {goal.habitId && (
-        <button type="button" onClick={() => save(null, null)} disabled={saving} className="text-muted-foreground hover:text-foreground">
+        <Button type="button" variant="ghost" onClick={() => save(null, null)} disabled={saving}>
           Bỏ gắn
-        </button>
+        </Button>
       )}
-      <button type="button" onClick={onCancel} className="text-muted-foreground hover:text-foreground">
+      <Button type="button" variant="ghost" onClick={onCancel}>
         Hủy
-      </button>
+      </Button>
     </div>
   );
 }
@@ -526,32 +527,32 @@ function AddGoal({
         });
       }}
     >
-      <input
+      <Input
         aria-label="Mục tiêu mới"
         placeholder="Thêm mục tiêu…"
         value={title}
         maxLength={MAX_GOAL_TITLE}
         onChange={(e) => setTitle(e.target.value)}
-        className={`${fieldClass} min-w-48 flex-1`}
+        className="min-w-48 flex-1 max-md:h-10"
       />
       <select
         aria-label="Loại"
         value={type}
         onChange={(e) => setType(e.target.value as GoalType)}
-        className={`${fieldClass.replace("w-full", "w-auto")} select-chevron pr-8`}
+        className={`${selectClass} max-md:h-10`}
       >
         <option value="Thường">Thường</option>
         <option value="Ưu tiên">Ưu tiên</option>
       </select>
-      <button type="submit" disabled={pending || !title.trim()} className={primaryButtonClass}>
+      <Button type="submit" disabled={pending || !title.trim()} className="max-md:h-10">
         {pending ? "Đang thêm…" : "Thêm"}
-      </button>
+      </Button>
     </form>
   );
 }
 
 /**
- * "Chuyển N mục tiêu chưa xong sang <kỳ sau>" (SPEC-v1.0, Goal đợt 2): tạo bản sao ở kỳ sau, không đụng mục tiêu hiện tại.
+ * "Chuyển N mục tiêu chưa xong sang <kỳ sau>" (SPEC.md mục 5.3): tạo bản sao ở kỳ sau, không đụng mục tiêu hiện tại.
  * Gửi đúng danh sách đang hiện là chưa xong → số trên nút khớp số đã chuyển (rà soát A2 lỗi 2); xong thì ẩn nút,
  * kết quả + Hoàn tác ở toast.
  */
@@ -612,7 +613,7 @@ function CarryOver({
 }
 
 /**
- * Chọn việc gắn vào mục tiêu (SPEC-v1.0, Goal đợt 4): popover có ô tìm kiếm tự focus, giữ mở để gắn liên tiếp
+ * Chọn việc gắn vào mục tiêu (SPEC.md mục 5.3): popover có ô tìm kiếm tự focus, giữ mở để gắn liên tiếp
  * nhiều việc, dòng đang gắn hiện "Đang gắn…". Đóng bằng Esc / bấm ngoài, focus về nút mở.
  */
 function TaskPicker({
@@ -656,7 +657,7 @@ function TaskPicker({
         {trigger}
       </PopoverTrigger>
       <PopoverContent align="start" className="w-80 gap-2 p-2" aria-label={`Gắn việc vào mục tiêu: ${goalTitle}`}>
-        <input
+        <Input
           autoFocus
           type="search"
           value={query}
@@ -664,7 +665,6 @@ function TaskPicker({
           ref={inputRef}
           aria-label={`Tìm việc để gắn vào: ${goalTitle}`}
           placeholder="Tìm việc chưa gắn mục tiêu…"
-          className={`${fieldClass} py-1.5`}
         />
         {openTasks.length === 0 ? (
           <p className="px-1 py-1 text-sm text-muted-foreground">Không còn việc nào chưa gắn mục tiêu. Thêm việc mới ở Tasks.</p>

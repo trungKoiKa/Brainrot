@@ -12,11 +12,10 @@ import { ProgressRing } from "@/components/goals/progress-ring";
 import { HabitMonth } from "@/components/habits/habit-month";
 import { PageHeader } from "@/components/page-header";
 import { Skeleton } from "@/components/ui/skeleton";
-import { StaleBanner } from "@/components/stale-banner";
 import { todayVN } from "@/lib/date";
 import { goalCounts, goalsOf, isGoalDone, type Goal } from "@/lib/goals";
 import { doneHabits } from "@/lib/habits";
-import { anyStale, getDailyLogsBetween, getGoals, getHabits, getReflections, getTasks } from "@/lib/db/data";
+import { getDailyLogsBetween, getGoals, getHabits, getReflections, getTasks } from "@/lib/db/data";
 import { resolveGoals } from "@/lib/db/goal-status";
 import { previousFocus, reflectionOf } from "@/lib/reflections";
 import {
@@ -33,7 +32,7 @@ import {
   type Period,
 } from "@/lib/period";
 
-// SPEC-v0.4 mục 6. Bước 3: 4 chế độ + mục tiêu; Nhìn lại ở mọi chế độ; thẻ 7 ngày ở chế độ Tuần.
+// SPEC.md mục 5.3. Bước 3: 4 chế độ + mục tiêu; Nhìn lại ở mọi chế độ; thẻ 7 ngày ở chế độ Tuần.
 const href = (p: Period) => `/goals?level=${p.level}&period=${p.key}`;
 
 export default function GoalsPage({ searchParams }: PageProps<"/goals">) {
@@ -59,25 +58,24 @@ async function GoalsContent({ searchParams }: Pick<PageProps<"/goals">, "searchP
   // Một lần đọc Daily Log phủ cả kỳ đang xem lẫn các kỳ con (tuần lấn sang tháng bên cạnh) → resolveGoals dùng lại (rà soát A4)
   const logFrom = [period, ...children].reduce((m, p) => (p.start < m ? p.start : m), period.start);
   const logTo = [period, ...children].reduce((m, p) => (p.end > m ? p.end : m), period.end);
-  const [goalsLoaded, habits, reflections, logs, weekTasks] = await Promise.all([
+  const [allGoals, habits, reflections, logs, weekTasks] = await Promise.all([
     getGoals(),
     getHabits(),
     getReflections(),
     level === "month" || level === "week" ? getDailyLogsBetween(logFrom, logTo) : null,
     getTasks(), // việc gắn dưới mỗi mục tiêu (mọi cấp) + thẻ ngày / khay ở Tuần
   ]);
-  const reflection = reflectionOf(reflections.data, period);
-  const prevFocus = previousFocus(reflections.data, period);
-  const motto = reflectionOf(reflections.data, periodOf("year", period.start))?.motto.trim() || null;
+  const reflection = reflectionOf(reflections, period);
+  const prevFocus = previousFocus(reflections, period);
+  const motto = reflectionOf(reflections, periodOf("year", period.start))?.motto.trim() || null;
   // Trạng thái tự xong cho mục tiêu của kỳ đang xem + các kỳ con (cột %, thẻ quý/tháng)
   const shown = [period, ...children];
-  const resolved = await resolveGoals(
-    goalsLoaded.data.filter((g) => shown.some((p) => p.level === g.level && p.start === g.start)),
+  const goals = await resolveGoals(
+    allGoals.filter((g) => shown.some((p) => p.level === g.level && p.start === g.start)),
     logs ? { logs, from: logFrom, to: logTo } : undefined,
   );
-  const goals = resolved.goals;
   // Thói quen gắn được: được theo dõi ở ít nhất một tháng của kỳ
-  const linkable = habits.data.filter(
+  const linkable = habits.filter(
     (h) => monthOf(h.from) <= monthOf(period.end) && (h.to === null || monthOf(h.to) >= monthOf(period.start)),
   );
   const panelGoals = goalsOf(goals, period);
@@ -88,8 +86,8 @@ async function GoalsContent({ searchParams }: Pick<PageProps<"/goals">, "searchP
       return { href: href(p), label: shortLabel(p), pct: c.progress, total: c.total, current: p.start <= today && today <= p.end, ended: p.end < today };
     });
 
-  // Chuỗi Mục tiêu → Việc → Ngày (SPEC-v1.0, Goal đợt 2)
-  const taskById = new Map(weekTasks.data.map((t) => [t.id, t]));
+  // Chuỗi Mục tiêu → Việc → Ngày (SPEC.md mục 5.3)
+  const taskById = new Map(weekTasks.map((t) => [t.id, t]));
   const linkedTasks = Object.fromEntries(
     panelGoals.map((g) => [
       g.id,
@@ -101,7 +99,7 @@ async function GoalsContent({ searchParams }: Pick<PageProps<"/goals">, "searchP
   );
   const goalOfTask: Record<string, string> = {};
   for (const g of goals) for (const id of g.taskIds) goalOfTask[id] ??= g.title;
-  const openTasks = weekTasks.data.filter((t) => t.status !== "Xong" && t.goalIds.length === 0).map((t) => ({ id: t.id, title: t.title }));
+  const openTasks = weekTasks.filter((t) => t.status !== "Xong" && t.goalIds.length === 0).map((t) => ({ id: t.id, title: t.title }));
   const focusGoals = panelGoals.filter((g) => g.type === "Ưu tiên" && g.title.trim());
   const trayIds = [...new Set(panelGoals.flatMap((g) => g.taskIds))];
   const nextPeriod = shiftPeriod(period, 1);
@@ -122,8 +120,7 @@ async function GoalsContent({ searchParams }: Pick<PageProps<"/goals">, "searchP
 
   return (
     <div className="space-y-5">
-      <StaleBanner show={anyStale(goalsLoaded, habits, reflections, weekTasks, ...resolved.loaded, ...(logs ? [logs] : []))} />
-      {/* Châm ngôn năm (SPEC-v0.4 mục 5): hiện ở mọi chế độ của năm đó */}
+      {/* Châm ngôn năm (SPEC.md mục 5.3): hiện ở mọi chế độ của năm đó */}
       {motto && <p className="text-base text-muted-foreground italic">“{motto}”</p>}
 
       <div className="flex flex-wrap items-center gap-3">
@@ -185,7 +182,7 @@ async function GoalsContent({ searchParams }: Pick<PageProps<"/goals">, "searchP
               })}
             </div>
           )}
-          <WeekCards key={period.key} weekStart={period.start} today={today} tasks={weekTasks.data} logs={logs.data} goalOfTask={goalOfTask} trayIds={trayIds} />
+          <WeekCards key={period.key} weekStart={period.start} today={today} tasks={weekTasks} logs={logs} goalOfTask={goalOfTask} trayIds={trayIds} />
         </Card>
       )}
 
@@ -262,8 +259,8 @@ async function GoalsContent({ searchParams }: Pick<PageProps<"/goals">, "searchP
             key={period.key}
             month={period.key}
             today={today}
-            habits={habits.data}
-            doneByDay={Object.fromEntries(logs.data.flatMap((l) => (l.date ? [[l.date, doneHabits(l)]] : [])))}
+            habits={habits}
+            doneByDay={Object.fromEntries(logs.flatMap((l) => (l.date ? [[l.date, doneHabits(l)]] : [])))}
           />
         )}
 
@@ -275,7 +272,7 @@ async function GoalsContent({ searchParams }: Pick<PageProps<"/goals">, "searchP
   );
 }
 
-/** Thẻ quý (trong Năm) / tháng (trong Quý): % + mục tiêu Ưu tiên, bấm để mở (SPEC-v0.4 6.3). */
+/** Thẻ quý (trong Năm) / tháng (trong Quý): % + mục tiêu Ưu tiên, bấm để mở (SPEC.md mục 5.3). */
 function ChildCard({ period, goals, monthGoals, current, today }: { period: Period; goals: Goal[]; monthGoals: number; current: boolean; today: string }) {
   const c = goalCounts(goals);
   const priority = goals.filter((g) => g.type === "Ưu tiên" && g.title.trim());

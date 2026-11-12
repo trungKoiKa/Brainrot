@@ -12,11 +12,10 @@ import { HabitToday } from "@/components/habits/habit-today";
 import { doneHabits, habitsForMonth } from "@/lib/habits";
 import { monthOf, periodOf } from "@/lib/period";
 import { addDays, daysBetween, formatDay, greetingVN, isEveningVN, longDateVN, workdayClock, workdayVN } from "@/lib/date";
-import { anyStale, getGoals, getHabits, getKnowledge, getKnowledgeFields, getProfile, getRecentDailyLogs, getTaskProjects, getTasks } from "@/lib/db/data";
+import { getGoals, getHabits, getKnowledge, getKnowledgeFields, getProfile, getRecentDailyLogs, getTaskProjects, getTasks } from "@/lib/db/data";
 import { resolveGoals } from "@/lib/db/goal-status";
 import { isGoalDone, type Goal } from "@/lib/goals";
-import { StaleBanner } from "@/components/stale-banner";
-import type { DailyLog, Knowledge, Task } from "@/lib/types";
+import type { Knowledge, Task } from "@/lib/types";
 import { latestKnowledge, planToday, todayProgress, upcomingDeadlines, type DeadlineItem } from "@/lib/today";
 import { noteDay } from "@/lib/knowledge";
 import { colorVarByOrder } from "@/lib/topic-colors";
@@ -37,7 +36,7 @@ async function TodayContent() {
   const now = new Date();
   // Today đổi ngày lúc 4:00 (Trung chốt 06/11/2026): 0:00–3:59 vẫn là tối hôm trước
   const today = workdayVN(now);
-  const [profile, habitsLoaded, goalsLoaded, projects, notesLoaded, fields, ...loaded] = await Promise.all([
+  const [profile, allHabits, allGoals, projects, notes, fields, tasks, logs] = await Promise.all([
     getProfile(),
     getHabits(),
     getGoals(),
@@ -47,18 +46,17 @@ async function TodayContent() {
     getTasks(),
     getRecentDailyLogs(),
   ]);
-  const [tasks, logs] = loaded.map((l) => l.data) as [Task[], DailyLog[]];
   const todayLog = logs.find((l) => l.date === today) ?? null;
   // 18:00–3:59: cụm "Cuối ngày" lên ngay dưới "Hôm nay làm" và mở sẵn
   const evening = isEveningVN(now);
   const week = periodOf("week", today);
   const weekGoals = await resolveGoals(
-    goalsLoaded.data.filter((g) => g.level === "week" && g.start === week.start && g.type === "Ưu tiên" && g.title.trim()),
+    allGoals.filter((g) => g.level === "week" && g.start === week.start && g.type === "Ưu tiên" && g.title.trim()),
   );
 
   const plan = planToday(today, tasks);
   const progress = todayProgress(today, tasks);
-  const habits = habitsForMonth(habitsLoaded.data, monthOf(today)).map((h) => h.name);
+  const habits = habitsForMonth(allHabits, monthOf(today)).map((h) => h.name);
   const habitsDone = todayLog ? doneHabits(todayLog).filter((h) => habits.includes(h)).length : 0;
   // Hạn sắp tới: bỏ việc đã nằm trong "Hôm nay làm" để không lặp (rà soát A1 P1)
   const inPlan = new Set([...plan.planned, ...plan.late, ...plan.due].map((t) => t.id));
@@ -77,7 +75,6 @@ async function TodayContent() {
   return (
     <>
       <PageHeader kicker={`NHẬT KÝ · ${today}`} title={`${greetingVN(now)}, ${givenName(profile.name)}`} aside={longDateVN(workdayClock(now))} />
-      <StaleBanner show={anyStale(habitsLoaded, goalsLoaded, notesLoaded, ...weekGoals.loaded, ...loaded)} />
 
       <Readouts
         className="mb-6"
@@ -98,7 +95,7 @@ async function TodayContent() {
 
       <div className="grid grid-cols-1 items-start gap-6 xl:grid-cols-[minmax(0,1fr)_360px]">
         <div className="flex min-w-0 flex-col gap-6">
-          <TodayPlanCard today={today} tasks={tasks} projects={projects} weekGoals={weekGoals.goals} />
+          <TodayPlanCard today={today} tasks={tasks} projects={projects} weekGoals={weekGoals} />
           {evening && endOfDay}
           <Card title="Ghi nhanh ý tưởng">
             <IdeaForm />
@@ -115,7 +112,7 @@ async function TodayContent() {
             />
           </Card>
           <DeadlinesCard items={deadlines} />
-          <LatestNotesCard notes={latestKnowledge(notesLoaded.data)} fields={fields} />
+          <LatestNotesCard notes={latestKnowledge(notes)} fields={fields} />
         </aside>
       </div>
     </>
@@ -125,7 +122,7 @@ async function TodayContent() {
 /** Tên gọi trong lời chào: từ cuối của tên hiển thị ("Anh Trung" → "Trung"); chưa đặt tên → "bạn". */
 const givenName = (name: string) => name.trim().split(/\s+/).at(-1) || "bạn";
 
-/** "Hôm nay làm" (SPEC-v0.5 4.2) + mục tiêu tuần Ưu tiên ở cuối (SPEC-v0.4 mục 7). */
+/** "Hôm nay làm" (SPEC.md mục 5.1) + mục tiêu tuần Ưu tiên ở cuối (SPEC.md mục 5.1). */
 function TodayPlanCard({ today, tasks, projects, weekGoals }: { today: string; tasks: Task[]; projects: string[]; weekGoals: Goal[] }) {
   const rows = planToday(today, tasks);
   const count = rows.planned.length + rows.late.length + rows.due.length;

@@ -3,7 +3,7 @@ import { toneColor } from "./progress-ring";
 
 export type PeriodBar = { href: string; label: string; pct: number; total: number; current: boolean; /** kỳ đã kết thúc → mới tô màu theo ngưỡng */ ended: boolean };
 
-/** Cột % các kỳ con (Năm → Quý/Tháng, Quý → Tháng, Tháng → Tuần), bấm cột để mở kỳ đó (SPEC-v0.4 4.2). */
+/** Cột % các kỳ con (Năm → Quý/Tháng, Quý → Tháng, Tháng → Tuần), bấm cột để mở kỳ đó (SPEC.md mục 5.3). */
 export function PeriodBars({ bars }: { bars: PeriodBar[] }) {
   return (
     <ol className="flex h-40 items-end gap-1.5">

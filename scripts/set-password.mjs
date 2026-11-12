@@ -1,4 +1,4 @@
-// Đặt / đổi mật khẩu cho tài khoản (SPEC-v1.0, giai đoạn A). Chạy trong terminal của bạn, mật khẩu gõ ẩn:
+// Đặt / đổi mật khẩu cho tài khoản (SPEC.md mục 4, giai đoạn A). Chạy trong terminal của bạn, mật khẩu gõ ẩn:
 //   npm run user:password -- ban@example.com "Tên hiển thị"
 // - Email đã có → đổi mật khẩu.
 // - Chưa có và user mặc định (chủ dữ liệu hiện tại) chưa gắn email → gắn email + mật khẩu vào user mặc định.
@@ -61,7 +61,7 @@ if (existing) {
     console.log(`Đã gắn ${email} vào tài khoản mặc định (chủ dữ liệu hiện tại) và đặt mật khẩu.`);
   } else {
     const [created] = await sql`insert into users (email, name, password_hash) values (${email}, ${name || email}, ${hash}) returning id`;
-    await sql`insert into projects (user_id, name, sort) values (${created.id}, ${"Chung"}, 0)`; // dự án sẵn có cho người mới (SPEC-v1.0 bước 5)
+    await sql`insert into projects (user_id, name, sort) values (${created.id}, ${"Chung"}, 0)`; // dự án sẵn có cho người mới (SPEC.md mục 4)
     console.log(`Đã tạo người dùng mới ${email} (kèm dự án "Chung").`);
   }
 }

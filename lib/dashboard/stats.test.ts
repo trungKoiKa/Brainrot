@@ -25,7 +25,7 @@ const t = (o: Partial<DashTask> = {}): DashTask => ({
   title: "", project: null, status: "Chưa làm", deadline: null, doneOn: null, plannedOn: null, createdOn: "2026-10-01", ...o,
 });
 const input = (o: Partial<DashInput> = {}): DashInput => ({
-  today, tasks: [], knowledge: [], logs: [], thesisDeadline: "2026-12-06", habits: [], monthGoals: [], ...o,
+  today, tasks: [], projects: [], knowledge: [], logs: [], thesisDeadline: "2026-12-06", habits: [], monthGoals: [], ...o,
 });
 
 describe("ngày", () => {
@@ -105,7 +105,7 @@ describe("biểu đồ", () => {
       t({ project: "Đồ án", status: "Đang làm" }),
       t({ project: "Đồ án" }),
       t({ project: "Học AI", status: "Xong" }),
-    ]);
+    ], ["Đồ án", "Học AI", "Khác"]);
     expect(rows).toEqual([
       { project: "Đồ án", doing: 1, todo: 1 },
       { project: "Khác", doing: 0, todo: 1 },

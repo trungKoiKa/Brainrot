@@ -1,5 +1,5 @@
-// Vòng tròn % (SPEC-v0.4 4.2) — SVG thuần, màu theo ngưỡng giống chấm trạng thái Dashboard.
-// `neutral`: kỳ chưa kết thúc → chưa phán xét, dùng màu chủ đạo (SPEC-v1.0, Goal đợt 1).
+// Vòng tròn % (SPEC.md mục 5.3) — SVG thuần, màu theo ngưỡng giống chấm trạng thái Dashboard.
+// `neutral`: kỳ chưa kết thúc → chưa phán xét, dùng màu chủ đạo (SPEC.md mục 5.3).
 export const toneColor = (pct: number, neutral = false) =>
   neutral ? "var(--primary)" : pct >= 70 ? "var(--good)" : pct >= 40 ? "var(--warning)" : "var(--danger)";
 

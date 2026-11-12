@@ -2,11 +2,10 @@ import { Suspense } from "react";
 import { connection } from "next/server";
 import { PageHeader } from "@/components/page-header";
 import { Skeleton } from "@/components/ui/skeleton";
-import { StaleBanner } from "@/components/stale-banner";
 import { DashboardClient } from "@/components/dashboard/dashboard-client";
 import { toVNDate, todayVN } from "@/lib/date";
 import type { DashInput } from "@/lib/dashboard/stats";
-import { anyStale, getDailyLogs90, getGoals, getHabits, getKnowledge, getProfile, getReflections, getTasks } from "@/lib/db/data";
+import { getDailyLogs90, getGoals, getHabits, getKnowledge, getProfile, getReflections, getTaskProjects, getTasks } from "@/lib/db/data";
 import { noteDay } from "@/lib/knowledge";
 import { resolveGoals } from "@/lib/db/goal-status";
 import { periodOf } from "@/lib/period";
@@ -29,24 +28,25 @@ export default function DashboardPage() {
 async function DashboardContent() {
   await connection(); // số liệu tính theo ngày hôm nay
   const today = todayVN();
-  const [profile, tasks, knowledge, logs, habits, goals, reflections] = await Promise.all([
+  const [profile, tasks, projects, knowledge, logs, habits, goals, reflections] = await Promise.all([
     getProfile(),
     getTasks(),
+    getTaskProjects(),
     getKnowledge(),
     getDailyLogs90(),
     getHabits(),
     getGoals(),
     getReflections(),
   ]);
-  // Châm ngôn năm (SPEC-v0.4 mục 5) dưới tiêu đề
-  const motto = reflectionOf(reflections.data, periodOf("year", today))?.motto.trim() || null;
+  // Châm ngôn năm (SPEC.md mục 5.4) dưới tiêu đề
+  const motto = reflectionOf(reflections, periodOf("year", today))?.motto.trim() || null;
   const month = periodOf("month", today);
   const monthGoals = await resolveGoals(
-    goals.data.filter((g) => g.level === "month" && g.start === month.start),
+    goals.filter((g) => g.level === "month" && g.start === month.start),
     // 90 bản ghi gần nhất: chưa đủ 90 thì là toàn bộ lịch sử; đủ 90 thì phủ từ bản ghi cũ nhất tới hôm nay
     {
       logs,
-      from: logs.data.length < 90 ? "0000-01-01" : logs.data.reduce((m, l) => (l.date && l.date < m ? l.date : m), today),
+      from: logs.length < 90 ? "0000-01-01" : logs.reduce((m, l) => (l.date && l.date < m ? l.date : m), today),
       to: today,
     },
   );
@@ -55,7 +55,7 @@ async function DashboardContent() {
     today,
     thesisDeadline: profile.target.date,
     thesisLabel: profile.target.label,
-    tasks: tasks.data.map((t) => ({
+    tasks: tasks.map((t) => ({
       title: t.title,
       plannedOn: t.plannedOn,
       project: t.project,
@@ -64,8 +64,9 @@ async function DashboardContent() {
       doneOn: t.doneOn,
       createdOn: toVNDate(t.createdTime),
     })),
-    knowledge: knowledge.data.map(noteDay),
-    logs: logs.data.flatMap((l) => {
+    projects,
+    knowledge: knowledge.map(noteDay),
+    logs: logs.flatMap((l) => {
       if (!l.date) return [];
       const habitsDone = doneHabits(l);
       return [
@@ -78,14 +79,13 @@ async function DashboardContent() {
         },
       ];
     }),
-    habits: habits.data,
-    monthGoals: monthGoals.goals,
+    habits: habits,
+    monthGoals,
   };
 
   return (
     <>
       {motto && <p className="-mt-3 mb-6 text-base text-muted-foreground italic">“{motto}”</p>}
-      <StaleBanner show={anyStale(tasks, knowledge, logs, habits, goals, reflections, ...monthGoals.loaded)} />
       <DashboardClient real={real} />
     </>
   );
