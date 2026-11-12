@@ -210,7 +210,7 @@ export function WeekCards({
                     )}
                     {c.log.dropped && (
                       <p className="whitespace-pre-line">
-                        <span className="font-medium text-foreground">Rơi:</span> {c.log.dropped}
+                        <span className="font-medium text-foreground">Chưa xong:</span> {c.log.dropped}
                       </p>
                     )}
                   </div>

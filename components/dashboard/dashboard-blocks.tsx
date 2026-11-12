@@ -265,7 +265,7 @@ const dailyConfig = {
   h: { label: "Việc xong" },
   normal: { label: "Thường", color: "var(--chart-5)" },
   exercised: { label: "Có tập", color: "var(--good)" },
-  dropped: { label: "Có rơi việc", color: "var(--warning)" },
+  dropped: { label: "Có việc chưa xong", color: "var(--warning)" },
 } satisfies ChartConfig;
 
 const dayColor = (d: Day) =>
@@ -296,7 +296,7 @@ export function DailyBars({ days }: { days: Day[] }) {
                 formatter={(_, __, item) => {
                   const d = item.payload as Day;
                   if (!d.hasLog) return "Không ghi log";
-                  return [`${d.done} việc xong`, d.exercised && "có tập", d.dropped && "có rơi việc"].filter(Boolean).join(" · ");
+                  return [`${d.done} việc xong`, d.exercised && "có tập", d.dropped && "có việc chưa xong"].filter(Boolean).join(" · ");
                 }}
               />
             }

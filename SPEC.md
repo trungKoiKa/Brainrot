@@ -103,7 +103,7 @@ Màn nào chưa có dữ liệu thì hiện một câu hướng dẫn kèm đư�
 - **Thói quen · 7 ngày:** lưới 7 ngày gần nhất, bấm ô là lưu.
 - **Kiến thức mới:** 5 ghi chú mới nhất (tên, lĩnh vực, ngày); bấm tên mở Knowledge. Chưa có ghi chú thì một dòng
   hướng dẫn kèm link.
-- **Ghi nhanh ý tưởng** (một ô + Enter) và **Cuối ngày** (Daily Log: Xong · Rơi / chưa xong · Học được; và **Ngày mai
+- **Ghi nhanh ý tưởng** (một ô + Enter) và **Cuối ngày** (Daily Log: Xong · Chưa xong · Học được; và **Ngày mai
   làm**: tích việc để đặt Ngày làm = ngày mai) là dải viền nét đứt, thu gọn. Từ **18:00** "Cuối ngày" đứng ngay dưới
   "Hôm nay làm" và mở sẵn (Daily Log chỉ mở khi chưa ghi). Daily Log mỗi ngày một bản ghi, bản nháp tự lưu trong
   trình duyệt và khi khôi phục thì phần Daily Log tự mở.
@@ -191,6 +191,10 @@ khẩu; xoá toàn bộ dữ liệu, không hoàn tác).
   việc → dự án, ghi chú ↔ ghi chú ("liên quan tới", có hạt chạy). Quy tắc dựng: `lib/graph-build.ts`.
 - Màu theo thứ tự lĩnh vực / dự án của từng người (4 màu + xám); việc vẽ nhạt hơn dự án của nó. Hai nhóm dùng chung 4
   màu nên nhãn và chip **Lĩnh vực chấm đặc, Dự án chấm rỗng**.
+- **Kiểu neuron** (three.js): mỗi node là một nhân cầu bóng tự phát sáng có quầng sáng quanh; Lĩnh vực nhân đặc, Dự án
+  nhân rỗng có khung lưới; ghi chú to và sáng hơn việc. Link "liên quan tới" uốn cong, có hạt chạy như tín hiệu; nền có
+  lớp bụi mờ tạo chiều sâu; camera tự xoay rất chậm tới khi người dùng chạm vào. Bật "giảm chuyển động" ở hệ điều hành
+  thì không xoay, không hạt chạy.
 - Xoay, zoom, ô tìm không dấu (phím `/`; chọn kết quả thì bay tới và làm nổi các node nối trực tiếp), chip chú thích
   theo cụm (bấm để bay tới). Bấm node ghi chú mở `/knowledge`, bấm node việc mở `/tasks`.
 
@@ -272,5 +276,6 @@ token mã hoá AES-GCM) còn trong lịch sử git của file này nếu sau nà
 | 11/11/2026 | Duyệt v1.1: liên kết ghi chú chọn tay, Lĩnh vực ở Cài đặt, làm Calendar có đường lui, "Đã xong" tải hết | mục 10.5 |
 | 11/11/2026 | Gộp SPEC thành một file; Trung muốn hoàn thành cả v1.1 trong tuần 11–18/11 | file này, `docs/plans/active/v1.1.md` |
 | 12/11/2026 | Bỏ Calendar / Next up khỏi v1.1 | mục 9, 10.3 |
+| 12/11/2026 | Daily Log đổi nhãn "Rơi / chưa xong" thành "Chưa xong"; Brain vẽ node kiểu neuron phát sáng | mục 5.1, 5.7 |
 | 12/11/2026 | Giao diện "bản mềm": khung bo 12px, control bo 8px, bỏ chữ mono, hàng chỉ số thành ô rời | `DESIGN.md` |
 | 12/11/2026 | Knowledge và Brain xong; trên Brain nhãn Dự án dùng chấm rỗng, Lĩnh vực chấm đặc (hai nhóm chung 4 màu) | mục 5.6, 5.7 |

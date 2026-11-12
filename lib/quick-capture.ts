@@ -15,7 +15,7 @@ export type Parsed<T> = { ok: true; data: T } | { ok: false; error: string };
 
 const FIELD_LABELS: Record<Exclude<keyof DailyLogInput, "exercised">, string> = {
   done: "Xong",
-  dropped: "Rơi / chưa xong",
+  dropped: "Chưa xong",
   learned: "Học được",
 };
 
