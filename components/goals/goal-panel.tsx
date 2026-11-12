@@ -182,7 +182,7 @@ export function GoalPanel({
                 {list.filter((g) => g.title.trim()).length}
               </span>
             </h3>
-            <ul className="divide-y divide-dashed divide-line">
+            <ul className="divide-y divide-line-soft">
               {list.map((g) => (
                 <GoalRow
                   key={g.id}

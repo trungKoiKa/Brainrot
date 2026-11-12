@@ -88,7 +88,7 @@ export function TaskRow({
   const tags = <TaskTags task={task} today={today} projects={projects} />;
 
   return (
-    <li className="flex items-start gap-3 border-b border-line px-4 py-2.5 last:border-b-0" data-task-id={task.id}>
+    <li className="row-sep flex items-start gap-3 px-4 py-3 transition-colors hover:bg-surface-muted" data-task-id={task.id}>
       {(onComplete || onReopen) && <TaskCheckbox task={task} onComplete={onComplete} onReopen={onReopen} />}
       <div className="min-w-0 flex-1">
         <MaybeLink

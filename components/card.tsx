@@ -21,7 +21,7 @@ export function Card({
   return (
     <section className={`min-w-0 overflow-clip rounded-xl border border-line bg-surface ${className}`}>
       {(title || action) && (
-        <div className="flex min-h-11 items-center justify-between gap-3 border-b border-line px-4 py-2.5">
+        <div className="flex min-h-11 items-center justify-between gap-3 border-b border-line-soft px-4 py-2.5">
           {title && <h2 className={`font-semibold ${focal ? "text-base" : "text-sm"}`}>{title}</h2>}
           {action}
         </div>

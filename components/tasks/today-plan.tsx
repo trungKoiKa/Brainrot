@@ -66,7 +66,7 @@ function Row({
     </>
   );
   return (
-    <li className="flex items-start gap-3 border-b border-line px-4 py-2.5 last:border-b-0" data-task-id={task.id}>
+    <li className="row-sep flex items-start gap-3 px-4 py-3 transition-colors hover:bg-surface-muted" data-task-id={task.id}>
       <span aria-hidden="true" className="w-5 pt-0.5 font-mono text-xs text-muted-foreground">
         {String(n).padStart(2, "0")}
       </span>
@@ -164,7 +164,7 @@ export function TodayPlan({ today, tasks: initial, projects }: { today: string; 
           </ul>
         </>
       )}
-      <div className="border-t border-line px-4 py-3">
+      <div className="border-t border-line-soft px-4 py-3">
         <TodayAdd today={today} />
       </div>
     </div>
