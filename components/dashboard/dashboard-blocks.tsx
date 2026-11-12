@@ -5,11 +5,10 @@ import { useSyncExternalStore } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { CheckIcon } from "lucide-react";
-import { Area, AreaChart, Bar, BarChart, CartesianGrid, Cell, Line, LineChart, XAxis, YAxis } from "recharts";
 import { Card, Empty } from "@/components/card";
 import { ProgressRing } from "@/components/goals/progress-ring";
 import { Badge } from "@/components/reui/badge";
-import { ChartContainer, ChartTooltip, ChartTooltipContent, type ChartConfig } from "@/components/ui/chart";
+import { AreaChart, BarChart, Sparkline, TipRow } from "./charts";
 import { Progress } from "@/components/ui/progress";
 import { formatDay } from "@/lib/date";
 import { pctTone, type DashTask, type KpiTone, type Tone } from "@/lib/dashboard/stats";
@@ -19,15 +18,6 @@ import { goalCounts, isGoalDone, type Goal } from "@/lib/goals";
 // Màu (SPEC.md mục 5.4, critique lần 3): trạng thái dùng token ngữ nghĩa --good / --warning / --danger;
 // màu Lĩnh vực (--chart-1..5) chỉ để phân loại; sparkline màu trung tính.
 
-/** Mốc trục Y "tròn" (bước 1/2/5/10/20…), chừa ~15% phía trên để đỉnh không bị cắt. */
-export function niceMax(max: number): number {
-  const target = Math.max(4, max * 1.15);
-  const raw = target / 4;
-  const pow = 10 ** Math.floor(Math.log10(raw));
-  const step = [1, 2, 5, 10].map((m) => m * pow).find((s) => s >= raw) ?? 10 * pow;
-  return Math.ceil(target / step) * step;
-}
-const Y_DOMAIN: [number, (max: number) => number] = [0, niceMax];
 const TONE_COLOR: Record<Tone, string> = { good: "var(--good)", warn: "var(--warning)", bad: "var(--danger)" };
 const TONE_LABEL: Record<KpiTone, string> = { good: "Ổn", warn: "Cần để ý", bad: "Cần xử lý", none: "Chưa đủ dữ liệu" };
 /** Thay đổi nhỏ hơn mức này coi như đứng yên: không tô xanh/đỏ */
@@ -100,8 +90,6 @@ export function KpiStrip({ items }: { items: KpiItem[] }) {
 /** Đường xu hướng chỉ vẽ khi có ít nhất 2 lần đổi giá trị (một bậc thang đơn lẻ trông như lỗi hiển thị). */
 const hasTrend = (series: number[]) => series.filter((v, i) => i > 0 && v !== series[i - 1]).length >= 2;
 
-const sparkConfig = { v: { label: "Xu hướng", color: "var(--muted-foreground)" } } satisfies ChartConfig;
-
 function KpiCell({ item: k, first }: { item: KpiItem; first: boolean }) {
   return (
     <div className={`flex flex-col ${first ? "" : "xl:border-l xl:border-line xl:pl-6"}`}>
@@ -117,12 +105,7 @@ function KpiCell({ item: k, first }: { item: KpiItem; first: boolean }) {
         </span>
         {/* Đường phẳng không nói gì → ẩn */}
         {k.tone !== "none" && hasTrend(k.series) && (
-          <ChartContainer config={sparkConfig} className="aspect-auto h-8 w-20 shrink-0" aria-hidden>
-            <LineChart accessibilityLayer={false} data={k.series.map((v, i) => ({ i, v }))} margin={{ top: 4, bottom: 4, left: 2, right: 2 }}>
-              <YAxis hide domain={["dataMin", "dataMax"]} />
-              <Line dataKey="v" type="monotone" stroke="var(--color-v)" strokeWidth={1.5} dot={false} isAnimationActive={false} />
-            </LineChart>
-          </ChartContainer>
+          <Sparkline values={k.series} />
         )}
       </dd>
       <dd className="mt-2 flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
@@ -140,10 +123,11 @@ export function ToneDot({ tone }: { tone: KpiTone }) {
 
 // ---------- 4.2 ----------
 
-const projectConfig = {
-  doing: { label: "Đang làm", color: "var(--primary)" },
-  todo: { label: "Chưa làm", color: "var(--chart-5)" },
-} satisfies ChartConfig;
+type ProjectRow = { project: string; doing: number; todo: number };
+const PROJECT_SERIES = [
+  { key: "doing", label: "Đang làm", color: "var(--primary)", value: (r: ProjectRow) => r.doing },
+  { key: "todo", label: "Chưa làm", color: "var(--chart-5)", value: (r: ProjectRow) => r.todo },
+];
 
 const NARROW = "(max-width: 640px)";
 const subscribeNarrow = (cb: () => void) => {
@@ -154,12 +138,11 @@ const subscribeNarrow = (cb: () => void) => {
 /** Màn hẹp → nghiêng nhãn trục X cho tên dự án khỏi đè nhau. */
 const useNarrow = () => useSyncExternalStore(subscribeNarrow, () => window.matchMedia(NARROW).matches, () => false);
 
-export function ProjectBars({ rows }: { rows: { project: string; doing: number; todo: number }[] }) {
+export function ProjectBars({ rows }: { rows: ProjectRow[] }) {
   const router = useRouter();
   const narrow = useNarrow();
   if (rows.length === 0) return <p className="text-sm text-muted-foreground">Không còn việc nào chưa xong.</p>;
   const href = (project: string) => `/tasks?project=${encodeURIComponent(project)}`;
-  const open = (index: number) => router.push(href(rows[index].project));
   const summary = rows.map((r) => `${r.project}: ${r.doing} đang làm, ${r.todo} chưa làm`).join("; ");
   // Đường bàn phím / trình đọc màn hình thay cho bấm cột (chỉ chuột)
   const links = (
@@ -187,24 +170,24 @@ export function ProjectBars({ rows }: { rows: { project: string; doing: number; 
   }
   return (
     <>
-      <Legend config={projectConfig} />
-      <ChartContainer config={projectConfig} className="aspect-auto h-48 w-full" role="img" aria-label={`Việc chưa xong theo dự án. ${summary}.`}>
-        <BarChart accessibilityLayer={false} data={rows} margin={{ left: -12, right: 4 }} barGap={4} maxBarSize={36}>
-          <CartesianGrid vertical={false} strokeDasharray="3 3" />
-          <XAxis
-            dataKey="project"
-            tickLine={false}
-            axisLine={false}
-            interval={0}
-            tickMargin={8}
-            {...(narrow && { angle: -35, textAnchor: "end", height: 56 })}
-          />
-          <YAxis allowDecimals={false} tickLine={false} axisLine={false} width={40} domain={Y_DOMAIN} />
-          <ChartTooltip cursor={false} content={<ChartTooltipContent />} />
-          <Bar dataKey="doing" fill="var(--color-doing)" radius={4} className="cursor-pointer" onClick={(_, i) => open(i)} />
-          <Bar dataKey="todo" fill="var(--color-todo)" radius={4} className="cursor-pointer" onClick={(_, i) => open(i)} />
-        </BarChart>
-      </ChartContainer>
+      <Legend items={PROJECT_SERIES} />
+      <BarChart
+        rows={rows}
+        series={PROJECT_SERIES}
+        height={narrow ? 224 : 192}
+        angled={narrow}
+        label={`Việc chưa xong theo dự án. ${summary}.`}
+        xLabel={(r) => r.project}
+        onBarClick={(r) => router.push(href(r.project))}
+        tooltip={(r) => (
+          <>
+            <p className="mb-1 font-medium">{r.project}</p>
+            {PROJECT_SERIES.map((x) => (
+              <TipRow key={x.key} color={x.color} label={x.label} value={x.value(r)} />
+            ))}
+          </>
+        )}
+      />
       {links}
     </>
   );
@@ -212,47 +195,38 @@ export function ProjectBars({ rows }: { rows: { project: string; doing: number; 
 
 // ---------- 4.3 ----------
 
-const weeklyConfig = {
-  done: { label: "Việc xong", color: "var(--primary)" },
-  learned: { label: "Ghi chú mới", color: "var(--chart-3)" },
-} satisfies ChartConfig;
+type WeekRow = { week: string; done: number; learned: number };
+const WEEKLY_SERIES = [
+  { key: "done", label: "Việc xong", color: "var(--primary)", value: (r: WeekRow) => r.done },
+  { key: "learned", label: "Ghi chú mới", color: "var(--chart-3)", value: (r: WeekRow) => r.learned },
+];
 
 /** Dưới số tuần/ngày có dữ liệu này thì biểu đồ chỉ toàn số 0 → thu thành một dòng (SPEC.md mục 5.4, critique lần 2). */
 export const MIN_ACTIVE_WEEKS = 3;
 
 /** Trang gọi chỉ vẽ khi đã có từ MIN_ACTIVE_WEEKS tuần có hoạt động (dashboard-view.tsx). */
-export function WeeklyArea({ rows }: { rows: { week: string; done: number; learned: number }[] }) {
+export function WeeklyArea({ rows }: { rows: WeekRow[] }) {
   const total = rows.reduce((s, r) => s + r.done, 0);
   const learned = rows.reduce((s, r) => s + r.learned, 0);
   const last = rows.at(-1);
   return (
     <>
-      <Legend config={weeklyConfig} />
-      <ChartContainer
-        config={weeklyConfig}
-        className="aspect-auto h-64 w-full"
-        role="img"
-        aria-label={`12 tuần: tổng ${total} việc xong và ${learned} ghi chú mới; tuần này ${last?.done ?? 0} việc, ${last?.learned ?? 0} ghi chú.`}
-      >
-        <AreaChart accessibilityLayer={false} data={rows} margin={{ left: -12, right: 8 }}>
-          <defs>
-            {Object.keys(weeklyConfig).map((k) => (
-              <linearGradient key={k} id={`fill-${k}`} x1="0" y1="0" x2="0" y2="1">
-                <stop offset="5%" stopColor={`var(--color-${k})`} stopOpacity={0.35} />
-                <stop offset="95%" stopColor={`var(--color-${k})`} stopOpacity={0.02} />
-              </linearGradient>
+      <Legend items={WEEKLY_SERIES} />
+      <AreaChart
+        rows={rows}
+        series={WEEKLY_SERIES}
+        height={256}
+        label={`12 tuần: tổng ${total} việc xong và ${learned} ghi chú mới; tuần này ${last?.done ?? 0} việc, ${last?.learned ?? 0} ghi chú.`}
+        xLabel={(r) => formatDay(r.week, true)}
+        tooltip={(r) => (
+          <>
+            <p className="mb-1 font-medium">Tuần từ {formatDay(r.week, true)}</p>
+            {WEEKLY_SERIES.map((x) => (
+              <TipRow key={x.key} color={x.color} label={x.label} value={x.value(r)} />
             ))}
-          </defs>
-          <CartesianGrid vertical={false} strokeDasharray="3 3" />
-          <XAxis dataKey="week" tickLine={false} axisLine={false} tickMargin={8} tickFormatter={(w: string) => formatDay(w, true)} />
-          <YAxis allowDecimals={false} tickLine={false} axisLine={false} width={40} domain={Y_DOMAIN} />
-          <ChartTooltip
-            content={<ChartTooltipContent labelFormatter={(w) => `Tuần từ ${formatDay(String(w), true)}`} />}
-          />
-          <Area dataKey="done" type="monotone" stroke="var(--color-done)" strokeWidth={2} fill="url(#fill-done)" />
-          <Area dataKey="learned" type="monotone" stroke="var(--color-learned)" strokeWidth={2} fill="url(#fill-learned)" />
-        </AreaChart>
-      </ChartContainer>
+          </>
+        )}
+      />
     </>
   );
 }
@@ -261,53 +235,38 @@ export function WeeklyArea({ rows }: { rows: { week: string; done: number; learn
 
 type Day = { date: string; hasLog: boolean; done: number; exercised: boolean; dropped: boolean };
 
-const dailyConfig = {
-  h: { label: "Việc xong" },
-  normal: { label: "Thường", color: "var(--chart-5)" },
-  exercised: { label: "Có tập", color: "var(--good)" },
-  dropped: { label: "Có việc chưa xong", color: "var(--warning)" },
-} satisfies ChartConfig;
+const DAILY_LEGEND = [
+  { key: "normal", label: "Thường", color: "var(--chart-5)" },
+  { key: "exercised", label: "Có tập", color: "var(--good)" },
+  { key: "dropped", label: "Có việc chưa xong", color: "var(--warning)" },
+];
 
-const dayColor = (d: Day) =>
-  !d.hasLog ? "var(--line)" : d.exercised ? "var(--color-exercised)" : d.dropped ? "var(--color-dropped)" : "var(--color-normal)";
+const dayColor = (d: Day) => (!d.hasLog ? "var(--line)" : d.exercised ? "var(--good)" : d.dropped ? "var(--warning)" : "var(--chart-5)");
 
 export function DailyBars({ days }: { days: Day[] }) {
-  // Ngày không có log vẫn có cột thấp để thấy "lỗ"
-  const data = days.map((d) => ({ ...d, h: d.hasLog ? Math.max(d.done, 0.4) : 0.25 }));
+  const logged = days.filter((d) => d.hasLog).length;
+  const total = days.reduce((sum, d) => sum + d.done, 0);
   return (
     <>
-      <Legend config={{ normal: dailyConfig.normal, exercised: dailyConfig.exercised, dropped: dailyConfig.dropped }} />
-      <ChartContainer
-        config={dailyConfig}
-        className="aspect-auto h-56 w-full"
-        role="img"
-        aria-label={`${days.length} ngày: ${days.filter((d) => d.hasLog).length} ngày có log, tổng ${days.reduce((s, d) => s + d.done, 0)} việc xong.`}
-      >
-        <BarChart accessibilityLayer={false} data={data} margin={{ left: -12, right: 4 }} barCategoryGap={days.length > 40 ? 1 : 3}>
-          <CartesianGrid vertical={false} strokeDasharray="3 3" />
-          <XAxis dataKey="date" tickLine={false} axisLine={false} tickMargin={8} minTickGap={24} tickFormatter={(d: string) => formatDay(d, true)} />
-          <YAxis allowDecimals={false} tickLine={false} axisLine={false} width={40} domain={Y_DOMAIN} />
-          <ChartTooltip
-            cursor={false}
-            content={
-              <ChartTooltipContent
-                hideIndicator
-                labelFormatter={(_, payload) => formatDay(String(payload?.[0]?.payload?.date ?? ""))}
-                formatter={(_, __, item) => {
-                  const d = item.payload as Day;
-                  if (!d.hasLog) return "Không ghi log";
-                  return [`${d.done} việc xong`, d.exercised && "có tập", d.dropped && "có việc chưa xong"].filter(Boolean).join(" · ");
-                }}
-              />
-            }
-          />
-          <Bar dataKey="h" radius={[3, 3, 0, 0]}>
-            {data.map((d) => (
-              <Cell key={d.date} fill={dayColor(d)} />
-            ))}
-          </Bar>
-        </BarChart>
-      </ChartContainer>
+      <Legend items={DAILY_LEGEND} />
+      <BarChart
+        rows={days}
+        // Ngày không có log vẫn có cột thấp để thấy "lỗ"
+        series={[{ key: "done", label: "Việc xong", color: "var(--chart-5)", value: (d: Day) => (d.hasLog ? Math.max(d.done, 0.4) : 0.25) }]}
+        colorOf={(d) => dayColor(d)}
+        maxBar={28}
+        height={224}
+        label={`${days.length} ngày: ${logged} ngày có log, tổng ${total} việc xong.`}
+        xLabel={(d) => formatDay(d.date, true)}
+        tooltip={(d) => (
+          <>
+            <p className="mb-1 font-medium">{formatDay(d.date)}</p>
+            <p className="text-muted-foreground">
+              {d.hasLog ? [`${d.done} việc xong`, d.exercised && "có tập", d.dropped && "có việc chưa xong"].filter(Boolean).join(" · ") : "Không ghi log"}
+            </p>
+          </>
+        )}
+      />
     </>
   );
 }
@@ -419,12 +378,12 @@ export function HabitBars({
   );
 }
 
-function Legend({ config }: { config: ChartConfig }) {
+function Legend({ items }: { items: { key: string; label: string; color: string }[] }) {
   return (
     <div className="mb-3 flex flex-wrap justify-end gap-4 text-xs text-muted-foreground">
-      {Object.entries(config).map(([k, c]) => (
-        <span key={k} className="flex items-center gap-1.5">
-          <span className="size-2 rounded-full" style={{ background: "color" in c ? c.color : undefined }} />
+      {items.map((c) => (
+        <span key={c.key} className="flex items-center gap-1.5">
+          <span className="size-2 rounded-full" style={{ background: c.color }} />
           {c.label}
         </span>
       ))}

@@ -38,8 +38,8 @@ Trình duyệt ──► Next.js trên Vercel (Server Components + Server Action
                    └── lib/db/: MỌI truy vấn, luôn lọc theo userId ──► Postgres (Neon)
 ```
 
-- Stack: Next.js 16 (App Router) · TypeScript strict · Tailwind CSS v4 · shadcn/ui + ReUI · Recharts · Drizzle ORM +
-  Neon Postgres · Vitest · Vercel.
+- Stack: Next.js 16 (App Router) · TypeScript strict · Tailwind CSS v4 · shadcn/ui + ReUI · Drizzle ORM + Neon Postgres ·
+  Vitest · Vercel. Biểu đồ Dashboard là SVG tự vẽ (`components/dashboard/charts.tsx`, bỏ Recharts 12/11/2026).
 - Không cache dữ liệu người dùng (cache dùng chung là chỗ dễ lộ dữ liệu nhất). Ghi xong gọi `refreshData()`
   (`lib/db/revalidate.ts`). Giao diện cập nhật lạc quan; lỗi thì trả về như cũ và báo lỗi.
 - Một database Neon dùng chung cho dev và production. Migration ở `lib/db/migrations/`.
