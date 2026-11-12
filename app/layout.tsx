@@ -1,10 +1,10 @@
 import type { Metadata } from "next";
-import { Plus_Jakarta_Sans } from "next/font/google";
+import { Manrope } from "next/font/google";
 import { THEME_INIT_SCRIPT } from "@/lib/theme";
 import "./globals.css";
 
-// Plus Jakarta Sans cho mọi chữ (Trung chọn 11/11/2026 sau khi so 6 font). Bản mềm 12/11/2026 bỏ IBM Plex Mono.
-const sans = Plus_Jakarta_Sans({
+// Manrope cho mọi chữ (Trung chọn 12/11/2026 sau khi so 6 font trên màn Today; thay Plus Jakarta Sans). Không dùng chữ mono.
+const sans = Manrope({
   variable: "--font-sans-main",
   subsets: ["latin", "vietnamese"],
   weight: ["400", "500", "600"],

@@ -83,15 +83,15 @@
     "typographyMeta": {
       "display": {
         "displayName": "Display",
-        "purpose": "Tiêu đề trang, Plus Jakarta Sans 30px 600."
+        "purpose": "Tiêu đề trang, Manrope 30px 600."
       },
       "title": {
         "displayName": "Title",
-        "purpose": "Tiêu đề khung, Plus Jakarta Sans 14px 600."
+        "purpose": "Tiêu đề khung, Manrope 14px 600."
       },
       "body": {
         "displayName": "Body",
-        "purpose": "Nội dung, dòng việc, Plus Jakarta Sans 14px."
+        "purpose": "Nội dung, dòng việc, Manrope 14px."
       },
       "readout": {
         "displayName": "Readout",
@@ -139,7 +139,7 @@
       "refersTo": "button-primary",
       "description": "Nút chính (components/ui/button), một mỗi khung.",
       "html": "<button class=\"ds-btn\">Thêm việc</button>",
-      "css": ".ds-btn{background:#b03a0a;color:#fff;border:0;border-radius:4px;padding:6px 12px;font:500 14px/20px \"Plus Jakarta Sans\",system-ui}"
+      "css": ".ds-btn{background:#b03a0a;color:#fff;border:0;border-radius:4px;padding:6px 12px;font:500 14px/20px \"Manrope\",system-ui}"
     },
     {
       "name": "Project Pill",
@@ -147,7 +147,7 @@
       "refersTo": "pill-project",
       "description": "Nhãn dự án: chấm + tên, màu theo thứ tự dự án (components/pill.tsx).",
       "html": "<span class=\"ds-pill\"><i></i>Đồ án</span>",
-      "css": ".ds-pill{display:inline-flex;align-items:center;gap:6px;border-radius:999px;padding:2px 10px;font:500 12px/16px \"Plus Jakarta Sans\";color:#2459b8;background:color-mix(in srgb,#2459b8 13%,transparent)}.ds-pill i{width:6px;height:6px;border-radius:50%;background:currentColor}"
+      "css": ".ds-pill{display:inline-flex;align-items:center;gap:6px;border-radius:999px;padding:2px 10px;font:500 12px/16px \"Manrope\";color:#2459b8;background:color-mix(in srgb,#2459b8 13%,transparent)}.ds-pill i{width:6px;height:6px;border-radius:50%;background:currentColor}"
     },
     {
       "name": "Status Pill",
@@ -155,7 +155,7 @@
       "refersTo": "pill-status",
       "description": "Trạng thái: trễ (vàng), hạn hôm nay/quá hạn (đỏ), xong (xanh lá).",
       "html": "<span class=\"ds-pill-w\">trễ 3 ngày</span>",
-      "css": ".ds-pill-w{border-radius:999px;padding:2px 10px;font:500 12px/16px \"Plus Jakarta Sans\";color:#8a5a00;background:color-mix(in srgb,#8a5a00 13%,transparent)}"
+      "css": ".ds-pill-w{border-radius:999px;padding:2px 10px;font:500 12px/16px \"Manrope\";color:#8a5a00;background:color-mix(in srgb,#8a5a00 13%,transparent)}"
     },
     {
       "name": "Readout Cell",

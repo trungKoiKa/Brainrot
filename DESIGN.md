@@ -38,27 +38,27 @@ colors:
   project-neutral-dark: "#9ea69a"
 typography:
   display:
-    fontFamily: "Plus Jakarta Sans, system-ui, sans-serif"
+    fontFamily: "Manrope, system-ui, sans-serif"
     fontSize: "1.875rem"
     fontWeight: 600
     lineHeight: 1.15
   title:
-    fontFamily: "Plus Jakarta Sans, system-ui, sans-serif"
+    fontFamily: "Manrope, system-ui, sans-serif"
     fontSize: "0.875rem"
     fontWeight: 600
     lineHeight: 1.43
   body:
-    fontFamily: "Plus Jakarta Sans, system-ui, sans-serif"
+    fontFamily: "Manrope, system-ui, sans-serif"
     fontSize: "0.875rem"
     fontWeight: 400
     lineHeight: 1.43
   readout:
-    fontFamily: "Plus Jakarta Sans, system-ui, sans-serif"
+    fontFamily: "Manrope, system-ui, sans-serif"
     fontSize: "1.5rem"
     fontWeight: 600
     lineHeight: 1.25
   label:
-    fontFamily: "Plus Jakarta Sans, system-ui, sans-serif"
+    fontFamily: "Manrope, system-ui, sans-serif"
     fontSize: "0.75rem"
     fontWeight: 500
     lineHeight: 1.33
@@ -115,9 +115,10 @@ và trạng thái là pill bo tròn hẳn, để mắt bắt ngay "việc này t
 
 ## Typography
 
-- **Plus Jakarta Sans** (400, 500, 600) cho mọi chữ đọc; tiêu đề trang 30px 600, tiêu đề khung 14px 600. Trung chọn
-  ngày 11/11/2026 sau khi so 6 font (Plex Sans rồi Be Vietnam Pro đều trông cứng).
-- **Không dùng chữ mono** (bỏ IBM Plex Mono 12/11/2026: đứng cạnh Plus Jakarta Sans trông cứng). Số và ngày dùng cùng
+- **Manrope** (400, 500, 600) cho mọi chữ đọc; tiêu đề trang 30px 600, tiêu đề khung 14px 600. Trung chọn ngày
+  12/11/2026 sau khi so 6 font trên màn Today (`docs/audits/2026-11-options/fonts.png`); thay Plus Jakarta Sans (chọn
+  11/11, sau đó thấy không ổn). Trước nữa: Plex Sans rồi Be Vietnam Pro đều trông cứng.
+- **Không dùng chữ mono** (bỏ IBM Plex Mono 12/11/2026: đứng cạnh font chữ đọc tròn trông cứng). Số và ngày dùng cùng
   font với `tabular-nums` để thẳng cột: giá trị hàng chỉ số 24px 600, số thứ tự dòng `01`, `T-03`, `D-25`, ngày `13/11`.
   Nhãn ngắn IN HOA (`VIỆC HÔM NAY`, nhãn đầu trang) 12px 500, giãn chữ nhẹ. Class `font-mono` cũ trong code trỏ về font
   chữ đọc (`app/globals.css`), không thêm chỗ dùng mới.
