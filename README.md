@@ -1,8 +1,8 @@
 # Brainrot — Second Brain Web
 
-Web gom việc, mục tiêu và thói quen về một chỗ, lưu trong Postgres (Neon); mỗi người một tài khoản email + mật khẩu.
-Mở ra là biết hôm nay làm gì, tuần này đang ra sao, đang hướng tới mục tiêu nào.
-(Kiến thức, graph Brain 3D và lịch Google đang ẩn; kế hoạch làm lại ở [`SPEC.md`](SPEC.md) mục 10.)
+Web gom việc, mục tiêu, thói quen và ghi chú kiến thức về một chỗ, lưu trong Postgres (Neon); mỗi người một tài khoản
+email + mật khẩu. Mở ra là biết hôm nay làm gì, tuần này đang ra sao, đang hướng tới mục tiêu nào, đã học được gì.
+Phiên bản hiện tại: **v1.1** (12/11/2026).
 
 > Dự án cá nhân của một sinh viên năm 4 (PTIT), viết cùng AI agent. Giao diện tiếng Việt, giờ Việt Nam.
 
@@ -10,10 +10,13 @@ Mở ra là biết hôm nay làm gì, tuần này đang ra sao, đang hướng t
 
 | Trang | Câu hỏi nó trả lời | Nội dung |
 |---|---|---|
-| **Dashboard** | Tôi đang làm tốt không? | KPI việc tồn · hoàn thành · tuần này · đếm ngược đồ án; việc theo dự án; mục tiêu tháng; sắp đến hạn; nhịp làm; nhịp hằng ngày; thói quen. Chuyển **Thật / Mẫu** để xem với dữ liệu mẫu |
-| **Today** | Hôm nay làm gì? | **Hôm nay làm** (theo Ngày làm, việc trễ, hạn hôm nay) · hạn 14 ngày · thói quen 7 ngày · Ghi nhanh ý tưởng · Cuối ngày (Daily Log, chọn việc ngày mai) |
+| **Dashboard** | Tôi đang làm tốt không? | KPI việc tồn · hoàn thành · tuần này · đếm ngược đồ án; việc theo dự án; mục tiêu tháng; sắp đến hạn; nhịp làm & học; nhịp hằng ngày; thói quen. Chuyển **Thật / Mẫu** để xem với dữ liệu mẫu |
+| **Today** | Hôm nay làm gì? | **Hôm nay làm** (theo Ngày làm, việc trễ, hạn hôm nay) · hạn 14 ngày · thói quen 7 ngày · kiến thức mới · Ghi nhanh ý tưởng · Cuối ngày (Daily Log, chọn việc ngày mai) |
 | **Tasks** | Tôi có những việc gì? | Nơi duy nhất tạo, sửa và xoá việc: lọc theo dự án / ưu tiên, Deadline, **Ngày làm**, gắn Goal |
 | **Goal** | Tôi đang hướng tới điều gì? | Mục tiêu xếp tầng **Năm → Quý → Tháng → Tuần**, tự xong theo thói quen / task, bảng thói quen tháng, **7 thẻ ngày** của tuần (dời việc sang ngày khác), Nhìn lại 4 câu + châm ngôn năm |
+| **Knowledge** | Tôi đã học được gì? | Ghi chú kiến thức theo **Lĩnh vực** và mức hiểu (Mới học / Hiểu / Áp dụng được), tóm tắt, link nguồn, nối các ghi chú **liên quan tới** nhau; lọc và tìm không dấu |
+| **Brain** | Mọi thứ nối với nhau thế nào? | Graph 3D kiểu neuron: lĩnh vực, ghi chú, dự án, việc chưa xong và các liên kết; tìm không dấu (phím `/`), bấm node mở trang |
+| **Cài đặt** | | Tên, hạn đếm ngược, dự án, lĩnh vực, đổi mật khẩu, xoá tài khoản |
 
 Mô hình nghiệp vụ (từ v0.5): **Tasks là kho việc duy nhất**. Goal gồm Task, Task xếp vào ngày qua cột
 **Ngày làm**, thói quen làm Goal tự xong. Lý do và các lựa chọn đã cân nhắc: [`docs/specs/archive/SPEC-v0.5.md`](docs/specs/archive/SPEC-v0.5.md).

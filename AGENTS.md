@@ -41,11 +41,11 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
 
 Đọc `SPEC.md` trước khi làm bất cứ việc gì. SPEC là nguồn sự thật **duy nhất** về phạm vi; không tự thêm tính năng ngoài SPEC.
 
-> **Trạng thái (11/11/2026):** **v1.0 đang chạy production** (https://brainrot-blue.vercel.app; Postgres, email + mật khẩu,
-> nhiều người dùng; tag `v1.0.0`, redesign `v1.1.0-ui`). Trung muốn **hoàn thành cả project trong tuần 11–18/11/2026**:
-> plan `docs/plans/active/v1.1.md`. Knowledge và Brain đã lên production 12/11/2026 (`SPEC.md` mục 5.6, 5.7); Calendar bỏ khỏi v1.1.
-> SPEC cũ (v0.1 → v1.0) là lịch sử ở `docs/specs/archive/`; plan cũ ở `docs/plans/completed/`.
-> Yêu cầu mới → ghi vào "Follow-ups" của plan đang chạy, chốt SPEC trước khi code.
+> **Trạng thái (12/11/2026):** **v1.1 đang chạy production, project đã chốt** (https://brainrot-blue.vercel.app; tag
+> `v1.1.0`): Today, Tasks, Goal, Dashboard, Knowledge, Brain, Cài đặt; Postgres, email + mật khẩu, nhiều người dùng.
+> Không có plan đang chạy. Plan v1.1 và việc còn để ngỏ (mục Follow-ups) ở `docs/plans/completed/v1.1.md`.
+> SPEC cũ (v0.1 → v1.0) là lịch sử ở `docs/specs/archive/`.
+> Yêu cầu mới → viết vào `SPEC.md` và mở plan mới trong `docs/plans/active/`, Trung duyệt trước khi code.
 
 ## Thứ tự ưu tiên khi hướng dẫn mâu thuẫn
 

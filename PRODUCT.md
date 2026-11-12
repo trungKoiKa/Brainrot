@@ -19,7 +19,7 @@ web
 
 ## Product Purpose
 
-Gom việc, mục tiêu, thói quen (và về sau kiến thức) vào một chỗ, để mở ra là biết hôm nay làm 3 việc gì, deadline nào
+Gom việc, mục tiêu, thói quen và ghi chú kiến thức vào một chỗ, để mở ra là biết hôm nay làm 3 việc gì, deadline nào
 sắp tới, đang đi đúng hướng mục tiêu không.
 
 **Thành công:** Trung mở web ≥ 5 ngày/tuần trong 2 tuần liên tiếp (`SPEC.md` mục 1, Trung giữ nguyên 06/11/2026).
@@ -38,7 +38,9 @@ nối các mảnh này; Brainrot nối sẵn. Lý do và phương án đã cân 
     việc ngày mai)
   - **Tasks:** tôi có những việc gì? (nơi duy nhất tạo, sửa, xoá việc)
   - **Goal:** tôi đang hướng tới điều gì? (mục tiêu xếp tầng, bảng thói quen tháng, 7 thẻ ngày của tuần, Nhìn lại)
-  - **Dashboard:** tôi đang làm tốt không? (KPI, task theo dự án, mục tiêu tháng, nhịp làm, thói quen; chế độ Thật / Mẫu)
+  - **Dashboard:** tôi đang làm tốt không? (KPI, task theo dự án, mục tiêu tháng, nhịp làm & học, thói quen; chế độ Thật / Mẫu)
+  - **Knowledge:** tôi đã học được gì? (ghi chú theo lĩnh vực và mức hiểu, nối các ghi chú liên quan)
+  - **Brain:** mọi thứ nối với nhau thế nào? (graph 3D lĩnh vực, ghi chú, dự án, việc)
 - Trung dành ≤ 2 giờ/tuần cho dự án; agent viết code, Trung review và test.
 
 ## Capabilities and Constraints
@@ -53,7 +55,7 @@ nối các mảnh này; Brainrot nối sẵn. Lý do và phương án đã cân 
 ## Brand Commitments
 
 - Tên: **Brainrot** (Second Brain Web).
-- Giao diện tiếng Việt; giữ tên màn Today / Tasks / Goal / Dashboard.
+- Giao diện tiếng Việt; giữ tên màn Dashboard / Today / Tasks / Goal / Knowledge / Brain.
 - Có cả theme sáng và tối, mặc định theo hệ điều hành, ghi nhớ lựa chọn.
 - Mỗi Dự án có một màu cố định dùng chung giữa các màn, gán theo **thứ tự dự án của từng người** (4 màu đầu, còn lại xám),
   vẽ bằng pill bo tròn (redesign 11/2026, `DESIGN.md`).
