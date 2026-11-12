@@ -6,7 +6,6 @@ import { Card, Empty } from "@/components/card";
 import { PageHeader } from "@/components/page-header";
 import { Readouts } from "@/components/readout";
 import { Skeleton } from "@/components/ui/skeleton";
-import { MaybeLink } from "@/components/tasks/maybe-link";
 import { TodayPlan, TomorrowPicker } from "@/components/tasks/today-plan";
 import { DailyLogCapture, IdeaForm } from "@/components/quick-capture";
 import { HabitToday } from "@/components/habits/habit-today";
@@ -20,7 +19,7 @@ import { StaleBanner } from "@/components/stale-banner";
 import type { DailyLog, Knowledge, Task } from "@/lib/types";
 import { latestKnowledge, planToday, todayProgress, upcomingDeadlines, type DeadlineItem } from "@/lib/today";
 import { noteDay } from "@/lib/knowledge";
-import { projectColorByOrder } from "@/lib/fields";
+import { colorVarByOrder } from "@/lib/topic-colors";
 import { Pill } from "@/components/pill";
 
 // Today theo hướng "Nhật ký kỹ thuật" (DESIGN.md, redesign 11/2026): hàng chỉ số → "Hôm nay làm" | cột phụ (thói quen, hạn)
@@ -178,9 +177,9 @@ function DeadlinesCard({ items }: { items: DeadlineItem[] }) {
                 <span className={`w-12 shrink-0 font-mono text-xs ${tone}`} aria-label={t.daysLeft < 0 ? `quá hạn ${-t.daysLeft} ngày` : `còn ${t.daysLeft} ngày`}>
                   {tLabel(t.daysLeft)}
                 </span>
-                <MaybeLink href={t.url} className={`min-w-0 flex-1 truncate ${t.daysLeft < 0 ? "text-danger" : ""}`} title={t.title}>
+                <span className={`min-w-0 flex-1 truncate ${t.daysLeft < 0 ? "text-danger" : ""}`} title={t.title}>
                   {t.title || "(Chưa đặt tên)"}
-                </MaybeLink>
+                </span>
                 <span className="font-mono text-xs text-muted-foreground">{formatDay(t.deadline, true)}</span>
               </li>
             );
@@ -224,7 +223,7 @@ function LatestNotesCard({ notes, fields }: { notes: Knowledge[]; fields: string
               </span>
               {n.field && (
                 <span>
-                  <Pill color={`var(${projectColorByOrder(n.field, fields)})`} dot>
+                  <Pill color={`var(${colorVarByOrder(n.field, fields)})`} dot>
                     {n.field}
                   </Pill>
                 </span>

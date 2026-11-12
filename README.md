@@ -81,13 +81,15 @@ Phạm vi và hành vi sản phẩm: [`SPEC.md`](SPEC.md) (một file hiện hà
 ## Cấu trúc
 
 ```
-app/(app)/        Trang sau đăng nhập: Dashboard, Today, Tasks, Goal, Cài đặt
+app/(app)/        Trang sau đăng nhập: Dashboard, Today, Tasks, Goal, Knowledge, Brain, Cài đặt
 app/login/        Đăng nhập
-app/actions/      Server Actions (task, thói quen, goal, nhìn lại, ghi nhanh, tài khoản)
+app/actions/      Server Actions (task, thói quen, goal, nhìn lại, ghi nhanh, kiến thức, tài khoản)
 proxy.ts          Chặn route khi chưa đăng nhập (Next 16: tên mới của middleware)
 lib/db/           Postgres (server-only): schema, migrations, queries, mutations, data; mọi hàm lọc theo userId
-lib/              Hàm thuần có test: date (giờ VN), today, period (năm/quý/tháng/tuần), goals, habits, dashboard…
-components/       UI: dashboard/, goals/, habits/, tasks/, settings/, reui/ (ReUI), ui/ (shadcn); brain/ đang ẩn
+lib/              Hàm thuần có test đặt cạnh: date (giờ VN), today, period, goals, habits, knowledge, text, topic-colors;
+                  dashboard/ (số liệu), graph/ (dữ liệu Brain)
+components/       UI theo màn: dashboard/, goals/, habits/, tasks/, knowledge/, brain/, settings/; file nằm thẳng ở đây
+                  là thứ dùng chung (card, pill, readout, deadline-field…); reui/ (ReUI), ui/ (shadcn)
 docs/             decisions/ (quyết định kỹ thuật), plans/ (plan), specs/archive/ (SPEC cũ), audits/ (rà soát 11/2026)
 ```
 

@@ -44,6 +44,13 @@ Trình duyệt ──► Next.js trên Vercel (Server Components + Server Action
   (`lib/db/revalidate.ts`). Giao diện cập nhật lạc quan; lỗi thì trả về như cũ và báo lỗi.
 - Một database Neon dùng chung cho dev và production. Migration ở `lib/db/migrations/`.
 - Quyết định kỹ thuật lâu dài: `docs/decisions/`.
+- **Tổ chức code** (dọn 12/11/2026):
+  - `app/(app)/<màn>/page.tsx` trang; `app/actions/` Server Actions (kiểm tra đầu vào → gọi `lib/db/` → `refreshData()`).
+  - `components/<màn>/` giao diện riêng từng màn (`tasks`, `goals`, `habits`, `dashboard`, `knowledge`, `brain`,
+    `settings`); file nằm thẳng trong `components/` là thứ nhiều màn dùng chung (`card`, `pill`, `readout`,
+    `deadline-field`, `filter-row`, `form-bits`, `sidebar`…); `components/ui/`, `components/reui/` là component thư viện.
+  - `lib/db/` mọi truy vấn (server-only); phần còn lại của `lib/` là hàm thuần có test đặt cạnh (`*.test.ts`), gom thư
+    mục khi có từ 2 file cùng chủ đề (`lib/dashboard/`, `lib/graph/`).
 
 ## 3. Dữ liệu
 
@@ -188,7 +195,7 @@ khẩu; xoá toàn bộ dữ liệu, không hoàn tác).
 - Graph 3D (`react-force-graph-3d`, dynamic import `ssr: false`; chỉ trang này tải three.js). Chưa có ghi chú hay việc
   chưa xong thì không tải graph, chỉ hiện một dòng hướng dẫn.
 - **Node:** Lĩnh vực (có ghi chú), Dự án (có việc chưa xong), ghi chú, việc chưa xong. **Link:** ghi chú → lĩnh vực,
-  việc → dự án, ghi chú ↔ ghi chú ("liên quan tới", có hạt chạy). Quy tắc dựng: `lib/graph-build.ts`.
+  việc → dự án, ghi chú ↔ ghi chú ("liên quan tới", có hạt chạy). Quy tắc dựng: `lib/graph/build.ts`.
 - Màu theo thứ tự lĩnh vực / dự án của từng người (4 màu + xám); việc vẽ nhạt hơn dự án của nó. Hai nhóm dùng chung 4
   màu nên nhãn và chip **Lĩnh vực chấm đặc, Dự án chấm rỗng**.
 - **Kiểu neuron** (three.js): mỗi node là một nhân cầu bóng tự phát sáng có quầng sáng quanh; Lĩnh vực nhân đặc, Dự án
@@ -233,8 +240,8 @@ khẩu; xoá toàn bộ dữ liệu, không hoàn tác).
 Chia sẻ / việc nhóm giữa các tài khoản · thông báo, nhắc nhở · app điện thoại · thu phí · đa ngôn ngữ · nhập dữ liệu
 từ Notion · trang tự đăng ký · đăng nhập Google · việc lặp lại · kéo thả việc giữa các ngày, khối giờ trong ngày ·
 kéo thả sắp xếp mục tiêu, mục tiêu dạng số đo · export báo cáo, khoảng ngày tuỳ ý ở Dashboard · LLM (chờ ngân sách) ·
-Google Calendar và thẻ Next up trên Today (Trung bỏ 12/11/2026; code đọc lịch cũ `lib/calendar/google.ts`,
-`lib/next-up.ts` còn trong repo nhưng không trang nào dùng).
+Google Calendar và thẻ Next up trên Today (Trung bỏ 12/11/2026; code đọc lịch cũ đã xoá khỏi repo cùng ngày, còn trong
+lịch sử git: `lib/calendar/google.ts`, `lib/next-up.ts`).
 
 ## 10. v1.1 — Knowledge, Brain (Trung duyệt 11/11/2026)
 

@@ -13,6 +13,6 @@ documents here as real choices are accepted, then index them in this file.
 
 - [0001](0001-notion-query-via-data-source.md): *(Superseded bởi 0004)* Gọi Notion API theo data source, chỉ qua `lib/notion/`.
 - [0002](0002-cache-with-use-cache-and-tags.md): *(Superseded bởi 0004)* Cache Notion bằng `"use cache"` 5 phút + tag; trang render lúc request.
-- [0003](0003-field-colors.md): Màu Lĩnh vực: 4 slot đã kiểm định + xám trung tính; mở rộng qua `lib/fields.ts`.
+- [0003](0003-field-colors.md): Màu Lĩnh vực: 4 slot đã kiểm định + xám trung tính; gán theo thứ tự của từng người ở `lib/topic-colors.ts`.
 - [0004](0004-postgres-drizzle-userid.md): Postgres (Neon) + Drizzle; mọi hàm `lib/db/` nhận `userId`; không cache dùng chung.
 - [0005](0005-email-password-auth.md): Đăng nhập email + mật khẩu tự viết, cookie HMAC, khoá tạm khi dò mật khẩu.

@@ -5,7 +5,9 @@ Date: 2026-10-22
 ## Status
 
 Accepted (Trung chốt 22/10/2026). Cập nhật 11/2026: quy tắc "4 màu đã kiểm định + xám" vẫn giữ, nhưng ở v1.0 áp cho
-**Dự án** theo thứ tự dự án của từng người (`DESIGN.md`); "Lĩnh vực" của Knowledge chỉ quay lại nếu làm v1.1 (`SPEC.md` mục 10).
+**Dự án** theo thứ tự dự án của từng người (`DESIGN.md`). Cập nhật 12/11/2026 (v1.1): Lĩnh vực của Knowledge cũng gán
+theo thứ tự của từng người; bảng tên cứng `FIELD_SLOTS` / `PROJECT_SLOTS` nhắc ở mục Decision đã xoá, chỗ gán màu duy nhất
+giờ là `colorVarByOrder` trong `lib/topic-colors.ts` (file cũ `lib/fields.ts`).
 
 ## Context
 

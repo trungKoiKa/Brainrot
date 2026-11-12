@@ -8,14 +8,14 @@ import { Card, Empty } from "@/components/card";
 import { FilterRow } from "@/components/filter-row";
 import { fieldClass } from "@/components/form-bits";
 import { Pill } from "@/components/pill";
-import { DeadlineField } from "@/components/tasks/deadline-field";
+import { DeadlineField } from "@/components/deadline-field";
 import { ErrorNotice } from "@/components/tasks/task-row";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { formatDay } from "@/lib/date";
-import { projectColorByOrder } from "@/lib/fields";
-import { fold } from "@/lib/graph-search";
+import { colorVarByOrder } from "@/lib/topic-colors";
+import { fold } from "@/lib/text";
 import { KNOWLEDGE_LEVELS, MAX_NOTE_TITLE, MAX_RELATED, NO_FIELD, filterNotes, noteDay, sortNotes, type KnowledgeLevel } from "@/lib/knowledge";
 import type { Knowledge } from "@/lib/types";
 
@@ -195,7 +195,7 @@ export function KnowledgeBoard({
                       <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
                         <h3 className="min-w-0 font-medium break-words">{n.title}</h3>
                         {n.field && (
-                          <Pill color={`var(${projectColorByOrder(n.field, fields)})`} dot>
+                          <Pill color={`var(${colorVarByOrder(n.field, fields)})`} dot>
                             {n.field}
                           </Pill>
                         )}

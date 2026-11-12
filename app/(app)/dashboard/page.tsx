@@ -57,7 +57,6 @@ async function DashboardContent() {
     thesisLabel: profile.target.label,
     tasks: tasks.data.map((t) => ({
       title: t.title,
-      url: t.url,
       plannedOn: t.plannedOn,
       project: t.project,
       status: t.status,

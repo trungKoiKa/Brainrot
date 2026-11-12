@@ -3,11 +3,11 @@ import type { DailyLog, Task } from "./types";
 import { tasksOnDay, weekDayCards } from "./week-days";
 
 const task = (id: string, over: Partial<Task>): Task => ({
-  id, url: "", title: id, project: null, status: "Chưa làm", priority: null, deadline: null, plannedOn: null, note: "",
+  id, title: id, project: null, status: "Chưa làm", priority: null, deadline: null, plannedOn: null, note: "",
   doneOn: null, createdTime: "", goalIds: [], ...over,
 });
 const log = (date: string, done: string, dropped = ""): DailyLog => ({
-  id: date, url: "", title: "", date, done, dropped, learned: "", tomorrowTop3: "", exercised: false, habits: [],
+  id: date, title: "", date, done, dropped, learned: "", tomorrowTop3: "", exercised: false, habits: [],
 });
 
 describe("Thẻ ngày chế độ Tuần (SPEC-v0.5 4.3)", () => {

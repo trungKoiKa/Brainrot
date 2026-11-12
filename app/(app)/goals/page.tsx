@@ -95,7 +95,7 @@ async function GoalsContent({ searchParams }: Pick<PageProps<"/goals">, "searchP
       g.id,
       g.taskIds.flatMap((id) => {
         const t = taskById.get(id);
-        return t ? [{ id, title: t.title, url: t.url, plannedOn: t.plannedOn, done: t.status === "Xong" }] : [];
+        return t ? [{ id, title: t.title, plannedOn: t.plannedOn, done: t.status === "Xong" }] : [];
       }),
     ]),
   );

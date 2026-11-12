@@ -1,6 +1,5 @@
 "use client";
 
-import { MaybeLink } from "@/components/tasks/maybe-link";
 import { toast } from "sonner";
 import { useState } from "react";
 import { CalendarDaysIcon, ChevronDownIcon } from "lucide-react";
@@ -75,12 +74,7 @@ export function WeekCards({
       <li key={t.id} className="space-y-1">
         <div className="flex gap-2">
           <TaskCheckbox task={t} onComplete={complete} />
-          <MaybeLink
-            href={t.url}
-            className={`min-w-0 break-words hover:text-primary ${done ? "text-muted-foreground line-through" : ""}`}
-          >
-            {t.title || "(Chưa đặt tên)"}
-          </MaybeLink>
+          <span className={`min-w-0 break-words ${done ? "text-muted-foreground line-through" : ""}`}>{t.title || "(Chưa đặt tên)"}</span>
         </div>
         {goalOfTask[t.id] && (
           <p className="pl-6 text-xs text-muted-foreground">
@@ -158,7 +152,7 @@ export function WeekCards({
             <section
               key={c.date}
               aria-label={`${WEEKDAY[i]} ${formatDay(c.date, true)}`}
-              className={`min-w-0 border bg-surface p-3 ${isToday ? "border-primary" : "border-line"}`}
+              className={`min-w-0 rounded-xl border bg-surface p-3 ${isToday ? "border-primary" : "border-line"}`}
             >
               <div className="flex w-full items-start gap-2">
                 <div className="min-w-0 flex-1">

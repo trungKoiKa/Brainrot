@@ -1,6 +1,6 @@
 // Ghi chú kiến thức (SPEC.md mục 5.6). Hàm thuần, không gọi database → test được.
 import { MAX_TEXT, type Parsed } from "./quick-capture";
-import { fold } from "./graph-search";
+import { fold } from "./text";
 import type { Knowledge } from "./types";
 
 export const KNOWLEDGE_LEVELS = ["Mới học", "Hiểu", "Áp dụng được"] as const;

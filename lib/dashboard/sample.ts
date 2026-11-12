@@ -68,7 +68,6 @@ export function sampleDashboard(today: string, thesisDeadline = "2026-12-06"): D
       const done = r() < 0.85 && doneAfter <= i;
       tasks.push({
         title: "",
-        url: "",
         plannedOn: null,
         project,
         status: done ? "Xong" : r() < 0.35 ? "Đang làm" : "Chưa làm",

@@ -31,7 +31,6 @@ export async function listTasks(db: Db, userId: string): Promise<Task[]> {
   for (const l of links) goalsOf.set(l.taskId, [...(goalsOf.get(l.taskId) ?? []), l.goalId]);
   return rows.map(({ t, project }) => ({
     id: t.id,
-    url: "", // không còn trang Notion để mở; sửa task bằng nút ✎
     title: t.title,
     project,
     status: t.status,
@@ -64,7 +63,6 @@ async function withHabits(db: Db, userId: string, logs: (typeof dailyLogs.$infer
   for (const r of rows) namesOf.set(r.day, [...(namesOf.get(r.day) ?? []), r.name]);
   return logs.map((l) => ({
     id: l.id,
-    url: "",
     title: l.day,
     date: l.day,
     done: l.done,

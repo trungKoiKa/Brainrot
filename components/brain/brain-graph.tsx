@@ -7,9 +7,9 @@ import ForceGraph3D, { type ForceGraphMethods, type LinkObject, type NodeObject 
 import * as THREE from "three";
 import { forceX, forceY, forceZ } from "d3-force-3d";
 import { Button } from "@/components/ui/button";
-import { projectColorByOrder } from "@/lib/fields";
-import { neighborhood } from "@/lib/graph-search";
-import type { GraphData, GraphLink, GraphNode } from "@/lib/graph-types";
+import { colorVarByOrder } from "@/lib/topic-colors";
+import { neighborhood } from "@/lib/graph/search";
+import type { GraphData, GraphLink, GraphNode } from "@/lib/graph/types";
 import { GraphSearch } from "./graph-search";
 
 type Palette = Record<string, string>;
@@ -244,8 +244,8 @@ export default function BrainGraph({ data }: { data: GraphData }) {
     (n: GraphNode): string => {
       if (!palette) return "#888";
       // Màu theo thứ tự lĩnh vực / dự án của từng người (4 mục đầu có màu, còn lại xám), như pill ở các trang khác
-      if (n.kind === "field" || n.kind === "note") return palette[projectColorByOrder(n.field ?? null, data.fields)];
-      const projectColor = palette[projectColorByOrder(n.project ?? null, data.projects)];
+      if (n.kind === "field" || n.kind === "note") return palette[colorVarByOrder(n.field ?? null, data.fields)];
+      const projectColor = palette[colorVarByOrder(n.project ?? null, data.projects)];
       return n.kind === "project" ? projectColor : soften(projectColor, palette["--background"]);
     },
     [palette, data.fields, data.projects],
@@ -440,7 +440,7 @@ export default function BrainGraph({ data }: { data: GraphData }) {
             key={`f-${name}`}
             label={name}
             count={count}
-            color={`var(${projectColorByOrder(name, data.fields)})`}
+            color={`var(${colorVarByOrder(name, data.fields)})`}
             onClick={() => focusHub(`field:${name}`)}
           />
         ))}
@@ -450,7 +450,7 @@ export default function BrainGraph({ data }: { data: GraphData }) {
             key={`p-${name}`}
             label={name}
             count={count}
-            color={`var(${projectColorByOrder(name, data.projects)})`}
+            color={`var(${colorVarByOrder(name, data.projects)})`}
             hollow
             onClick={() => focusHub(`project:${name}`)}
           />

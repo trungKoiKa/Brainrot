@@ -61,8 +61,8 @@ function store(key: string, value: string) {
 
 const fmt = new Intl.NumberFormat("vi-VN");
 const linkClass = "font-medium text-primary underline-offset-4 hover:underline";
-// Khung trong lưới: kéo panel cao bằng hàng để không lộ nền khung bên dưới
-const fill = "h-full [&>[data-slot=frame-panel]]:flex-1";
+// Khung trong lưới cao bằng hàng
+const fill = "h-full";
 const SPAN = { 1: "", 2: "lg:col-span-2", 3: "lg:col-span-3" } as const;
 
 /** Một khối có dữ liệu (vẽ trong lưới) hoặc không (một dòng trong khung "Chưa có dữ liệu"). */
