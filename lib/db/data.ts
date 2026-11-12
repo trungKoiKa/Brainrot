@@ -12,6 +12,7 @@ import {
   getProfileRow,
   listProjectsWithCounts,
 } from "./queries";
+import { listFieldNames, listFieldsWithCounts, listKnowledge } from "./knowledge";
 import { requireUserId } from "@/lib/session";
 import { DEFAULT_USER_ID } from "./schema";
 import type { Goal } from "@/lib/goals";
@@ -33,8 +34,23 @@ export const getTasks = cache(async (): Promise<Loaded<Task[]>> => {
   return fresh(await listTasks(db, userId));
 });
 
-/** Đợt 1 chưa có Knowledge (v1.1) → luôn rỗng. */
-export const getKnowledge = async (): Promise<Loaded<Knowledge[]>> => fresh([]);
+/** Ghi chú kiến thức của người đang đăng nhập (SPEC.md mục 10.1). */
+export const getKnowledge = cache(async (): Promise<Loaded<Knowledge[]>> => {
+  const { db, userId } = await scope();
+  return fresh(await listKnowledge(db, userId));
+});
+
+/** Lĩnh vực chọn được khi thêm / sửa ghi chú. */
+export const getKnowledgeFields = cache(async (): Promise<string[]> => {
+  const { db, userId } = await scope();
+  return listFieldNames(db, userId);
+});
+
+/** Lĩnh vực + số ghi chú gắn (trang Cài đặt). */
+export async function getFieldsWithCounts() {
+  const { db, userId } = await scope();
+  return listFieldsWithCounts(db, userId);
+}
 
 export const getRecentDailyLogs = cache(async (): Promise<Loaded<DailyLog[]>> => {
   const { db, userId } = await scope();
