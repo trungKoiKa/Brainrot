@@ -18,7 +18,7 @@ export default function BrainPage() {
   return (
     <>
       <PageHeader kicker="BẢN ĐỒ" title="Brain" subtitle="Ghi chú, lĩnh vực, việc và dự án nối với nhau thế nào." />
-      <Suspense fallback={<Skeleton className="h-[calc(100dvh-13rem)] min-h-96 rounded-none" />}>
+      <Suspense fallback={<Skeleton className="h-[calc(100dvh-13rem)] min-h-96 rounded-xl" />}>
         <BrainContent />
       </Suspense>
     </>

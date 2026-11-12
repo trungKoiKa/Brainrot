@@ -1,4 +1,4 @@
-// Khung chuẩn của hướng "Nhật ký kỹ thuật" (DESIGN.md): hộp vuông viền 1px nền surface, hàng tiêu đề kẻ dưới.
+// Khung chuẩn (DESIGN.md): hộp bo 12px viền 1px nền surface, hàng tiêu đề kẻ dưới.
 // Một họ khung cho mọi trang; không lồng khung trong khung.
 
 export function Card({
@@ -19,7 +19,7 @@ export function Card({
   children: React.ReactNode;
 }) {
   return (
-    <section className={`min-w-0 border border-line bg-surface ${className}`}>
+    <section className={`min-w-0 overflow-clip rounded-xl border border-line bg-surface ${className}`}>
       {(title || action) && (
         <div className="flex min-h-11 items-center justify-between gap-3 border-b border-line px-4 py-2.5">
           {title && <h2 className={`font-semibold ${focal ? "text-base" : "text-sm"}`}>{title}</h2>}

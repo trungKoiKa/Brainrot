@@ -196,7 +196,7 @@ export function TaskBoard({
       )}
 
       {done.length > 0 && (
-        <Collapsible className="border border-line bg-surface">
+        <Collapsible className="overflow-clip rounded-xl border border-line bg-surface">
           <CollapsibleTrigger className="group/done flex min-h-11 w-full items-center gap-2 px-4 py-2.5 text-left">
             <ChevronRightIcon aria-hidden="true" className="size-4 text-muted-foreground transition-transform group-data-[panel-open]/done:rotate-90" />
             <h2 className="text-sm font-semibold">

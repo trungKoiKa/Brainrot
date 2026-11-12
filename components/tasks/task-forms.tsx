@@ -38,7 +38,7 @@ function Select({
       value={value}
       onChange={(e) => onChange(e.target.value)}
       // Chưa chọn → chữ mờ như ô ngày trống, để không trông như đã chọn
-      className={`${compactField} ${value ? "" : "text-muted-foreground"}`}
+      className={`${compactField} select-chevron pr-8 ${value ? "" : "text-muted-foreground"}`}
     >
       {empty !== undefined && <option value="">{empty}</option>}
       {options.map((o) => (

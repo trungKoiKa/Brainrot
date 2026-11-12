@@ -18,9 +18,9 @@ export default function TasksPage({ searchParams }: PageProps<"/tasks">) {
       <Suspense
         fallback={
           <div className="flex flex-col gap-6">
-            <Skeleton className="h-24 rounded-none" />
-            <Skeleton className="h-28 rounded-none" />
-            <Skeleton className="h-80 rounded-none" />
+            <Skeleton className="h-24 rounded-xl" />
+            <Skeleton className="h-28 rounded-xl" />
+            <Skeleton className="h-80 rounded-xl" />
           </div>
         }
       >

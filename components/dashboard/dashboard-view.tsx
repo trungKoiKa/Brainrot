@@ -290,7 +290,7 @@ export function DashboardView({ real }: { real: DashInput }) {
 
       {/* Một dải thông báo thay cho nhãn "Mẫu" trên từng khung (critique lần 3) */}
       {all && (
-        <div role="status" className="flex flex-wrap items-center gap-3 border border-line bg-surface-muted px-4 py-3 text-sm">
+        <div role="status" className="flex flex-wrap items-center gap-3 rounded-xl border border-line bg-surface-muted px-4 py-3 text-sm">
           <span>
             Đang xem <span className="font-medium">dữ liệu mẫu</span>, không phải số của bạn.
           </span>
@@ -414,7 +414,7 @@ function Segmented<T extends string | number>({
   return (
     <div role="group" aria-label={label} className={`flex items-center gap-2 ${className}`}>
       <span className="font-mono text-xs text-muted-foreground uppercase">{label}</span>
-      <div className="flex border border-line bg-surface p-0.5">
+      <div className="flex rounded-lg border border-line bg-surface p-0.5">
         {options.map((o) => (
           <button
             key={o.value}

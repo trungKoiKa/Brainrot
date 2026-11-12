@@ -40,7 +40,7 @@ export default function GoalsPage({ searchParams }: PageProps<"/goals">) {
   return (
     <div>
       <PageHeader kicker="MỤC TIÊU" title="Goal" subtitle="Mục tiêu, thói quen và nhìn lại theo năm · quý · tháng · tuần." />
-      <Suspense fallback={<Skeleton className="h-96 rounded-none" />}>
+      <Suspense fallback={<Skeleton className="h-96 rounded-xl" />}>
         <GoalsContent searchParams={searchParams} />
       </Suspense>
     </div>
@@ -127,7 +127,7 @@ async function GoalsContent({ searchParams }: Pick<PageProps<"/goals">, "searchP
       {motto && <p className="text-base text-muted-foreground italic">“{motto}”</p>}
 
       <div className="flex flex-wrap items-center gap-3">
-        <nav aria-label="Cấp" className="flex border border-line bg-surface p-0.5">
+        <nav aria-label="Cấp" className="flex rounded-lg border border-line bg-surface p-0.5">
           {LEVELS.map((l) => (
             <Link
               key={l}

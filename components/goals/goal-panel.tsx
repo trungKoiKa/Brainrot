@@ -461,7 +461,7 @@ function LinkHabit({
         aria-label="Thói quen"
         value={habitId}
         onChange={(e) => setHabitId(e.target.value)}
-        className={`${fieldClass.replace("w-full", "w-auto")} py-1`}
+        className={`${fieldClass.replace("w-full", "w-auto")} select-chevron pr-8`}
       >
         {habits.map((h) => (
           <option key={h.id} value={h.id}>
@@ -538,7 +538,7 @@ function AddGoal({
         aria-label="Loại"
         value={type}
         onChange={(e) => setType(e.target.value as GoalType)}
-        className={fieldClass.replace("w-full", "w-auto")}
+        className={`${fieldClass.replace("w-full", "w-auto")} select-chevron pr-8`}
       >
         <option value="Thường">Thường</option>
         <option value="Ưu tiên">Ưu tiên</option>
