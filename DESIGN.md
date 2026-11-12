@@ -98,7 +98,9 @@ và trạng thái là pill bo tròn hẳn, để mắt bắt ngay "việc này t
 
 - **Giấy kẻ ô** (`background`): nền trang, có lưới 24px rất mờ (`--grid`). Chỉ ở nền trang, không trong khung.
 - **Surface**: nền khung (trắng / gần đen). `surface-muted` cho hàng tiêu đề bảng, vùng chọn.
-- **Line** (`--line`): viền khung, kẻ dòng. Chỉ trang trí, **không** dùng làm viền control.
+- **Line** (`--line`): viền khung. Chỉ trang trí, **không** dùng làm viền control.
+- **Line soft** (`--line-soft`): kẻ giữa các dòng trong khung và kẻ dưới hàng tiêu đề khung; nhạt hơn viền khung để khung
+  vẫn là đường mạnh nhất.
 - **Input** (`--input`): viền ô nhập, ô tích, select (≥ 3:1 trên surface, WCAG 1.4.11).
 - **Tín hiệu cam** (`--primary`): nút chính, mục đang chọn, đếm ngược, focus ring. Màu nhấn duy nhất.
 - **Trạng thái** (chữ ≥ 4,5:1 trên surface ở cả hai theme):
@@ -162,7 +164,9 @@ Chữ 12px 500, đệm 2px × 10px, nền là chính màu chữ trộn 13% với
 Nút pill (ví dụ "Làm hôm nay"): viền `--input`, nền surface, chữ 12px 500.
 
 ### Bảng việc (signature)
-Dòng: số thứ tự `01` · ô tích · tên việc · cột nhãn căn phải (pill + ngày). Dưới `md`: nhãn xuống dòng
+Dòng: số thứ tự `01` · ô tích · tên việc · cột nhãn căn phải (pill + ngày).
+Giữa các dòng là kẻ mảnh `--line-soft` **thụt 16px hai đầu** (class `row-sep`), không chạy sát viền khung; rê chuột thì
+dòng có nền `surface-muted`; dòng đang sửa giữ nền đó (Trung chốt 12/11/2026: kẻ đậm sát viền trông thô). Dưới `md`: nhãn xuống dòng
 dưới tên, không bao giờ bóp tên thành cột hẹp. Việc vừa tích **ở lại** gạch ngang, pill "xong", tới hết ngày.
 
 ### Hàng chỉ số

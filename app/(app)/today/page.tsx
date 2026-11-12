@@ -134,7 +134,7 @@ function TodayPlanCard({ today, tasks, projects, weekGoals }: { today: string; t
     <Card title="Hôm nay làm" focal flush action={<span className="text-xs text-muted-foreground tabular-nums">{count} dòng</span>}>
       <TodayPlan today={today} tasks={tasks} projects={projects} />
       {weekGoals.length > 0 && (
-        <div className="border-t border-line px-4 py-3">
+        <div className="border-t border-line-soft px-4 py-3">
           <p className="mb-2 flex items-baseline justify-between text-xs text-muted-foreground">
             <span className="font-mono uppercase">Mục tiêu tuần</span>
             <Link href="/goals?level=week" className="hover:text-foreground">
@@ -174,7 +174,7 @@ function DeadlinesCard({ items }: { items: DeadlineItem[] }) {
           {items.map((t) => {
             const tone = t.daysLeft < 0 ? "text-danger" : t.daysLeft <= 1 ? "text-warning" : "text-muted-foreground";
             return (
-              <li key={t.id} className="flex items-baseline gap-3 border-b border-line px-4 py-2 text-sm last:border-b-0">
+              <li key={t.id} className="row-sep flex items-baseline gap-3 px-4 py-2.5 text-sm transition-colors hover:bg-surface-muted">
                 <span className={`w-12 shrink-0 font-mono text-xs ${tone}`} aria-label={t.daysLeft < 0 ? `quá hạn ${-t.daysLeft} ngày` : `còn ${t.daysLeft} ngày`}>
                   {tLabel(t.daysLeft)}
                 </span>
@@ -215,7 +215,7 @@ function LatestNotesCard({ notes, fields }: { notes: Knowledge[]; fields: string
       ) : (
         <ul>
           {notes.map((n) => (
-            <li key={n.id} className="flex flex-col gap-1 border-b border-line px-4 py-2 text-sm last:border-b-0">
+            <li key={n.id} className="row-sep flex flex-col gap-1 px-4 py-2.5 text-sm transition-colors hover:bg-surface-muted">
               <span className="flex items-baseline gap-3">
                 <Link href="/knowledge" className="min-w-0 flex-1 truncate underline-offset-4 hover:underline" title={n.title}>
                   {n.title}

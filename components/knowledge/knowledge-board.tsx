@@ -181,9 +181,9 @@ export function KnowledgeBoard({
             </span>
           }
         >
-          <ul className="divide-y divide-line">
+          <ul>
             {shown.map((n, i) => (
-              <li key={n.id} data-note-id={n.id} className="px-4 py-3">
+              <li key={n.id} data-note-id={n.id} className={`row-sep px-4 py-3 ${editing === n.id ? "bg-surface-muted" : "transition-colors hover:bg-surface-muted"}`}>
                 {editing === n.id ? (
                   <EditNoteForm note={n} fields={fields} others={sorted.filter((o) => o.id !== n.id)} onClose={() => closeEdit(n.id)} />
                 ) : (

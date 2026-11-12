@@ -79,7 +79,7 @@ export function HabitManager({ month, habits }: { month: string; habits: Habit[]
           Thêm
         </button>
       </form>
-      <ul className="divide-y divide-line">
+      <ul className="divide-y divide-line-soft">
         {habits.map((h, i) => {
           const ending = h.to !== null && monthOf(h.to) === month;
           return (

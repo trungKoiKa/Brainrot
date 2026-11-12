@@ -384,7 +384,7 @@ export function DashboardView({ real }: { real: DashInput }) {
       {/* Khối chưa có dữ liệu: gom về một khung cuối trang, mỗi khối một dòng (critique lần 3) */}
       {missing.length > 0 && (
         <Card title="Chưa có dữ liệu">
-          <ul className="divide-y divide-line text-sm">
+          <ul className="divide-y divide-line-soft text-sm">
             {missing.map((b) => (
               <li key={b.key} className="grid gap-1 py-2.5 first:pt-0 last:pb-0 sm:grid-cols-[11rem_1fr] sm:gap-4">
                 <span className="font-medium">{b.title}</span>

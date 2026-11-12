@@ -175,7 +175,7 @@ export function TaskBoard({
               <ul>
                 {g.tasks.map((t) =>
                   editing === t.id ? (
-                    <li key={t.id} className="border-b border-line p-4 last:border-b-0">
+                    <li key={t.id} className="row-sep bg-surface-muted p-4">
                       <EditTaskForm task={t} projects={allProjects} goals={goals} onClose={() => closeEdit(t.id)} />
                     </li>
                   ) : (
@@ -204,7 +204,7 @@ export function TaskBoard({
             </h2>
           </CollapsibleTrigger>
           <CollapsibleContent>
-            <ul className="border-t border-line">
+            <ul className="border-t border-line-soft">
               {done.map((t) => (
                 <TaskRow key={t.id} task={t} today={today} projects={allProjects} onReopen={reopen} onDelete={onDelete} />
               ))}

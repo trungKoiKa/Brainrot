@@ -317,7 +317,7 @@ export function DailyBars({ days }: { days: Day[] }) {
 export function DueSoonList({ items, more }: { items: (DashTask & { deadline: string; daysLeft: number })[]; more: number }) {
   if (items.length === 0) return <Empty>Không có việc nào quá hạn hay sắp đến hạn.</Empty>;
   return (
-    <ul className="divide-y divide-line text-sm">
+    <ul className="divide-y divide-line-soft text-sm">
       {items.map((t, i) => (
         <li key={`${t.title}-${i}`} className="flex items-baseline gap-3 py-2 first:pt-0 last:pb-0">
           {/* Task không còn trang riêng (v1.0) → mở Tasks, lọc theo dự án của việc */}
