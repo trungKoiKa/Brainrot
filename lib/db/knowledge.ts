@@ -1,4 +1,4 @@
-// Knowledge (SPEC.md mục 10.1): lĩnh vực, ghi chú, liên kết "liên quan tới".
+// Knowledge (SPEC.md mục 5.6): lĩnh vực, ghi chú, liên kết "liên quan tới".
 // Như mọi file lib/db/: mọi hàm nhận `userId` và mọi câu đọc / sửa / xoá đều kèm `user_id` (docs/decisions/0004).
 
 import { and, asc, count, eq, inArray, or, sql } from "drizzle-orm";

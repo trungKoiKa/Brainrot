@@ -79,8 +79,9 @@ export function sampleDashboard(today: string, thesisDeadline = "2026-12-06"): D
     }
   }
 
-  // Knowledge ẩn ở v1.0; vẫn rút số ngẫu nhiên như cũ để phần mẫu phía sau không đổi
-  for (let i = HISTORY_DAYS; i >= 0; i--) r();
+  // Ghi chú kiến thức mẫu: khoảng 1 ghi chú mỗi 3 ngày
+  const knowledge: string[] = [];
+  for (let i = HISTORY_DAYS; i >= 0; i--) if (r() < 0.32) knowledge.push(addDays(today, -i));
 
   const logs: DashLog[] = [];
   for (let i = 89; i >= 0; i--) {
@@ -129,5 +130,5 @@ export function sampleDashboard(today: string, thesisDeadline = "2026-12-06"): D
     taskIds: [],
   }));
 
-  return { today, tasks, logs, thesisDeadline, habits, monthGoals };
+  return { today, tasks, knowledge, logs, thesisDeadline, habits, monthGoals };
 }

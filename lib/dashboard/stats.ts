@@ -36,6 +36,8 @@ export type DashInput = {
   today: string;
   tasks: DashTask[];
   logs: DashLog[];
+  /** Ngày của từng ghi chú kiến thức (Ngày học, không có thì ngày tạo) — SPEC.md mục 5.6 */
+  knowledge: string[];
   thesisDeadline: string | null;
   /** Nhãn thẻ đếm ngược trong Cài đặt (vd. "hạn nộp đồ án"); thiếu → "Hạn chót" */
   thesisLabel?: string;
@@ -165,9 +167,9 @@ export function tasksByProject(tasks: DashTask[]) {
   return [...groups.values()].sort((a, b) => rank(a.project) - rank(b.project));
 }
 
-// ---------- 4.3 nhịp làm theo tuần (v1.0 bỏ phần "học": Knowledge ẩn tới v1.1) ----------
+// ---------- 4.3 nhịp làm & học theo tuần ----------
 
-export function weeklyRhythm({ today, tasks }: DashInput, weeks = 12) {
+export function weeklyRhythm({ today, tasks, knowledge }: DashInput, weeks = 12) {
   const thisMonday = mondayOf(today);
   const rows = Array.from({ length: weeks }, (_, i) => {
     const week = addDays(thisMonday, (i - weeks + 1) * 7);
@@ -176,9 +178,10 @@ export function weeklyRhythm({ today, tasks }: DashInput, weeks = 12) {
     return {
       week,
       done: tasks.filter((t) => isDone(t) && inWeek(t.doneOn)).length,
+      learned: knowledge.filter(inWeek).length,
     };
   });
-  const sum = (part: typeof rows) => part.reduce((s, r) => s + r.done, 0);
+  const sum = (part: typeof rows) => part.reduce((s, r) => s + r.done + r.learned, 0);
   return { rows, change: change(sum(rows.slice(-4)), sum(rows.slice(-8, -4))) };
 }
 

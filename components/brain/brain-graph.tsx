@@ -2,10 +2,12 @@
 
 // Chỉ được nạp phía client (xem brain-view.tsx: dynamic import, ssr: false) vì three.js cần WebGL/window.
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useRouter } from "next/navigation";
 import ForceGraph3D, { type ForceGraphMethods, type LinkObject, type NodeObject } from "react-force-graph-3d";
 import * as THREE from "three";
 import { forceX, forceY, forceZ } from "d3-force-3d";
-import { fieldColorVar, projectColorVar } from "@/lib/fields";
+import { Button } from "@/components/ui/button";
+import { projectColorByOrder } from "@/lib/fields";
 import { neighborhood } from "@/lib/graph-search";
 import type { GraphData, GraphLink, GraphNode } from "@/lib/graph-types";
 import { GraphSearch } from "./graph-search";
@@ -51,18 +53,21 @@ function useSize<T extends HTMLElement>() {
   return [ref, size] as const;
 }
 
-/** Tooltip của thư viện chèn HTML → phải escape tên trang lấy từ Notion. */
+/** Tooltip của thư viện chèn HTML → phải escape tên do người dùng gõ. */
 const escapeHtml = (s: string) =>
   s.replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]!);
 
-const MIN_DISTANCE = 180;
-const DIM = 0.85; // mức trộn về màu nền của node/link bị làm mờ khi đang chọn một node // khoảng cách camera tối thiểu (đơn vị của graph)
+const MIN_DISTANCE = 180; // khoảng cách camera tối thiểu (đơn vị của graph)
+const DIM = 0.85; // mức trộn về màu nền của node/link bị làm mờ khi đang chọn một node
 
 const isHub = (n: GraphNode) => n.kind === "field" || n.kind === "project";
 const idOf = (end: string | number | Node | undefined) => (typeof end === "object" ? String(end.id) : String(end));
 
-/** Nhãn cụm cố định trên graph: chấm màu + tên (vẽ ra canvas rồi làm sprite, không cần thư viện chữ). */
-function makeLabel(text: string, dotColor: string, textColor: string, opacity = 1): THREE.Sprite {
+/**
+ * Nhãn cụm cố định trên graph: chấm màu + tên (vẽ ra canvas rồi làm sprite, không cần thư viện chữ).
+ * `hollow`: chấm rỗng cho Dự án, chấm đặc cho Lĩnh vực — cùng quy ước với chip chú thích, vì hai nhóm dùng chung 4 màu.
+ */
+function makeLabel(text: string, dotColor: string, textColor: string, opacity = 1, hollow = false): THREE.Sprite {
   const ratio = 4;
   const fontSize = 15 * ratio;
   const font = `600 ${fontSize}px ${getComputedStyle(document.body).fontFamily}`;
@@ -76,10 +81,18 @@ function makeLabel(text: string, dotColor: string, textColor: string, opacity = 
   ctx.canvas.height = height;
   ctx.font = font;
   ctx.textBaseline = "middle";
-  ctx.fillStyle = dotColor;
   ctx.beginPath();
-  ctx.arc(dot, height / 2, dot, 0, Math.PI * 2);
-  ctx.fill();
+  if (hollow) {
+    const line = dot * 0.45;
+    ctx.strokeStyle = dotColor;
+    ctx.lineWidth = line;
+    ctx.arc(dot, height / 2, dot - line / 2, 0, Math.PI * 2);
+    ctx.stroke();
+  } else {
+    ctx.fillStyle = dotColor;
+    ctx.arc(dot, height / 2, dot, 0, Math.PI * 2);
+    ctx.fill();
+  }
   ctx.fillStyle = textColor;
   ctx.fillText(text, dot * 2 + gap, height / 2);
 
@@ -97,13 +110,14 @@ function makeLabel(text: string, dotColor: string, textColor: string, opacity = 
   return sprite;
 }
 
-/** Màu nhạt hơn của một màu (trộn về phía màu nền) — task "màu nhạt" theo SPEC 7.3. */
+/** Màu nhạt hơn của một màu (trộn về phía màu nền): việc vẽ nhạt hơn dự án của nó. */
 function soften(color: string, background: string, amount = 0.45): string {
   return `#${new THREE.Color(color).lerp(new THREE.Color(background), amount).getHexString()}`;
 }
 
 export default function BrainGraph({ data }: { data: GraphData }) {
   const palette = usePalette();
+  const router = useRouter();
   const [containerRef, { width, height }] = useSize<HTMLDivElement>();
   const graphRef = useRef<ForceGraphMethods<Node, Link> | undefined>(undefined);
   const fitted = useRef(false);
@@ -128,11 +142,12 @@ export default function BrainGraph({ data }: { data: GraphData }) {
   const colorOf = useCallback(
     (n: GraphNode): string => {
       if (!palette) return "#888";
-      if (n.kind === "field" || n.kind === "note") return palette[fieldColorVar(n.field ?? null)];
-      const projectColor = palette[projectColorVar(n.project ?? null)];
+      // Màu theo thứ tự lĩnh vực / dự án của từng người (4 mục đầu có màu, còn lại xám), như pill ở các trang khác
+      if (n.kind === "field" || n.kind === "note") return palette[projectColorByOrder(n.field ?? null, data.fields)];
+      const projectColor = palette[projectColorByOrder(n.project ?? null, data.projects)];
       return n.kind === "project" ? projectColor : soften(projectColor, palette["--background"]);
     },
-    [palette],
+    [palette, data.fields, data.projects],
   );
 
   // Lực mô phỏng: hút mọi node về tâm (3 trục) để các cụm không trôi xa nhau, đẩy nhẹ, link ngắn
@@ -160,7 +175,7 @@ export default function BrainGraph({ data }: { data: GraphData }) {
   const hubObject = useCallback(
     (n: Node) =>
       (palette && isHub(n)
-        ? makeLabel(n.label, colorOf(n), palette["--foreground"], dimmed(String(n.id)) ? 0.25 : 1)
+        ? makeLabel(n.label, colorOf(n), palette["--foreground"], dimmed(String(n.id)) ? 0.25 : 1, n.kind === "project")
         : undefined) as THREE.Object3D,
     [palette, colorOf, dimmed],
   );
@@ -187,7 +202,7 @@ export default function BrainGraph({ data }: { data: GraphData }) {
   }
 
   function handleClick(node: Node) {
-    if (node.url) window.open(node.url, "_blank", "noopener,noreferrer");
+    if (node.url) router.push(node.url); // ghi chú → /knowledge, việc → /tasks
     else focus(node); // Lĩnh vực / Dự án → bay camera tới cụm
   }
 
@@ -206,8 +221,9 @@ export default function BrainGraph({ data }: { data: GraphData }) {
     data.links.filter(
       (l) => l.kind === "belongs" && l.target === `${key}:${value}` && data.nodes.find((n) => n.id === l.source)?.kind === kind,
     ).length;
-  const pageCount = data.nodes.filter((n) => !isHub(n)).length;
-  // Chỉ hiện chip của cụm đang có trang (giống ảnh tham khảo); cụm trống gom thành 1 dòng
+  const noteCount = data.nodes.filter((n) => n.kind === "note").length;
+  const taskCount = data.nodes.filter((n) => n.kind === "task").length;
+  // Chỉ hiện chip của cụm đang có ghi chú / việc; cụm trống gom thành 1 dòng
   const fieldAll = data.fields.map((name) => ({ name, count: memberCount("note", "field", name) }));
   const projectAll = data.projects.map((name) => ({ name, count: memberCount("task", "project", name) }));
   const fieldChips = fieldAll.filter((c) => c.count > 0);
@@ -231,7 +247,7 @@ export default function BrainGraph({ data }: { data: GraphData }) {
           nodeColor={(n) => shownColor(colorOf(n), dimmed(String(n.id)))}
           nodeOpacity={0.92}
           nodeThreeObject={hubObject}
-          nodeLabel={(n) => escapeHtml(isHub(n) ? `${n.label} — bấm để zoom` : n.label)}
+          nodeLabel={(n) => escapeHtml(isHub(n) ? `${n.label} · bấm để bay tới` : `${n.label} · bấm để mở ${n.kind === "note" ? "Knowledge" : "Tasks"}`)}
           linkColor={(l) =>
             shownColor(
               colorById.get(idOf(l.source)) ?? palette["--muted-foreground"],
@@ -263,9 +279,9 @@ export default function BrainGraph({ data }: { data: GraphData }) {
         />
         <span className="flex flex-col items-end gap-1 pt-1.5">
           <span className="font-mono">
-            {pageCount} trang · {data.links.length} link
+            {noteCount} ghi chú · {taskCount} việc · {data.links.length} liên kết
           </span>
-          <span className="hidden sm:inline">Kéo để xoay · cuộn để zoom · bấm cụm hoặc trang</span>
+          <span className="hidden sm:inline">Kéo để xoay · cuộn để zoom · bấm cụm để bay tới</span>
         </span>
       </div>
 
@@ -277,7 +293,7 @@ export default function BrainGraph({ data }: { data: GraphData }) {
             key={`f-${name}`}
             label={name}
             count={count}
-            color={`var(${fieldColorVar(name)})`}
+            color={`var(${projectColorByOrder(name, data.fields)})`}
             onClick={() => focusHub(`field:${name}`)}
           />
         ))}
@@ -287,14 +303,14 @@ export default function BrainGraph({ data }: { data: GraphData }) {
             key={`p-${name}`}
             label={name}
             count={count}
-            color={`var(${projectColorVar(name)})`}
+            color={`var(${projectColorByOrder(name, data.projects)})`}
             hollow
             onClick={() => focusHub(`project:${name}`)}
           />
         ))}
         {emptyCount > 0 && (
           <span className="text-xs text-muted-foreground" title={emptyNames.join(", ")}>
-            +{emptyCount} cụm chưa có trang
+            +{emptyCount} cụm trống
           </span>
         )}
       </div>
@@ -303,7 +319,7 @@ export default function BrainGraph({ data }: { data: GraphData }) {
 }
 
 function GroupLabel({ children }: { children: React.ReactNode }) {
-  return <span className="shrink-0 pl-1 text-xs font-medium uppercase tracking-wide text-muted-foreground first:pl-0">{children}</span>;
+  return <span className="shrink-0 pl-1 font-mono text-xs text-muted-foreground uppercase first:pl-0">{children}</span>;
 }
 
 function LegendChip({
@@ -319,21 +335,15 @@ function LegendChip({
   hollow?: boolean;
   onClick: () => void;
 }) {
-  const empty = count === 0;
   return (
-    <button
-      type="button"
-      onClick={onClick}
-      disabled={empty}
-      title={empty ? `${label}: chưa có trang nào` : `Bay tới cụm ${label}`}
-      className="flex shrink-0 items-center gap-2 rounded-full border border-line bg-surface/80 px-3 py-1 text-xs text-foreground backdrop-blur transition-colors hover:border-primary disabled:cursor-default disabled:opacity-45 disabled:hover:border-line"
-    >
+    <Button type="button" variant="outline" size="sm" onClick={onClick} title={`Bay tới cụm ${label}`} className="shrink-0 gap-2 bg-surface max-md:h-10">
       <span
+        aria-hidden="true"
         className="size-2 rounded-full"
         style={hollow ? { boxShadow: `inset 0 0 0 1.5px ${color}` } : { backgroundColor: color }}
       />
       {label}
-      <span className="font-mono text-muted-foreground">{count}</span>
-    </button>
+      <span className="font-mono text-muted-foreground tabular-nums">{count}</span>
+    </Button>
   );
 }

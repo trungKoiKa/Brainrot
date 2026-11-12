@@ -184,7 +184,7 @@ for (const text of ["Thử dùng deep sleep + wake on GPIO cho node cảm biến
   await sql`insert into ideas (user_id, text) values (${uid}, ${text})`;
 }
 
-// ---------- kiến thức (SPEC.md mục 10.1) ----------
+// ---------- kiến thức (SPEC.md mục 5.6) ----------
 const fieldNames = ["Computer Vision", "Embedded / Edge AI", "AI Agent", "Đồ án"];
 const fieldId = {};
 for (const [i, name] of fieldNames.entries()) {

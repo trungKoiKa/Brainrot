@@ -7,7 +7,7 @@ import { KNOWLEDGE_LEVELS, MAX_FIELD_NAME, MAX_NOTE_TITLE, MAX_RELATED, cleanFie
 import { MAX_TEXT } from "@/lib/quick-capture";
 import { SESSION_EXPIRED, isSignedIn } from "@/lib/session";
 
-// Knowledge (SPEC.md mục 10.1). userId luôn lấy từ cookie trong dbScope(), không nhận từ client.
+// Knowledge (SPEC.md mục 5.6). userId luôn lấy từ cookie trong dbScope(), không nhận từ client.
 
 export type NoteFormState = { ok?: boolean; error?: string; at?: number };
 export type NoteResult = { ok: true } | { ok: false; error: string };

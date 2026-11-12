@@ -25,7 +25,7 @@ const t = (o: Partial<DashTask> = {}): DashTask => ({
   title: "", url: "", project: null, status: "Chưa làm", deadline: null, doneOn: null, plannedOn: null, createdOn: "2026-10-01", ...o,
 });
 const input = (o: Partial<DashInput> = {}): DashInput => ({
-  today, tasks: [], logs: [], thesisDeadline: "2026-12-06", habits: [], monthGoals: [], ...o,
+  today, tasks: [], knowledge: [], logs: [], thesisDeadline: "2026-12-06", habits: [], monthGoals: [], ...o,
 });
 
 describe("ngày", () => {
@@ -116,10 +116,11 @@ describe("biểu đồ", () => {
   it("weeklyRhythm: 12 tuần, tuần cuối là tuần hiện tại", () => {
     const { rows } = weeklyRhythm(input({
       tasks: [t({ status: "Xong", doneOn: "2026-10-27" }), t({ status: "Xong", doneOn: "2026-10-20" })],
+      knowledge: ["2026-10-20", "2026-10-25", "2026-10-26"],
     }));
     expect(rows).toHaveLength(12);
-    expect(rows.at(-1)).toEqual({ week: "2026-10-26", done: 1 });
-    expect(rows.at(-2)).toEqual({ week: "2026-10-19", done: 1 });
+    expect(rows.at(-1)).toEqual({ week: "2026-10-26", done: 1, learned: 1 });
+    expect(rows.at(-2)).toEqual({ week: "2026-10-19", done: 1, learned: 2 });
   });
 
   it("dailyRhythm: ngày không có log vẫn có cột", () => {
@@ -175,6 +176,7 @@ describe("dữ liệu mẫu", () => {
     expect(a.tasks.some((x) => x.status === "Xong" && x.doneOn)).toBe(true);
     expect(a.tasks.some((x) => x.status !== "Xong")).toBe(true);
     expect(a.logs.length).toBeGreaterThan(30);
+    expect(a.knowledge.length).toBeGreaterThan(10);
     expect(a.tasks.some((x) => x.plannedOn !== null && x.plannedOn >= mondayOf(today))).toBe(true);
     expect(a.habits).toHaveLength(5);
     expect(a.logs.some((l) => l.habits.length > 0)).toBe(true);

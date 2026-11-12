@@ -94,7 +94,7 @@ Trung không muốn tự viết code ở dự án này: agent viết, Trung revi
 ## Stack
 
 Next.js 16 (App Router) + TypeScript (strict) · Tailwind CSS v4 · shadcn/ui + ReUI · Drizzle ORM + Neon Postgres · Recharts ·
-Vitest · Vercel. `react-force-graph-3d` (Brain) còn trong dependency nhưng trang đang ẩn tới khi làm `SPEC.md` mục 10.2.
+Vitest · Vercel. `react-force-graph-3d` chỉ tải ở trang Brain (`SPEC.md` mục 5.7).
 
 ## Quy tắc code
 

@@ -4,6 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
   BookOpenIcon,
+  BrainIcon,
   LayoutDashboardIcon,
   ListChecksIcon,
   SettingsIcon,
@@ -23,19 +24,20 @@ import {
 
 import { ThemeToggle } from "./theme-toggle";
 
-// Dashboard đứng đầu (Trung chốt 26/10/2026); Brain tạm ẩn ở v1.0 (SPEC-v1.0 mục 7), `/` chuyển sang Today
+// Dashboard đứng đầu (Trung chốt 26/10/2026); `/` chuyển sang Today. Knowledge và Brain thêm ở v1.1 (SPEC.md mục 10)
 export const NAV: readonly { href: string; label: string; icon: LucideIcon }[] = [
   { href: "/dashboard", label: "Dashboard", icon: LayoutDashboardIcon },
   { href: "/today", label: "Today", icon: SunIcon },
   { href: "/tasks", label: "Tasks", icon: ListChecksIcon },
   { href: "/goals", label: "Goal", icon: TargetIcon },
   { href: "/knowledge", label: "Knowledge", icon: BookOpenIcon },
+  { href: "/brain", label: "Brain", icon: BrainIcon },
 ];
 
 export const isActive = (href: string, pathname: string) => (href === "/" ? pathname === "/" : pathname.startsWith(href));
 
 /**
- * Thanh bên kiểu "nhật ký kỹ thuật" như phương án C (Trung chọn 11/11/2026): danh sách vuông kẻ dòng, số 01–05 mono bên
+ * Thanh bên kiểu "nhật ký kỹ thuật" như phương án C (Trung chọn 11/11/2026): danh sách vuông kẻ dòng, số 01–07 mono bên
  * trái, ô cam nhỏ ở mục đang chọn, không icon. Desktop thu/mở hẳn (offcanvas); mobile mở dạng ngăn kéo.
  */
 export function AppSidebar({ account }: { account?: React.ReactNode }) {

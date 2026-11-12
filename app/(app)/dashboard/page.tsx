@@ -6,14 +6,15 @@ import { StaleBanner } from "@/components/stale-banner";
 import { DashboardClient } from "@/components/dashboard/dashboard-client";
 import { toVNDate, todayVN } from "@/lib/date";
 import type { DashInput } from "@/lib/dashboard/stats";
-import { anyStale, getDailyLogs90, getGoals, getHabits, getProfile, getReflections, getTasks } from "@/lib/db/data";
+import { anyStale, getDailyLogs90, getGoals, getHabits, getKnowledge, getProfile, getReflections, getTasks } from "@/lib/db/data";
+import { noteDay } from "@/lib/knowledge";
 import { resolveGoals } from "@/lib/db/goal-status";
 import { periodOf } from "@/lib/period";
 import { reflectionOf } from "@/lib/reflections";
 import { doneHabits, LEGACY_EXERCISE } from "@/lib/habits";
 import { splitLines } from "@/lib/today";
 
-// SPEC-v0.3: "Tôi đang làm tốt không?". Chỉ đọc; v0.5 bỏ Planner; v1.0 ẩn Brain + Knowledge (SPEC-v1.0 mục 3).
+// SPEC.md mục 5: "Tôi đang làm tốt không?". Chỉ đọc. "Nhịp làm & học" đếm thêm ghi chú kiến thức (mục 5.6).
 export default function DashboardPage() {
   return (
     <div>
@@ -28,9 +29,10 @@ export default function DashboardPage() {
 async function DashboardContent() {
   await connection(); // số liệu tính theo ngày hôm nay
   const today = todayVN();
-  const [profile, tasks, logs, habits, goals, reflections] = await Promise.all([
+  const [profile, tasks, knowledge, logs, habits, goals, reflections] = await Promise.all([
     getProfile(),
     getTasks(),
+    getKnowledge(),
     getDailyLogs90(),
     getHabits(),
     getGoals(),
@@ -63,6 +65,7 @@ async function DashboardContent() {
       doneOn: t.doneOn,
       createdOn: toVNDate(t.createdTime),
     })),
+    knowledge: knowledge.data.map(noteDay),
     logs: logs.data.flatMap((l) => {
       if (!l.date) return [];
       const habitsDone = doneHabits(l);
@@ -83,7 +86,7 @@ async function DashboardContent() {
   return (
     <>
       {motto && <p className="-mt-3 mb-6 text-base text-muted-foreground italic">“{motto}”</p>}
-      <StaleBanner show={anyStale(tasks, logs, habits, goals, reflections, ...monthGoals.loaded)} />
+      <StaleBanner show={anyStale(tasks, knowledge, logs, habits, goals, reflections, ...monthGoals.loaded)} />
       <DashboardClient real={real} />
     </>
   );

@@ -1,4 +1,4 @@
-// Ghi chú kiến thức (SPEC.md mục 10.1). Hàm thuần, không gọi database → test được.
+// Ghi chú kiến thức (SPEC.md mục 5.6). Hàm thuần, không gọi database → test được.
 import { MAX_TEXT, type Parsed } from "./quick-capture";
 import { fold } from "./graph-search";
 import type { Knowledge } from "./types";

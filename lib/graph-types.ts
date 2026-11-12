@@ -1,4 +1,4 @@
-// Dữ liệu graph Brain (SPEC 7.3) — dùng chung server (dựng) và client (vẽ).
+// Dữ liệu graph Brain (SPEC.md mục 5.7) — dùng chung server (dựng) và client (vẽ).
 
 export type GraphNodeKind = "field" | "project" | "note" | "task";
 
@@ -6,7 +6,7 @@ export type GraphNode = {
   id: string;
   kind: GraphNodeKind;
   label: string;
-  /** Trang Notion (note/task) */
+  /** Trang trong app mở khi bấm node (ghi chú → /knowledge, việc → /tasks); cụm không có */
   url?: string;
   /** Lĩnh vực — quyết định màu của node field/note */
   field?: string | null;
@@ -17,13 +17,14 @@ export type GraphNode = {
 export type GraphLink = {
   source: string;
   target: string;
+  /** belongs: ghi chú → lĩnh vực, việc → dự án; mention: hai ghi chú "liên quan tới" nhau */
   kind: "belongs" | "mention";
 };
 
 export type GraphData = {
   nodes: GraphNode[];
   links: GraphLink[];
-  /** Mọi giá trị trong schema (kể cả chưa có trang nào) — cho hàng chip chú thích */
+  /** Danh sách của người dùng theo thứ tự ở Cài đặt (kể cả cụm trống) — quyết định màu và hàng chip chú thích */
   fields: string[];
   projects: string[];
 };

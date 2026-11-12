@@ -32,7 +32,7 @@ const focusSoon = (selector: string) => requestAnimationFrame(() => document.que
 type Change = { type: "delete"; id: string } | { type: "restore"; note: Knowledge };
 
 /**
- * Trang Knowledge (SPEC.md mục 10.1): thêm nhanh, lọc theo Lĩnh vực / Mức hiểu (trong URL), tìm không dấu,
+ * Trang Knowledge (SPEC.md mục 5.6): thêm nhanh, lọc theo Lĩnh vực / Mức hiểu (trong URL), tìm không dấu,
  * sửa tại chỗ (kèm "Liên quan tới"), xoá có Hoàn tác.
  */
 export function KnowledgeBoard({

@@ -62,6 +62,9 @@ Mọi bảng có `user_id` → `users.id` **ON DELETE CASCADE**. Ngày lưu ki�
 | `daily_logs` | day (duy nhất theo user), done, dropped, learned |
 | `reflections` | level, start, went_well, lesson, grateful, next_focus, motto (duy nhất theo user + level + start) |
 | `ideas` | text, created_at (chỉ ghi, chưa có trang xem) |
+| `fields` | Lĩnh vực của ghi chú: name (duy nhất theo user, ≤ 40 ký tự), sort |
+| `knowledge` | title (≤ 200 ký tự), field_id? (xoá lĩnh vực → trống), level (Mới học / Hiểu / Áp dụng được), summary, source_url? (chỉ http / https), learned_on?, created_at |
+| `knowledge_links` | from_id, to_id: hai ghi chú "liên quan tới" nhau (mỗi cặp một dòng, hai chiều) |
 | `login_attempts` | email, thời điểm (chống dò mật khẩu) |
 
 Mỗi ô văn bản ≤ 2000 ký tự.
@@ -81,8 +84,8 @@ Mỗi ô văn bản ≤ 2000 ký tự.
 
 ## 5. Các màn
 
-Sidebar: **Dashboard · Today · Tasks · Goal · Cài đặt**; chân sidebar có ngày, đếm ngược, tên người dùng, Đăng xuất,
-nút đổi sáng / tối. `/` → `/today`; `/planner` → `/goals?level=week`; `/brain` → `/today` (tới khi làm mục 10).
+Sidebar: **Dashboard · Today · Tasks · Goal · Knowledge · Brain · Cài đặt**; chân sidebar có ngày, đếm ngược, tên người
+dùng, Đăng xuất, nút đổi sáng / tối. `/` → `/today`; `/planner` → `/goals?level=week`.
 Màn nào chưa có dữ liệu thì hiện một câu hướng dẫn kèm đường tới chỗ thêm, không hiện bảng trống.
 
 ### 5.1 Today — "Hôm nay làm gì?"
@@ -98,6 +101,8 @@ Màn nào chưa có dữ liệu thì hiện một câu hướng dẫn kèm đư�
   Tasks). Khi trống nói rõ lý do (chưa có việc / xong hết / đã xếp ngày khác). Cuối thẻ liệt kê mục tiêu tuần Ưu tiên.
 - **Hạn · 14 ngày:** việc chưa xong có Deadline ≤ hôm nay + 14 ngày; không lặp việc đã nằm trong "Hôm nay làm".
 - **Thói quen · 7 ngày:** lưới 7 ngày gần nhất, bấm ô là lưu.
+- **Kiến thức mới:** 5 ghi chú mới nhất (tên, lĩnh vực, ngày); bấm tên mở Knowledge. Chưa có ghi chú thì một dòng
+  hướng dẫn kèm link.
 - **Ghi nhanh ý tưởng** (một ô + Enter) và **Cuối ngày** (Daily Log: Xong · Rơi / chưa xong · Học được; và **Ngày mai
   làm**: tích việc để đặt Ngày làm = ngày mai) là dải viền nét đứt, thu gọn. Từ **18:00** "Cuối ngày" đứng ngay dưới
   "Hôm nay làm" và mở sẵn (Daily Log chỉ mở khi chưa ghi). Daily Log mỗi ngày một bản ghi, bản nháp tự lưu trong
@@ -156,7 +161,8 @@ Chỉ đọc. Bộ chọn kỳ **7 / 30 / 90 ngày** (mặc định 30) và côn
 - **4 KPI trong một khung:** Việc tồn · Hoàn thành · Việc theo lịch tuần này · Đếm ngược (đọc hạn từ Cài đặt). Chấm
   trung tính và số mờ khi chưa đủ dữ liệu để phán xét; thay đổi dưới 5% không tô màu.
 - **Khối:** Việc theo dự án (bấm cột → Tasks lọc theo dự án; chỉ một nhóm thì hiện một dòng chữ) · Mục tiêu tháng này ·
-  Sắp đến hạn (quá hạn hoặc hạn ≤ 14 ngày) · Nhịp làm (việc xong 12 tuần) · Nhịp hằng ngày (từ Daily Log) · Thói quen.
+  Sắp đến hạn (quá hạn hoặc hạn ≤ 14 ngày) · Nhịp làm & học (việc xong và ghi chú mới mỗi tuần, 12 tuần) · Nhịp hằng
+  ngày (từ Daily Log) · Thói quen.
 - **Thật là thật:** chế độ Thật không lấp bằng dữ liệu mẫu; khối chưa có dữ liệu gom vào khung "Chưa có dữ liệu" cuối
   trang, mỗi khối một dòng + link. Chế độ Mẫu (`lib/dashboard/sample.ts`, cố định theo ngày) có một dải thông báo đầu
   trang kèm nút "Về dữ liệu thật".
@@ -164,7 +170,29 @@ Chỉ đọc. Bộ chọn kỳ **7 / 30 / 90 ngày** (mặc định 30) và côn
 ### 5.5 Cài đặt
 
 Tên hiển thị · hạn + tên hạn cho thẻ đếm ngược (trống thì ẩn thẻ) · **Dự án** (thêm, đổi tên, xoá khi không còn việc)
-· đổi mật khẩu · **Xoá tài khoản** (gõ lại email + mật khẩu; xoá toàn bộ dữ liệu, không hoàn tác).
+· **Lĩnh vực** (cùng mẫu với Dự án; xoá khi không còn ghi chú) · đổi mật khẩu · **Xoá tài khoản** (gõ lại email + mật
+khẩu; xoá toàn bộ dữ liệu, không hoàn tác).
+
+### 5.6 Knowledge — "Tôi đã học được gì?"
+
+- 4 chỉ số đầu trang: tổng ghi chú · ghi chú 7 ngày qua · số "Áp dụng được" · số có liên kết.
+- **Thêm nhanh:** Tên + Lĩnh vực + Mức hiểu (mặc định "Mới học"). Lĩnh vực chọn từ danh sách ở Cài đặt, không gõ tự do.
+- **Danh sách** mới nhất trước (theo Ngày học, không có thì ngày tạo). **Sửa tại chỗ:** thêm Tóm tắt, Nguồn (link
+  http / https), Ngày học, **Liên quan tới** (chọn ghi chú khác bằng ô tìm không dấu, tối đa 20; liên kết hai chiều).
+- **Lọc** theo Lĩnh vực (kể cả "Không có lĩnh vực") và Mức hiểu, nằm trong URL (`?field=&level=`); ô tìm không dấu
+  khớp tên hoặc tóm tắt.
+- **Xoá** có Hoàn tác (chèn lại ghi chú và các liên kết của nó).
+
+### 5.7 Brain — "Mọi thứ nối với nhau thế nào?"
+
+- Graph 3D (`react-force-graph-3d`, dynamic import `ssr: false`; chỉ trang này tải three.js). Chưa có ghi chú hay việc
+  chưa xong thì không tải graph, chỉ hiện một dòng hướng dẫn.
+- **Node:** Lĩnh vực (có ghi chú), Dự án (có việc chưa xong), ghi chú, việc chưa xong. **Link:** ghi chú → lĩnh vực,
+  việc → dự án, ghi chú ↔ ghi chú ("liên quan tới", có hạt chạy). Quy tắc dựng: `lib/graph-build.ts`.
+- Màu theo thứ tự lĩnh vực / dự án của từng người (4 màu + xám); việc vẽ nhạt hơn dự án của nó. Hai nhóm dùng chung 4
+  màu nên nhãn và chip **Lĩnh vực chấm đặc, Dự án chấm rỗng**.
+- Xoay, zoom, ô tìm không dấu (phím `/`; chọn kết quả thì bay tới và làm nổi các node nối trực tiếp), chip chú thích
+  theo cụm (bấm để bay tới). Bấm node ghi chú mở `/knowledge`, bấm node việc mở `/tasks`.
 
 ## 6. Quy tắc chung
 
@@ -172,7 +200,8 @@ Tên hiển thị · hạn + tên hạn cho thẻ đếm ngược (trống thì 
   chuột hoặc có focus bàn phím (`sonner`, `useAutoDismiss`).
 - **Giao diện** theo `DESIGN.md` (hướng "Nhật ký kỹ thuật"): dùng component trong `components/ui/`, `components/reui/`,
   khung `components/card.tsx`, nhãn `components/pill.tsx`; màu qua CSS variables cho cả hai theme.
-- **Màu dự án:** 4 màu đầu theo thứ tự dự án của từng người, còn lại xám (`docs/decisions/0003-field-colors.md`).
+- **Màu dự án và lĩnh vực:** 4 màu đầu theo thứ tự trong danh sách của từng người, còn lại xám
+  (`docs/decisions/0003-field-colors.md`).
 - **Theme:** mặc định theo hệ điều hành, nhớ lựa chọn, không nhấp nháy khi tải.
 - **Tiếp cận:** vòng focus rõ, tương phản đạt AA, tôn trọng `prefers-reduced-motion`, không tràn ngang ở 320–768px.
 - **Lỗi đọc database:** trang vẫn hiện kèm banner "Không lấy được dữ liệu".
@@ -201,26 +230,11 @@ kéo thả sắp xếp mục tiêu, mục tiêu dạng số đo · export báo c
 
 ## 10. v1.1 — Knowledge, Brain, Calendar (Trung duyệt 11/11/2026)
 
-> Chưa có trên production. Khi một phần làm xong thì chuyển mô tả của nó lên mục 3, 5, 7 và xoá khỏi đây.
+> Còn lại mục 10.3 (Calendar) chưa làm. Khi một phần làm xong thì chuyển mô tả của nó lên mục 3, 5, 7 và xoá khỏi đây.
 
-### 10.1 Knowledge (`/knowledge`)
+### 10.1, 10.2 Knowledge và Brain — đã làm xong
 
-- Bảng `knowledge`: title, field_id?, level (Mới học / Hiểu / Áp dụng được), summary (≤ 2000 ký tự), source_url?,
-  learned_on (mặc định hôm nay). Bảng `fields` (Lĩnh vực, riêng từng người, như `projects`). Bảng `knowledge_links`
-  (from_id, to_id) cho "liên quan tới".
-- Trang: thêm nhanh (Tên + Lĩnh vực + Mức hiểu), sửa tại chỗ (thêm Tóm tắt, Nguồn, Ngày học, **Liên quan tới**: chọn
-  ghi chú khác bằng ô tìm không dấu), xoá có Hoàn tác, lọc theo Lĩnh vực và Mức hiểu (trong URL).
-- Cài đặt thêm khối **Lĩnh vực** (thêm, đổi tên, xoá khi không còn ghi chú), cùng mẫu với Dự án.
-- Today có lại khối **Kiến thức mới** (5 ghi chú mới nhất). Dashboard: "Nhịp làm" thành "Nhịp làm & học" (thêm đường
-  ghi chú mới mỗi tuần). Chế độ Mẫu có dữ liệu ghi chú mẫu.
-
-### 10.2 Brain (`/brain`)
-
-- Mở lại graph 3D (dynamic import, `ssr: false`, chỉ tải ở trang này); thêm mục **Brain** vào sidebar.
-- Node: Lĩnh vực, Dự án (có việc chưa xong), ghi chú, việc chưa xong. Link: ghi chú → lĩnh vực, việc → dự án, ghi chú ↔
-  ghi chú ("liên quan tới"). Màu lĩnh vực theo quy tắc 4 màu + xám như dự án.
-- Tương tác như bản cũ: xoay, zoom, tìm không dấu (phím `/`), bấm cụm để bay tới. Bấm node ghi chú mở `/knowledge`, bấm
-  node việc mở `/tasks`.
+Mô tả đã chuyển lên mục 3 (bảng), 5.1, 5.4, 5.5, **5.6 (Knowledge)** và **5.7 (Brain)**.
 
 ### 10.3 Calendar — thẻ Next up trên Today
 
@@ -263,3 +277,4 @@ kéo thả sắp xếp mục tiêu, mục tiêu dạng số đo · export báo c
 | 11/11/2026 | Xoá hẳn thói quen có Hoàn tác; thẻ quý có dòng "+N mục tiêu ở các tháng"; bộ lọc Tasks trong URL | file này |
 | 11/11/2026 | Duyệt v1.1: liên kết ghi chú chọn tay, Lĩnh vực ở Cài đặt, làm Calendar có đường lui, "Đã xong" tải hết | mục 10.5 |
 | 11/11/2026 | Gộp SPEC thành một file; Trung muốn hoàn thành cả v1.1 trong tuần 11–18/11 | file này, `docs/plans/active/v1.1.md` |
+| 12/11/2026 | Knowledge và Brain xong; trên Brain nhãn Dự án dùng chấm rỗng, Lĩnh vực chấm đặc (hai nhóm chung 4 màu) | mục 5.6, 5.7 |
