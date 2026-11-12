@@ -214,7 +214,7 @@ khẩu; xoá toàn bộ dữ liệu, không hoàn tác).
 | `AUTH_SECRET` | ✓ | ≥ 32 ký tự, ký cookie (bí mật) |
 | `THESIS_DEADLINE` | | Hạn mặc định cho người dùng đầu tiên khi chưa đặt hạn ở Cài đặt |
 
-`GOOGLE_*` hiện không trang nào đọc; số phận của chúng nằm ở mục 10.3. `NOTION_*` và `APP_PASSWORD` đã bỏ.
+`GOOGLE_*`, `NOTION_*` và `APP_PASSWORD` đã bỏ: không trang nào đọc (Calendar ngoài phạm vi, mục 9).
 
 ## 8. Kiểm thử và bằng chứng hoàn thành
 
@@ -226,40 +226,34 @@ khẩu; xoá toàn bộ dữ liệu, không hoàn tác).
 
 Chia sẻ / việc nhóm giữa các tài khoản · thông báo, nhắc nhở · app điện thoại · thu phí · đa ngôn ngữ · nhập dữ liệu
 từ Notion · trang tự đăng ký · đăng nhập Google · việc lặp lại · kéo thả việc giữa các ngày, khối giờ trong ngày ·
-kéo thả sắp xếp mục tiêu, mục tiêu dạng số đo · export báo cáo, khoảng ngày tuỳ ý ở Dashboard · LLM (chờ ngân sách).
+kéo thả sắp xếp mục tiêu, mục tiêu dạng số đo · export báo cáo, khoảng ngày tuỳ ý ở Dashboard · LLM (chờ ngân sách) ·
+Google Calendar và thẻ Next up trên Today (Trung bỏ 12/11/2026; code đọc lịch cũ `lib/calendar/google.ts`,
+`lib/next-up.ts` còn trong repo nhưng không trang nào dùng).
 
-## 10. v1.1 — Knowledge, Brain, Calendar (Trung duyệt 11/11/2026)
+## 10. v1.1 — Knowledge, Brain (Trung duyệt 11/11/2026)
 
-> Còn lại mục 10.3 (Calendar) chưa làm. Khi một phần làm xong thì chuyển mô tả của nó lên mục 3, 5, 7 và xoá khỏi đây.
+> Knowledge và Brain đã lên production 12/11/2026; Calendar bỏ khỏi v1.1. Còn lại bước chốt (tag `v1.1.0`).
 
 ### 10.1, 10.2 Knowledge và Brain — đã làm xong
 
 Mô tả đã chuyển lên mục 3 (bảng), 5.1, 5.4, 5.5, **5.6 (Knowledge)** và **5.7 (Brain)**.
 
-### 10.3 Calendar — thẻ Next up trên Today
+### 10.3 Calendar — bỏ khỏi v1.1 (Trung, 12/11/2026)
 
-- Mỗi người tự nối ở Cài đặt: nút **Nối Google Calendar** → Google OAuth quyền chỉ đọc `calendar.readonly` → lưu refresh
-  token **mã hoá AES-GCM** (khoá suy ra từ `AUTH_SECRET`) trong bảng `google_tokens`; nút **Ngắt kết nối** xoá token.
-- Thẻ **Next up**: sự kiện còn lại hôm nay (tối đa 5; giờ, tên, địa điểm hoặc link họp; "Đang diễn ra"); hết thì hiện
-  sự kiện sớm nhất ngày mai. Bỏ sự kiện đã huỷ hoặc đã từ chối. Chưa nối thì không hiện thẻ. Google lỗi thì thẻ báo
-  lỗi, các thẻ khác vẫn chạy.
-- Biến môi trường: giữ `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`; bỏ `GOOGLE_REFRESH_TOKEN`, `GOOGLE_CALENDAR_IDS`.
-- Trung tự làm trên Google Cloud Console: thêm redirect URI, để app "In production". App chưa được Google xác minh nên
-  người nối sẽ thấy màn cảnh báo và giới hạn 100 người.
-- **Đường lui:** nếu không ổn định kịp trong tuần thì bỏ mục 10.3 khỏi bản cuối và ghi vào mục 9.
+Không làm thẻ Next up / nối Google Calendar trong v1.1; ghi ở mục 9. Đề xuất cũ (OAuth `calendar.readonly` từng người,
+token mã hoá AES-GCM) còn trong lịch sử git của file này nếu sau này làm lại.
 
 ### 10.4 Tiêu chí hoàn thành v1.1
 
 1. Thêm ghi chú có liên kết → thấy trên Brain; hai tài khoản không thấy ghi chú của nhau (test cách ly).
 2. Brain chạy ở cả hai theme, không làm nặng các trang khác.
-3. (Nếu làm 10.3) nối và ngắt Calendar được; token trong database là bản mã hoá; không in token ra log.
-4. Lint, test, build sạch; ảnh hai theme; README, hướng dẫn, PRODUCT khớp sản phẩm.
+3. Lint, test, build sạch; ảnh hai theme; README, hướng dẫn, PRODUCT khớp sản phẩm.
 
 ### 10.5 Đã chốt (11/11/2026)
 
 1. **Liên kết giữa ghi chú:** chọn tay ở ô "Liên quan tới" (không dùng cú pháp `[[tên]]`).
 2. **Lĩnh vực:** danh sách riêng từng người ở Cài đặt (không gõ tự do).
-3. **Calendar:** làm theo 10.3, có đường lui (không ổn định kịp thì bỏ khỏi bản cuối).
+3. **Calendar:** bỏ khỏi v1.1 (Trung chốt lại 12/11/2026, thay "làm, có đường lui" của 11/11).
 4. **"Đã xong" ở Tasks:** giữ như hiện nay, tải hết (không giới hạn 30 ngày).
 5. **Tên menu:** giữ Dashboard / Today / Tasks / Goal (chưa có yêu cầu Việt hoá).
 
@@ -277,4 +271,5 @@ Mô tả đã chuyển lên mục 3 (bảng), 5.1, 5.4, 5.5, **5.6 (Knowledge)**
 | 11/11/2026 | Xoá hẳn thói quen có Hoàn tác; thẻ quý có dòng "+N mục tiêu ở các tháng"; bộ lọc Tasks trong URL | file này |
 | 11/11/2026 | Duyệt v1.1: liên kết ghi chú chọn tay, Lĩnh vực ở Cài đặt, làm Calendar có đường lui, "Đã xong" tải hết | mục 10.5 |
 | 11/11/2026 | Gộp SPEC thành một file; Trung muốn hoàn thành cả v1.1 trong tuần 11–18/11 | file này, `docs/plans/active/v1.1.md` |
+| 12/11/2026 | Bỏ Calendar / Next up khỏi v1.1 | mục 9, 10.3 |
 | 12/11/2026 | Knowledge và Brain xong; trên Brain nhãn Dự án dùng chấm rỗng, Lĩnh vực chấm đặc (hai nhóm chung 4 màu) | mục 5.6, 5.7 |

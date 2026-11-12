@@ -49,7 +49,7 @@ npm test        # unit test (vitest)
 | `AUTH_SECRET` | ✓ | Chuỗi ngẫu nhiên ≥ 32 ký tự để ký cookie (**bí mật**): `node -e "console.log(require('crypto').randomBytes(32).toString('base64url'))"` |
 | `THESIS_DEADLINE` | | Hạn mặc định (`YYYY-MM-DD`) cho thẻ đếm ngược của người dùng đầu tiên khi chưa đặt hạn ở Cài đặt |
 
-Các biến `GOOGLE_*` (lịch Google) hiện **không được đọc**; xem `SPEC.md` mục 10.3.
+Các biến `GOOGLE_*` (lịch Google) **không được đọc**: Calendar đã bỏ khỏi phạm vi (`SPEC.md` mục 9).
 
 `.env.local` nằm trong `.gitignore` — **không bao giờ commit**.
 
