@@ -22,7 +22,7 @@ Mô hình nghiệp vụ (từ v0.5): **Tasks là kho việc duy nhất**. Goal g
 **Ngày làm**, thói quen làm Goal tự xong. Lý do và các lựa chọn đã cân nhắc: [`docs/specs/archive/SPEC-v0.5.md`](docs/specs/archive/SPEC-v0.5.md).
 
 Stack: Next.js 16 (App Router, Cache Components) · React 19 · TypeScript strict · Tailwind CSS v4 ·
-shadcn/ui + [ReUI](https://reui.io) · Recharts · Drizzle ORM + Neon Postgres · Vitest · Vercel.
+shadcn/ui + [ReUI](https://reui.io) · biểu đồ SVG tự vẽ · Drizzle ORM + Neon Postgres · Vitest · Vercel.
 
 ## Chạy trên máy
 
