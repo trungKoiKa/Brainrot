@@ -212,6 +212,15 @@
   }
 }
 
+/* Nền khung Brain "Tinh vân" (components/brain/brain-view.tsx): luôn tối, ba vệt màu mờ tím / xanh ngọc / hồng */
+@utility brain-bg-nebula {
+  background:
+    radial-gradient(42% 52% at 20% 28%, rgb(124 92 255 / 0.3), transparent 72%),
+    radial-gradient(46% 56% at 80% 70%, rgb(20 184 166 / 0.24), transparent 72%),
+    radial-gradient(36% 42% at 62% 16%, rgb(240 90 160 / 0.17), transparent 72%),
+    #070912;
+}
+
 /* Ô chọn gốc của trình duyệt: bỏ mũi tên mặc định, dùng chevron theo theme (--chevron) */
 @utility select-chevron {
   appearance: none;

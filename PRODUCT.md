@@ -57,7 +57,7 @@ nối các mảnh này; Brainrot nối sẵn. Lý do và phương án đã cân 
 - Có cả theme sáng và tối, mặc định theo hệ điều hành, ghi nhớ lựa chọn.
 - Mỗi Dự án có một màu cố định dùng chung giữa các màn, gán theo **thứ tự dự án của từng người** (4 màu đầu, còn lại xám),
   vẽ bằng pill bo tròn (redesign 11/2026, `DESIGN.md`).
-- Hướng nhìn **Nhật ký kỹ thuật** (Trung chốt 10/11/2026): giấy kẻ ô, khung bo góc, chữ Plus Jakarta Sans (bản mềm 12/11/2026: bỏ chữ mono, bỏ khung vuông), một màu cam
+- Hướng nhìn **Nhật ký kỹ thuật** (Trung chốt 10/11/2026): giấy kẻ ô, khung bo góc, chữ Manrope (bản mềm 12/11/2026: bỏ chữ mono, bỏ khung vuông), một màu cam
   tín hiệu. Thay hướng giấy kem / Lora / xanh chàm cũ.
 - Giọng chữ: ngắn, thẳng, đời thường; không văn quảng cáo.
 

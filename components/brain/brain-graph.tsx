@@ -21,21 +21,24 @@ const VARS = [
   "--field-1", "--field-2", "--field-3", "--field-4", "--field-neutral",
 ];
 
-function readPalette(): Palette {
-  const style = getComputedStyle(document.documentElement);
+function readPalette(scope: Element): Palette {
+  const style = getComputedStyle(scope);
   return Object.fromEntries(VARS.map((v) => [v, style.getPropertyValue(v).trim()]));
 }
 
-/** Đọc lại màu từ CSS variables mỗi khi đổi theme (data-theme trên <html>). */
-function usePalette(): Palette | null {
+/**
+ * Đọc lại màu từ CSS variables mỗi khi đổi theme (data-theme trên <html>). Đọc ở khung graph chứ không ở <html>:
+ * khung có thể tự mang `data-theme="dark"` (nền luôn tối) và khi đó token bên trong là token tối.
+ */
+function usePalette(scope: React.RefObject<Element | null>): Palette | null {
   const [palette, setPalette] = useState<Palette | null>(null);
   useEffect(() => {
-    const update = () => setPalette(readPalette());
+    const update = () => setPalette(readPalette(scope.current ?? document.documentElement));
     update();
     const observer = new MutationObserver(update);
     observer.observe(document.documentElement, { attributes: true, attributeFilter: ["data-theme"] });
     return () => observer.disconnect();
-  }, []);
+  }, [scope]);
   return palette;
 }
 
@@ -210,9 +213,9 @@ function soften(color: string, background: string, amount = 0.45): string {
 }
 
 export default function BrainGraph({ data }: { data: GraphData }) {
-  const palette = usePalette();
   const router = useRouter();
   const [containerRef, { width, height }] = useSize<HTMLDivElement>();
+  const palette = usePalette(containerRef);
   const graphRef = useRef<ForceGraphMethods<Node, Link> | undefined>(undefined);
   const fitted = useRef(false);
   // Thư viện gắn x/y/z vào object node → tạo bản sao một lần, không đụng props
@@ -381,7 +384,8 @@ export default function BrainGraph({ data }: { data: GraphData }) {
           width={width}
           height={height}
           graphData={graphData}
-          backgroundColor={palette["--background"]}
+          // Canvas trong suốt: nền là của khung bao ngoài (brain-view.tsx)
+          backgroundColor="rgba(0,0,0,0)"
           showNavInfo={false}
           controlType="orbit"
           nodeRelSize={REL_SIZE}
