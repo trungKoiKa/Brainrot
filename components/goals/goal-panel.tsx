@@ -20,7 +20,7 @@ import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { carryOverGoalsAction, createGoalAction, linkTaskAction, trashGoalAction, updateGoalAction } from "@/app/actions/goals";
 import { formatDay } from "@/lib/date";
-import { fold } from "@/lib/graph-search";
+import { fold } from "@/lib/text";
 import { fieldClass, primaryButtonClass } from "@/components/form-bits";
 import { Badge } from "@/components/reui/badge";
 import { ErrorNotice } from "@/components/tasks/task-row";
@@ -38,7 +38,7 @@ import {
 import type { Level } from "@/lib/period";
 import { ProgressRing } from "./progress-ring";
 
-export type LinkedTask = { id: string; title: string; url: string; plannedOn: string | null; done: boolean };
+export type LinkedTask = { id: string; title: string; plannedOn: string | null; done: boolean };
 
 const UNDO_MS = 8000;
 

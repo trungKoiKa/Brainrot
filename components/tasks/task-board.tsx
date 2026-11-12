@@ -6,7 +6,7 @@ import { ChevronRightIcon } from "lucide-react";
 import { Card, Empty } from "@/components/card";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { FilterRow } from "@/components/filter-row";
-import { projectColorByOrder } from "@/lib/fields";
+import { colorVarByOrder } from "@/lib/topic-colors";
 import { compareTasks } from "@/lib/today";
 import type { Priority, Task } from "@/lib/types";
 import { PRIORITIES } from "@/lib/task-form";
@@ -166,7 +166,7 @@ export function TaskBoard({
               flush
               title={
                 <span className="flex items-center gap-2">
-                  <span aria-hidden="true" className="size-2.5 shrink-0" style={{ background: `var(${projectColorByOrder(g.name, allProjects)})` }} />
+                  <span aria-hidden="true" className="size-2.5 shrink-0" style={{ background: `var(${colorVarByOrder(g.name, allProjects)})` }} />
                   {g.name}
                 </span>
               }

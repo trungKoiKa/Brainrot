@@ -1,7 +1,6 @@
 "use client";
 
 import { CircleAlertIcon, PencilIcon, Trash2Icon, XIcon } from "lucide-react";
-import { MaybeLink } from "@/components/tasks/maybe-link";
 import { Pill, ProjectPill, StatusPill } from "@/components/pill";
 import { Alert, AlertAction, AlertDescription, AlertTitle } from "@/components/reui/alert";
 import { Button } from "@/components/ui/button";
@@ -91,12 +90,7 @@ export function TaskRow({
     <li className="row-sep flex items-start gap-3 px-4 py-3 transition-colors hover:bg-surface-muted" data-task-id={task.id}>
       {(onComplete || onReopen) && <TaskCheckbox task={task} onComplete={onComplete} onReopen={onReopen} />}
       <div className="min-w-0 flex-1">
-        <MaybeLink
-          href={task.url}
-          className={`text-sm break-words ${task.url ? "hover:text-primary" : ""} ${done ? "text-muted-foreground line-through" : overdue ? "text-danger" : ""}`}
-        >
-          {task.title || "(Chưa đặt tên)"}
-        </MaybeLink>
+        <span className={`text-sm break-words ${done ? "text-muted-foreground line-through" : overdue ? "text-danger" : ""}`}>{task.title || "(Chưa đặt tên)"}</span>
         {task.note && <p className="mt-0.5 truncate text-xs text-muted-foreground" title={task.note}>{task.note}</p>}
         <div className="mt-1.5 flex flex-wrap items-center gap-1.5 lg:hidden">{tags}</div>
       </div>

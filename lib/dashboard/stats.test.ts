@@ -22,7 +22,7 @@ import {
 
 const today = "2026-10-26"; // thứ Hai
 const t = (o: Partial<DashTask> = {}): DashTask => ({
-  title: "", url: "", project: null, status: "Chưa làm", deadline: null, doneOn: null, plannedOn: null, createdOn: "2026-10-01", ...o,
+  title: "", project: null, status: "Chưa làm", deadline: null, doneOn: null, plannedOn: null, createdOn: "2026-10-01", ...o,
 });
 const input = (o: Partial<DashInput> = {}): DashInput => ({
   today, tasks: [], knowledge: [], logs: [], thesisDeadline: "2026-12-06", habits: [], monthGoals: [], ...o,

@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
-import { fold, neighborhood, searchNodes } from "./graph-search";
-import type { GraphNode } from "./graph-types";
+import { neighborhood, searchNodes } from "./search";
+import type { GraphNode } from "./types";
 
 const node = (id: string, label: string, kind: GraphNode["kind"] = "note"): GraphNode => ({ id, label, kind });
 const NODES = [
@@ -10,13 +10,6 @@ const NODES = [
   node("n2", "Học Computer Vision (ưu tiên số 1 tuần này)", "task"),
   node("n3", "Supervision trong ML"),
 ];
-
-describe("fold", () => {
-  it("bỏ dấu, đ → d, chữ thường, gộp khoảng trắng", () => {
-    expect(fold("  Đồ   Án ")).toBe("do an");
-    expect(fold("Sức khỏe")).toBe("suc khoe");
-  });
-});
 
 describe("searchNodes", () => {
   it("gõ không dấu vẫn khớp", () => {

@@ -81,7 +81,6 @@ describe("ghi chú", () => {
       source: "https://example.com/yolo",
       learnedOn: "2026-11-10",
       related: [],
-      url: "",
     });
     await createNote(db, other, note("Của bạn", { field: "Computer Vision" })); // "Computer Vision" là lĩnh vực của ME
     expect((await byTitle(other, "Của bạn")).field).toBeNull();

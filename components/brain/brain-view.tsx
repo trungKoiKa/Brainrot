@@ -1,7 +1,7 @@
 "use client";
 
 import dynamic from "next/dynamic";
-import type { GraphData } from "@/lib/graph-types";
+import type { GraphData } from "@/lib/graph/types";
 
 // three.js chỉ chạy được trên trình duyệt → không render phía server; chỉ trang /brain tải gói này (SPEC.md mục 5.7)
 const BrainGraph = dynamic(() => import("./brain-graph"), {

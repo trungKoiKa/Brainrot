@@ -10,8 +10,6 @@ export const PERIODS: Period[] = [7, 30, 90];
 
 export type DashTask = {
   title: string;
-  /** Trang Notion (rỗng ở dữ liệu mẫu) */
-  url: string;
   project: string | null;
   status: TaskStatus | null;
   deadline: string | null;
@@ -75,8 +73,6 @@ const isDone = (t: DashTask) => t.status === "Xong";
 export function openOn(tasks: DashTask[], day: string): number {
   return tasks.filter((t) => t.createdOn <= day && !(isDone(t) && (t.doneOn === null || t.doneOn <= day))).length;
 }
-
-export const hasDoneDates = (tasks: DashTask[]) => tasks.some((t) => t.doneOn !== null);
 
 // ---------- 4.1 thẻ số liệu ----------
 

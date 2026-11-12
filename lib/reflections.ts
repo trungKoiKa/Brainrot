@@ -8,15 +8,6 @@ export type Reflection = ReflectionFields & { id: string; level: Level; start: s
 
 export const MAX_MOTTO = 300;
 
-/** Tên cột Notion của từng ô. */
-export const REFLECTION_COLUMNS: Record<keyof ReflectionFields, string> = {
-  wentWell: "Làm tốt",
-  lesson: "Bài học",
-  grateful: "Biết ơn",
-  nextFocus: "Tập trung tiếp",
-  motto: "Châm ngôn",
-};
-
 /** 4 câu hỏi; câu 4 đổi chữ theo cấp ("…trong tuần/tháng/quý/năm tiếp theo là?"). */
 export function reflectionQuestions(level: Level): { key: Exclude<keyof ReflectionFields, "motto">; label: string }[] {
   return [

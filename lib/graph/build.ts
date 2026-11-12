@@ -1,6 +1,6 @@
 // Dựng dữ liệu graph Brain (SPEC.md mục 5.7). Hàm thuần, không gọi database → test được.
-import type { GraphData, GraphLink, GraphNode } from "./graph-types";
-import type { Knowledge, Task } from "./types";
+import type { GraphData, GraphLink, GraphNode } from "./types";
+import type { Knowledge, Task } from "@/lib/types";
 
 export const fieldNodeId = (name: string) => `field:${name}`;
 export const projectNodeId = (name: string) => `project:${name}`;

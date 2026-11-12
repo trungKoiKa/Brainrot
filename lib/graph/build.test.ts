@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { buildGraph } from "./graph-build";
+import { buildGraph } from "./build";
 
 const note = (id: string, field: string | null, related: string[] = []) => ({ id, title: `note ${id}`, field, related });
 const task = (id: string, project: string | null, status: "Chưa làm" | "Đang làm" | "Xong" = "Chưa làm") => ({ id, title: `task ${id}`, project, status });

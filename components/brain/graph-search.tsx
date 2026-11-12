@@ -4,8 +4,8 @@ import { useEffect, useId, useRef, useState } from "react";
 import { XIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { searchNodes } from "@/lib/graph-search";
-import type { GraphNode } from "@/lib/graph-types";
+import { searchNodes } from "@/lib/graph/search";
+import type { GraphNode } from "@/lib/graph/types";
 
 const KIND_LABEL: Record<GraphNode["kind"], string> = {
   note: "Ghi chú",

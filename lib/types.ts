@@ -5,7 +5,6 @@ export type Priority = "Cao" | "Vừa" | "Thấp";
 
 export type Task = {
   id: string;
-  url: string;
   title: string;
   project: string | null;
   status: TaskStatus | null;
@@ -25,7 +24,6 @@ export type Task = {
 
 export type Knowledge = {
   id: string;
-  url: string;
   title: string;
   field: string | null;
   level: string | null;
@@ -40,7 +38,6 @@ export type Knowledge = {
 
 export type DailyLog = {
   id: string;
-  url: string;
   title: string;
   /** YYYY-MM-DD theo giờ Việt Nam */
   date: string | null;

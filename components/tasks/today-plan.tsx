@@ -4,7 +4,6 @@ import Link from "next/link";
 import { useActionState, useRef, useState } from "react";
 import { createTaskAction, type TaskFormState } from "@/app/actions/tasks";
 import { toast } from "sonner";
-import { MaybeLink } from "@/components/tasks/maybe-link";
 import { Empty } from "@/components/card";
 import { ProjectPill, StatusPill } from "@/components/pill";
 import { Button } from "@/components/ui/button";
@@ -78,9 +77,7 @@ function Row({
         />
       </span>
       <div className="min-w-0 flex-1">
-        <MaybeLink href={task.url} className={`text-sm break-words ${done ? "text-muted-foreground line-through" : "hover:text-primary"}`}>
-          {task.title || "(Chưa đặt tên)"}
-        </MaybeLink>
+        <span className={`text-sm break-words ${done ? "text-muted-foreground line-through" : ""}`}>{task.title || "(Chưa đặt tên)"}</span>
         <div className="mt-1.5 flex flex-wrap items-center gap-1.5 md:hidden">{tags}</div>
       </div>
       <div className="hidden shrink-0 flex-wrap items-center justify-end gap-1.5 md:flex">{tags}</div>

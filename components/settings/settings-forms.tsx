@@ -14,7 +14,7 @@ import { createFieldAction, deleteFieldAction, renameFieldAction } from "@/app/a
 import { Status, fieldClass } from "@/components/form-bits";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { DeadlineField } from "@/components/tasks/deadline-field";
+import { DeadlineField } from "@/components/deadline-field";
 
 // Trùng MIN_PASSWORD_LENGTH ở lib/password.ts (file đó dùng node:crypto nên không import vào bundle trình duyệt)
 const MIN_PASSWORD_LENGTH = 8;

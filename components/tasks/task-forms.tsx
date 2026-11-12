@@ -8,7 +8,7 @@ import { Status, fieldClass } from "../form-bits";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { DeadlineField } from "./deadline-field";
+import { DeadlineField } from "@/components/deadline-field";
 
 // Ô select/date hẹp hơn ô tên; giữ cùng kiểu viền với fieldClass
 const compactField = fieldClass.replace("w-full", "w-auto");

@@ -3,16 +3,6 @@ import { useEffect } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
-  BookOpenIcon,
-  BrainIcon,
-  LayoutDashboardIcon,
-  ListChecksIcon,
-  SettingsIcon,
-  SunIcon,
-  TargetIcon,
-  type LucideIcon,
-} from "lucide-react";
-import {
   Sidebar,
   SidebarContent,
   SidebarFooter,
@@ -25,13 +15,13 @@ import {
 import { ThemeToggle } from "./theme-toggle";
 
 // Dashboard đứng đầu (Trung chốt 26/10/2026); `/` chuyển sang Today. Knowledge và Brain thêm ở v1.1 (SPEC.md mục 10)
-export const NAV: readonly { href: string; label: string; icon: LucideIcon }[] = [
-  { href: "/dashboard", label: "Dashboard", icon: LayoutDashboardIcon },
-  { href: "/today", label: "Today", icon: SunIcon },
-  { href: "/tasks", label: "Tasks", icon: ListChecksIcon },
-  { href: "/goals", label: "Goal", icon: TargetIcon },
-  { href: "/knowledge", label: "Knowledge", icon: BookOpenIcon },
-  { href: "/brain", label: "Brain", icon: BrainIcon },
+export const NAV: readonly { href: string; label: string }[] = [
+  { href: "/dashboard", label: "Dashboard" },
+  { href: "/today", label: "Today" },
+  { href: "/tasks", label: "Tasks" },
+  { href: "/goals", label: "Goal" },
+  { href: "/knowledge", label: "Knowledge" },
+  { href: "/brain", label: "Brain" },
 ];
 
 export const isActive = (href: string, pathname: string) => (href === "/" ? pathname === "/" : pathname.startsWith(href));
@@ -46,7 +36,7 @@ export function AppSidebar({ account }: { account?: React.ReactNode }) {
   const { setOpenMobile } = useSidebar();
   // Mobile: đổi trang thì đóng ngăn kéo (rà soát A3 mục 1)
   useEffect(() => setOpenMobile(false), [pathname, setOpenMobile]);
-  const items = [...NAV, { href: "/settings", label: "Cài đặt", icon: SettingsIcon }];
+  const items = [...NAV, { href: "/settings", label: "Cài đặt" }];
 
   return (
     <Sidebar collapsible="offcanvas">

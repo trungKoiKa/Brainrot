@@ -12,7 +12,7 @@ import {
 } from "./today";
 
 const task = (id: string, o: Partial<Task> = {}): Task => ({
-  id, url: `u-${id}`, title: id, project: null, status: "Chưa làm", priority: null, deadline: null, plannedOn: null, note: "",
+  id, title: id, project: null, status: "Chưa làm", priority: null, deadline: null, plannedOn: null, note: "",
   doneOn: null, createdTime: "2026-10-01T00:00:00.000Z", goalIds: [], ...o,
 });
 const today = "2026-10-22";

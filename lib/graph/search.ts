@@ -1,17 +1,6 @@
 // Tìm node trên Brain (SPEC-v0.2 mục 4.3). Hàm thuần, chạy phía client → test được.
-import type { GraphLink, GraphNode } from "./graph-types";
-
-/** Bỏ dấu tiếng Việt + chữ thường: "Đồ án" → "do an". */
-export function fold(s: string): string {
-  return s
-    .normalize("NFD")
-    .replace(/[̀-ͯ]/g, "")
-    .replace(/đ/g, "d")
-    .replace(/Đ/g, "D")
-    .toLowerCase()
-    .replace(/\s+/g, " ")
-    .trim();
-}
+import { fold } from "@/lib/text";
+import type { GraphLink, GraphNode } from "./types";
 
 /** Thứ hạng khớp: 0 = đầu tên, 1 = đầu một từ, 2 = ở giữa; null = không khớp. */
 function rank(label: string, query: string): number | null {

@@ -1,6 +1,6 @@
 // Nhãn bo tròn (pill) — một cách vẽ duy nhất cho dự án và trạng thái ở mọi trang (DESIGN.md → Pill, The One Status Map Rule).
 import type { ReactNode } from "react";
-import { projectColorByOrder } from "@/lib/fields";
+import { colorVarByOrder } from "@/lib/topic-colors";
 
 type Tone = "warning" | "danger" | "success" | "primary" | "muted";
 
@@ -33,7 +33,7 @@ export function StatusPill({ tone, children }: { tone: Tone; children: ReactNode
 export function ProjectPill({ project, projects }: { project: string | null; projects: readonly string[] }) {
   if (!project) return null;
   return (
-    <Pill color={`var(${projectColorByOrder(project, projects)})`} dot>
+    <Pill color={`var(${colorVarByOrder(project, projects)})`} dot>
       {project}
     </Pill>
   );

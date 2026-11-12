@@ -177,8 +177,8 @@ Mỗi chỉ số một ô rời bo 12px, cách nhau 12px (`components/readout.ts
 24px 600, chú thích 12px. Chỉ ô đếm ngược dùng màu cam.
 
 ### Controls
-Dùng component thư viện (`components/ui`, `components/reui`), không tự viết: `Button`, `Input`, `Textarea`, `Select`,
-`Checkbox`, `Collapsible`, `ToggleGroup`/`Tabs`, `AlertDialog`, `Popover`, `DropdownMenu`, `Skeleton`, toast `sonner`
+Dùng component thư viện (`components/ui`, `components/reui`), không tự viết: `Button`, `Input`, `Textarea`,
+`Checkbox`, `Collapsible`, `ToggleGroup`, `AlertDialog`, `Popover`, `DropdownMenu`, `Skeleton`, toast `sonner`
 (có nút Hoàn tác, xếp chồng).
 - Focus ring: 2px đặc màu `--ring` (cam), cách 2px, ≥ 3:1 ở cả hai theme.
 - Vùng bấm ≥ 24px desktop, ≥ 40px cảm ứng.

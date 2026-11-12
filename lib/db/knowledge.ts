@@ -97,7 +97,6 @@ export async function listKnowledge(db: Db, userId: string): Promise<Knowledge[]
   }
   return rows.map(({ k, field }) => ({
     id: k.id,
-    url: "",
     title: k.title,
     field,
     level: k.level,

@@ -60,7 +60,7 @@ describe("tasks", () => {
   it("tạo → đọc đúng kiểu Task cũ; sửa; tích xong; Ngày làm", async () => {
     await createTask(db, ME, input("Viết chương 3", { project: "Đồ án", priority: "Cao", deadline: "2026-11-08", plannedOn: "2026-10-28" }));
     const [t] = (await listTasks(db, ME)).filter((x) => x.title === "Viết chương 3");
-    expect(t).toMatchObject({ project: "Đồ án", priority: "Cao", status: "Chưa làm", deadline: "2026-11-08", plannedOn: "2026-10-28", doneOn: null, goalIds: [], url: "" });
+    expect(t).toMatchObject({ project: "Đồ án", priority: "Cao", status: "Chưa làm", deadline: "2026-11-08", plannedOn: "2026-10-28", doneOn: null, goalIds: [] });
 
     await updateTask(db, ME, t.id, update("Viết chương 3 (sửa)", { project: null, note: "ghi chú", plannedOn: null }));
     expect((await listTasks(db, ME)).find((x) => x.id === t.id)).toMatchObject({ title: "Viết chương 3 (sửa)", project: null, status: "Đang làm", note: "ghi chú", plannedOn: null });
