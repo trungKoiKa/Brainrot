@@ -128,7 +128,9 @@ và trạng thái là pill bo tròn hẳn, để mắt bắt ngay "việc này t
 - App shell đặt **một** bề rộng nội dung (`max-w-7xl`) và lề 16px (mobile) / 32px (desktop) cho mọi trang.
 - Bố cục trang: tiêu đề + dòng phụ → hàng chỉ số (2 cột mobile, 4 cột desktop, ô rời cách 12px) → lưới
   `minmax(0,1fr) 360px` (bảng chính | cột phụ) từ `xl`, một cột dưới đó.
-- Sidebar 192px, mục có số `01…07`, mục đang chọn chữ đậm + ô vuông cam nhỏ; mobile thu thành thanh trên + ngăn kéo.
+- Sidebar: mỗi mục là một dòng bo 8px có số `01…07`, **không kẻ dòng**; rê chuột có nền `surface-muted`; mục đang chọn
+  chữ đậm, nền cam nhạt (`accent-soft`), số cam và chấm tròn cam (Trung chốt 12/11/2026). Mobile thu thành thanh trên +
+  ngăn kéo.
 - Khoảng cách theo bội 4px; giữa các khung 24px.
 
 ## Elevation & Depth

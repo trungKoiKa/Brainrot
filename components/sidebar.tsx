@@ -37,8 +37,9 @@ export const NAV: readonly { href: string; label: string; icon: LucideIcon }[] =
 export const isActive = (href: string, pathname: string) => (href === "/" ? pathname === "/" : pathname.startsWith(href));
 
 /**
- * Thanh bên kiểu "nhật ký kỹ thuật" như phương án C (Trung chọn 11/11/2026): danh sách vuông kẻ dòng, số 01–07 mono bên
- * trái, ô cam nhỏ ở mục đang chọn, không icon. Desktop thu/mở hẳn (offcanvas); mobile mở dạng ngăn kéo.
+ * Thanh bên (DESIGN.md → Layout): mỗi mục là một dòng bo 8px có số 01–07 bên trái, không kẻ dòng, không icon; mục đang
+ * chọn có nền cam nhạt, số cam và chấm cam (bản mềm, Trung chốt 12/11/2026). Desktop thu/mở hẳn (offcanvas); mobile mở
+ * dạng ngăn kéo.
  */
 export function AppSidebar({ account }: { account?: React.ReactNode }) {
   const pathname = usePathname();
@@ -49,32 +50,32 @@ export function AppSidebar({ account }: { account?: React.ReactNode }) {
 
   return (
     <Sidebar collapsible="offcanvas">
-      <SidebarHeader className="border-b border-sidebar-border p-0">
-        <Link href="/" className="block px-4 py-4 font-mono text-sm font-semibold tracking-wide">
+      <SidebarHeader className="p-0">
+        <Link href="/" className="block px-4 pt-4 pb-2 text-sm font-semibold tracking-wide">
           BRAINROT/v1
         </Link>
       </SidebarHeader>
 
       <SidebarContent role="navigation" aria-label="Điều hướng chính" className="gap-0">
-        <ul>
+        <ul className="flex flex-col gap-0.5 px-2 py-1">
           {items.map(({ href, label }, i) => {
             const active = isActive(href, pathname);
             return (
-              <li key={href} className="border-b border-sidebar-border">
+              <li key={href}>
                 <Link
                   href={href}
                   aria-current={active ? "page" : undefined}
-                  className={`flex items-center gap-3 px-4 py-2.5 text-sm transition-colors hover:bg-sidebar-accent ${
-                    active ? "font-semibold text-foreground" : "text-muted-foreground hover:text-foreground"
+                  className={`flex min-h-9 items-center gap-3 rounded-lg px-2 py-2 text-sm transition-colors max-md:min-h-10 ${
+                    active ? "bg-accent-soft font-semibold text-foreground" : "text-muted-foreground hover:bg-sidebar-accent hover:text-foreground"
                   }`}
                 >
-                  <span aria-hidden="true" className="w-5 font-mono text-xs text-muted-foreground">
+                  <span aria-hidden="true" className={`w-5 text-xs tabular-nums ${active ? "text-primary" : "text-muted-foreground"}`}>
                     {String(i + 1).padStart(2, "0")}
                   </span>
                   <span lang={href === "/settings" ? undefined : "en"} className="flex-1">
                     {label}
                   </span>
-                  {active && <span aria-hidden="true" className="size-1.5 bg-primary" />}
+                  {active && <span aria-hidden="true" className="mr-1 size-1.5 rounded-full bg-primary" />}
                 </Link>
               </li>
             );
