@@ -189,7 +189,8 @@ khẩu; xoá toàn bộ dữ liệu, không hoàn tác).
   chưa xong thì không tải graph, chỉ hiện một dòng hướng dẫn.
 - **Node:** Lĩnh vực (có ghi chú), Dự án (có việc chưa xong), ghi chú, việc chưa xong. **Link:** ghi chú → lĩnh vực,
   việc → dự án, ghi chú ↔ ghi chú ("liên quan tới", có hạt chạy). Quy tắc dựng: `lib/graph-build.ts`.
-- Màu theo thứ tự lĩnh vực / dự án của từng người (4 màu + xám); việc vẽ nhạt hơn dự án của nó.
+- Màu theo thứ tự lĩnh vực / dự án của từng người (4 màu + xám); việc vẽ nhạt hơn dự án của nó. Hai nhóm dùng chung 4
+  màu nên nhãn và chip **Lĩnh vực chấm đặc, Dự án chấm rỗng**.
 - Xoay, zoom, ô tìm không dấu (phím `/`; chọn kết quả thì bay tới và làm nổi các node nối trực tiếp), chip chú thích
   theo cụm (bấm để bay tới). Bấm node ghi chú mở `/knowledge`, bấm node việc mở `/tasks`.
 
@@ -276,3 +277,4 @@ Mô tả đã chuyển lên mục 3 (bảng), 5.1, 5.4, 5.5, **5.6 (Knowledge)**
 | 11/11/2026 | Xoá hẳn thói quen có Hoàn tác; thẻ quý có dòng "+N mục tiêu ở các tháng"; bộ lọc Tasks trong URL | file này |
 | 11/11/2026 | Duyệt v1.1: liên kết ghi chú chọn tay, Lĩnh vực ở Cài đặt, làm Calendar có đường lui, "Đã xong" tải hết | mục 10.5 |
 | 11/11/2026 | Gộp SPEC thành một file; Trung muốn hoàn thành cả v1.1 trong tuần 11–18/11 | file này, `docs/plans/active/v1.1.md` |
+| 12/11/2026 | Knowledge và Brain xong; trên Brain nhãn Dự án dùng chấm rỗng, Lĩnh vực chấm đặc (hai nhóm chung 4 màu) | mục 5.6, 5.7 |

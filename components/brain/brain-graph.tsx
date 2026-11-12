@@ -63,8 +63,11 @@ const DIM = 0.85; // mức trộn về màu nền của node/link bị làm mờ
 const isHub = (n: GraphNode) => n.kind === "field" || n.kind === "project";
 const idOf = (end: string | number | Node | undefined) => (typeof end === "object" ? String(end.id) : String(end));
 
-/** Nhãn cụm cố định trên graph: chấm màu + tên (vẽ ra canvas rồi làm sprite, không cần thư viện chữ). */
-function makeLabel(text: string, dotColor: string, textColor: string, opacity = 1): THREE.Sprite {
+/**
+ * Nhãn cụm cố định trên graph: chấm màu + tên (vẽ ra canvas rồi làm sprite, không cần thư viện chữ).
+ * `hollow`: chấm rỗng cho Dự án, chấm đặc cho Lĩnh vực — cùng quy ước với chip chú thích, vì hai nhóm dùng chung 4 màu.
+ */
+function makeLabel(text: string, dotColor: string, textColor: string, opacity = 1, hollow = false): THREE.Sprite {
   const ratio = 4;
   const fontSize = 15 * ratio;
   const font = `600 ${fontSize}px ${getComputedStyle(document.body).fontFamily}`;
@@ -78,10 +81,18 @@ function makeLabel(text: string, dotColor: string, textColor: string, opacity = 
   ctx.canvas.height = height;
   ctx.font = font;
   ctx.textBaseline = "middle";
-  ctx.fillStyle = dotColor;
   ctx.beginPath();
-  ctx.arc(dot, height / 2, dot, 0, Math.PI * 2);
-  ctx.fill();
+  if (hollow) {
+    const line = dot * 0.45;
+    ctx.strokeStyle = dotColor;
+    ctx.lineWidth = line;
+    ctx.arc(dot, height / 2, dot - line / 2, 0, Math.PI * 2);
+    ctx.stroke();
+  } else {
+    ctx.fillStyle = dotColor;
+    ctx.arc(dot, height / 2, dot, 0, Math.PI * 2);
+    ctx.fill();
+  }
   ctx.fillStyle = textColor;
   ctx.fillText(text, dot * 2 + gap, height / 2);
 
@@ -164,7 +175,7 @@ export default function BrainGraph({ data }: { data: GraphData }) {
   const hubObject = useCallback(
     (n: Node) =>
       (palette && isHub(n)
-        ? makeLabel(n.label, colorOf(n), palette["--foreground"], dimmed(String(n.id)) ? 0.25 : 1)
+        ? makeLabel(n.label, colorOf(n), palette["--foreground"], dimmed(String(n.id)) ? 0.25 : 1, n.kind === "project")
         : undefined) as THREE.Object3D,
     [palette, colorOf, dimmed],
   );
