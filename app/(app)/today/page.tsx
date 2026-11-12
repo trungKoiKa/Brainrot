@@ -242,7 +242,7 @@ function TodaySkeleton() {
   return (
     <>
       <PageHeader kicker="NHẬT KÝ" title="Hôm nay" subtitle="Đang tải…" />
-      <div className="mb-6 grid grid-cols-2 gap-px md:grid-cols-4">
+      <div className="mb-6 grid grid-cols-2 gap-3 md:grid-cols-4">
         {[0, 1, 2, 3].map((i) => (
           <Skeleton key={i} className="h-24 rounded-xl" />
         ))}
