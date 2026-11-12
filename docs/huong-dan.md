@@ -1,6 +1,6 @@
 # Hướng dẫn sử dụng Brainrot
 
-> Áp dụng từ **v1.0** (05/11/2026). Production: <https://brainrot-blue.vercel.app> (đăng nhập email + mật khẩu).
+> Áp dụng cho **v1.1** (12/11/2026). Production: <https://brainrot-blue.vercel.app> (đăng nhập email + mật khẩu).
 > Cài đặt, biến môi trường, database: xem [`README.md`](../README.md). Phạm vi và hành vi sản phẩm: [`SPEC.md`](../SPEC.md).
 > Sơ đồ là ảnh PNG; nguồn mermaid để sửa nằm cạnh ảnh trong [`images/huong-dan/`](images/huong-dan/) (`*.mmd`).
 
@@ -15,6 +15,8 @@ theo dõi cùng những task đó.
 | **Today** | Hôm nay làm gì? | Tích xong, đặt Ngày làm, tích thói quen, Daily Log, ý tưởng |
 | **Goal** | Tôi đang hướng tới điều gì? | Mục tiêu, Nhìn lại, châm ngôn, thói quen, dời Ngày làm |
 | **Dashboard** | Tôi đang làm tốt không? | Không ghi gì (chỉ đọc) |
+| **Knowledge** | Tôi đã học được gì? | Ghi chú kiến thức, liên kết giữa các ghi chú |
+| **Brain** | Mọi thứ nối với nhau thế nào? | Không ghi gì (chỉ xem graph) |
 
 Ba sợi dây nối các phần với nhau:
 
@@ -31,7 +33,7 @@ Hai ngày của một task — đừng nhầm:
 
 ### 2.1 Có việc mới → Tasks
 
-1. Gõ tên việc ở ô "Thêm task mới…".
+1. Gõ tên việc ở ô "Thêm việc mới…".
 2. Chọn **Dự án** và **Ưu tiên** (Cao / Vừa / Thấp).
 3. Chọn **Deadline** nếu có hạn thật; chọn **Ngày làm** nếu đã biết sẽ làm hôm nào (không chắc thì để trống).
 4. Bấm **Thêm** → task được tạo với Trạng thái "Chưa làm".
@@ -44,7 +46,7 @@ Dòng task hiện "Làm: T4 28/10" — **đỏ** khi Ngày làm đã qua mà ch�
 Khối **"Hôm nay làm"** tự gom, theo thứ tự:
 
 1. Task chưa xong có **Ngày làm = hôm nay** (Ưu tiên Cao trước).
-2. **Trễ lịch**: Ngày làm đã qua mà chưa xong → nút **"Dời sang hôm nay"**.
+2. **Trễ lịch**: Ngày làm đã qua mà chưa xong → nút **"Làm hôm nay"**.
 3. **Hạn hôm nay**: Deadline = hôm nay nhưng chưa xếp làm hôm nay → nút **"Làm hôm nay"**.
 4. Cả ba trống → **gợi ý 3 task** ưu tiên cao nhất chưa xếp lịch, kèm nút "Làm hôm nay".
 
@@ -52,12 +54,12 @@ Thao tác:
 
 - Tích ô vuông → Trạng thái = **Xong**, Ngày xong = hôm nay. Task gạch ngang tới lần tải lại.
 - Cuối khối là **mục tiêu tuần Ưu tiên** (✓ khi xong, kể cả tự xong) — nhắc mình tuần này đang hướng tới gì.
-- Thẻ **Thói quen hôm nay**: bấm từng thói quen đã làm → ghi vào Daily Log của hôm nay (tự tạo nếu chưa có).
+- Thẻ **Thói quen · 7 ngày**: bấm ô của từng thói quen ở ngày đã làm → lưu ngay.
 
 Các phần khác chỉ để xem: dòng đếm ngược dưới lời chào và thẻ **Hạn · 14 ngày** (không lặp việc đã nằm trong "Hôm nay làm").
 Thẻ **Kiến thức mới** liệt kê 5 ghi chú mới nhất (bấm tên mở Knowledge). Next up (Google Calendar) không có trong sản phẩm.
 
-### 2.3 Buổi tối → Today, khối Ghi nhanh
+### 2.3 Buổi tối → Today, Ghi nhanh và Cuối ngày
 
 1. **Ý tưởng**: gõ một dòng → Lưu → database Ideas.
 2. **Daily Log hôm nay**: ghi Xong / Chưa xong / Học được → Lưu (đã có thì Cập nhật, mỗi ngày một bản ghi).
@@ -101,13 +103,29 @@ Trên điện thoại 7 thẻ thành danh sách dọc, ngày hôm nay mở sẵn
 - Hàng KPI: **Việc tồn** (quá hạn → đỏ), **Hoàn thành**, **Tuần này** (% task có Ngày làm trong tuần đã xong;
   "—" nếu chưa xếp lịch việc nào), **Đồ án** (còn bao nhiêu ngày).
 - **Task theo dự án** (bấm cột → Tasks lọc dự án đó), **Mục tiêu tháng này**, **Sắp đến hạn** (14 ngày),
-  **Nhịp làm** (việc xong 12 tuần), **Nhịp hằng ngày**, **Thói quen**.
+  **Nhịp làm & học** (việc xong và ghi chú mới mỗi tuần, 12 tuần), **Nhịp hằng ngày**, **Thói quen**.
 - Ở chế độ Thật, khối nào chưa có dữ liệu thì gom vào khung **"Chưa có dữ liệu"** cuối trang kèm link tới chỗ thêm
   (không tự lấp bằng dữ liệu mẫu). Chế độ Mẫu có một dải thông báo đầu trang và nút "Về dữ liệu thật".
 
-### 2.8 Kiến thức → Brain
+### 2.8 Học được gì → Knowledge
 
-Tạm ẩn từ v1.0 (chưa có bảng Kiến thức). `/brain` chuyển về Today. Kế hoạch làm lại: `SPEC.md` mục 10.
+1. Lần đầu: vào **Cài đặt → Lĩnh vực**, thêm vài lĩnh vực (vd. Computer Vision, Nhúng, Đồ án). 4 lĩnh vực đầu có màu riêng.
+2. Ở **Knowledge**, gõ tên điều vừa học, chọn **Lĩnh vực** và **Mức hiểu** (Mới học / Hiểu / Áp dụng được) → **Thêm**.
+3. Bấm **✎** trên ghi chú để thêm **Tóm tắt**, **Nguồn** (link http/https), **Ngày học** và **Liên quan tới**: gõ tìm
+   (không cần dấu) rồi chọn ghi chú khác; liên kết là hai chiều.
+4. Lọc theo Lĩnh vực / Mức hiểu (nằm trên URL, gửi link là giữ bộ lọc), ô **Tìm** khớp tên và tóm tắt.
+5. Xoá ghi chú có nút **Hoàn tác** 8 giây (khôi phục cả liên kết).
+
+5 ghi chú mới nhất hiện ở thẻ **Kiến thức mới** trên Today; số ghi chú mỗi tuần hiện ở **Nhịp làm & học** trên Dashboard.
+
+### 2.9 Nhìn toàn cảnh → Brain
+
+- Graph 3D: mỗi **Lĩnh vực** và **Dự án** là một cụm có tên; ghi chú nối về lĩnh vực, việc chưa xong nối về dự án, các ghi
+  chú "liên quan tới" nhau nối bằng sợi cong có hạt chạy. Lĩnh vực là nhân đặc, Dự án là nhân rỗng có khung lưới.
+- Kéo để xoay, cuộn để zoom; bấm chip ở chân khung hoặc bấm cụm để bay tới.
+- Phím **/** mở ô tìm (không cần dấu) → Enter để bay tới và làm nổi node cùng các node nối trực tiếp; Esc để bỏ.
+- Bấm một ghi chú mở Knowledge, bấm một việc mở Tasks.
+- Khung Brain luôn nền tối ở cả hai theme để các neuron phát sáng rõ.
 
 ## 3. Luồng dữ liệu bên trong
 
@@ -133,6 +151,8 @@ về như cũ và báo lỗi.
 | Mục tiêu | `createGoalAction` / `updateGoalAction` / `trashGoalAction` | Goals (xóa mềm, hoàn tác trong 8 giây) |
 | Nhìn lại / châm ngôn | `saveReflectionAction` | Reflections: 1 bản ghi / kỳ (có thì cập nhật) |
 | Thêm / ngừng / đổi thứ tự thói quen | `addHabitAction` / `stopHabitAction` / `moveHabitAction` | Habits |
+| Ghi chú kiến thức | `createNoteAction` / `updateNoteAction` / `deleteNoteAction` / `restoreNoteAction` | knowledge, knowledge_links |
+| Lĩnh vực | `createFieldAction` / `renameFieldAction` / `deleteFieldAction` | fields |
 
 ### 3.3 Mục tiêu "tự xong"
 
@@ -155,10 +175,10 @@ database — chỉ tính lúc hiển thị.
 | Planner đâu rồi? | Bỏ từ v0.5; `/planner` tự chuyển sang Goal → Tuần. Xếp việc theo ngày bằng **Ngày làm**. |
 | Đổi máy / điện thoại có mất dữ liệu không? | Không — mọi dữ liệu nằm trong database (Neon), theo tài khoản. Chỉ lựa chọn giao diện (sáng/tối, Thật/Mẫu, kỳ) lưu theo trình duyệt. |
 
-## 5. Cài đặt và tài khoản (từ bước 5)
+## 5. Cài đặt và tài khoản
 
-- **Cài đặt** (sidebar, bấm tên của bạn): tên hiển thị, hạn cần đếm ngược + tên của hạn, **dự án** của riêng bạn (thêm / đổi tên /
-  xóa khi không còn việc), đổi mật khẩu, xóa tài khoản (xóa **toàn bộ** dữ liệu, không hoàn tác).
+- **Cài đặt** (mục cuối sidebar): tên hiển thị, hạn cần đếm ngược + tên của hạn, **dự án** của riêng bạn (thêm / đổi tên /
+  xóa khi không còn việc), **lĩnh vực** (tương tự, xóa khi không còn ghi chú), đổi mật khẩu, xóa tài khoản (xóa **toàn bộ** dữ liệu, không hoàn tác).
 - **Đăng xuất**: nút ở chân sidebar.
 - Sai mật khẩu **5 lần** trong 15 phút thì email đó bị khóa tạm 15 phút.
 

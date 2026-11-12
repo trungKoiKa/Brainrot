@@ -2,11 +2,11 @@
 
 > **Nguồn sự thật duy nhất về phạm vi và hành vi sản phẩm.** Viết lại ngày 11/11/2026 bằng cách gộp `SPEC` v0.1 → v1.0;
 > chỗ các bản cũ nói khác nhau thì lấy quyết định mới nhất của Trung. Bản cũ giữ nguyên văn ở `docs/specs/archive/`
-> (comment trong code kiểu "SPEC-v0.4 6.3" trỏ tới các file đó).
+> (comment trong code trỏ tới mục của file này, kiểu "SPEC.md mục 5.3").
 > Mọi thay đổi phạm vi phải được Trung đồng ý và ghi vào file này trước khi code.
 >
-> **Trạng thái:** mục 1–9 = **v1.0, đang chạy production**. Mục 10 = **v1.1, Trung duyệt 11/11/2026**, đang làm
-> (`docs/plans/active/v1.1.md`).
+> **Trạng thái:** **v1.1 đang chạy production** (tag `v1.1.0`, 12/11/2026): mục 1–9 tả sản phẩm hiện tại, gồm cả Knowledge
+> và Brain. Mục 10 là bản ghi phạm vi v1.1 đã duyệt và đã xong (`docs/plans/completed/v1.1.md`).
 
 ## 1. Mục đích và ràng buộc
 
@@ -245,7 +245,8 @@ lịch sử git: `lib/calendar/google.ts`, `lib/next-up.ts`).
 
 ## 10. v1.1 — Knowledge, Brain (Trung duyệt 11/11/2026)
 
-> Knowledge và Brain đã lên production 12/11/2026; Calendar bỏ khỏi v1.1. Còn lại bước chốt (tag `v1.1.0`).
+> **Xong 12/11/2026, tag `v1.1.0`.** Knowledge và Brain lên production; Calendar bỏ khỏi v1.1. Mục này chỉ còn là bản
+> ghi; hành vi hiện tại đọc ở mục 1–9.
 
 ### 10.1, 10.2 Knowledge và Brain — đã làm xong
 
@@ -283,7 +284,8 @@ token mã hoá AES-GCM) còn trong lịch sử git của file này nếu sau nà
 | 10/11/2026 | Redesign "Nhật ký kỹ thuật"; xoá task có Hoàn tác (thay "xoá hẳn, không hoàn tác") | `DESIGN.md`, `docs/audits/2026-11-audit.md` |
 | 11/11/2026 | Xoá hẳn thói quen có Hoàn tác; thẻ quý có dòng "+N mục tiêu ở các tháng"; bộ lọc Tasks trong URL | file này |
 | 11/11/2026 | Duyệt v1.1: liên kết ghi chú chọn tay, Lĩnh vực ở Cài đặt, làm Calendar có đường lui, "Đã xong" tải hết | mục 10.5 |
-| 11/11/2026 | Gộp SPEC thành một file; Trung muốn hoàn thành cả v1.1 trong tuần 11–18/11 | file này, `docs/plans/active/v1.1.md` |
+| 11/11/2026 | Gộp SPEC thành một file; Trung muốn hoàn thành cả v1.1 trong tuần 11–18/11 | file này, `docs/plans/completed/v1.1.md` |
+| 12/11/2026 | Chốt v1.1, tag `v1.1.0` (Knowledge, Brain, giao diện bản mềm, dọn code) | `docs/plans/completed/v1.1.md` |
 | 12/11/2026 | Bỏ Calendar / Next up khỏi v1.1 | mục 9, 10.3 |
 | 12/11/2026 | Font cả app đổi sang Manrope (thay Plus Jakarta Sans); nền khung Brain là "Tinh vân", luôn tối | `DESIGN.md`, mục 5.7 |
 | 12/11/2026 | Daily Log đổi nhãn "Rơi / chưa xong" thành "Chưa xong"; Brain vẽ node kiểu neuron phát sáng | mục 5.1, 5.7 |
