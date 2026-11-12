@@ -57,7 +57,7 @@ function useSize<T extends HTMLElement>() {
 const escapeHtml = (s: string) =>
   s.replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]!);
 
-const MIN_DISTANCE = 180; // khoảng cách camera tối thiểu (đơn vị của graph)
+const MIN_DISTANCE = 150; // khoảng cách camera tối thiểu (đơn vị của graph)
 const DIM = 0.85; // mức trộn về màu nền của node/link bị làm mờ khi đang chọn một node
 
 const isHub = (n: GraphNode) => n.kind === "field" || n.kind === "project";
@@ -74,7 +74,7 @@ function makeLabel(text: string, dotColor: string, textColor: string, opacity = 
   const ctx = document.createElement("canvas").getContext("2d")!;
   ctx.font = font;
   const dot = fontSize * 0.32;
-  const gap = fontSize * 0.45;
+  const gap = fontSize * 0.8; // chừa chỗ cho nhân neuron nằm dưới chấm
   const width = Math.ceil(dot * 2 + gap + ctx.measureText(text).width + 4);
   const height = Math.ceil(fontSize * 1.4);
   ctx.canvas.width = width;
@@ -110,6 +110,100 @@ function makeLabel(text: string, dotColor: string, textColor: string, opacity = 
   return sprite;
 }
 
+// ---------- Neuron: nhân cầu bóng có phát sáng + quầng sáng quanh nhân (SPEC.md mục 5.7) ----------
+
+const REL_SIZE = 5.5; // bán kính = REL_SIZE × căn bậc ba của "khối lượng" node, như cách thư viện tính quả cầu mặc định
+const SPHERE = new THREE.SphereGeometry(1, 32, 24); // dùng chung, mỗi node chỉ đổi scale
+const SHELL = new THREE.IcosahedronGeometry(1, 1); // khung lưới của nhân Dự án
+
+let glowMap: THREE.Texture | null = null;
+/** Ảnh quầng sáng tròn mờ dần (trắng, tô màu bằng material.color) — tạo một lần, mọi node dùng chung. */
+function glowTexture(): THREE.Texture {
+  if (glowMap) return glowMap;
+  const size = 128;
+  const ctx = document.createElement("canvas").getContext("2d")!;
+  ctx.canvas.width = ctx.canvas.height = size;
+  const g = ctx.createRadialGradient(size / 2, size / 2, 0, size / 2, size / 2, size / 2);
+  g.addColorStop(0, "rgba(255,255,255,1)");
+  g.addColorStop(0.22, "rgba(255,255,255,0.55)");
+  g.addColorStop(0.55, "rgba(255,255,255,0.14)");
+  g.addColorStop(1, "rgba(255,255,255,0)");
+  ctx.fillStyle = g;
+  ctx.fillRect(0, 0, size, size);
+  glowMap = new THREE.CanvasTexture(ctx.canvas);
+  return glowMap;
+}
+
+/**
+ * Một neuron. `shell`: nhân Dự án vẽ rỗng (cầu trong + khung lưới) để phân biệt với Lĩnh vực (cầu đặc) khi trùng màu.
+ * `glow`: độ mạnh quầng sáng (0 = không vẽ, dùng cho node đang bị làm mờ).
+ */
+function makeNeuron(color: string, radius: number, { dark, glow, shell }: { dark: boolean; glow: number; shell: boolean }): THREE.Group {
+  const group = new THREE.Group();
+  const c = new THREE.Color(color);
+  const core = new THREE.Mesh(
+    SPHERE,
+    new THREE.MeshStandardMaterial({
+      color: c,
+      emissive: c,
+      emissiveIntensity: dark ? 0.6 : 0.12,
+      roughness: 0.32,
+      metalness: 0.15,
+      transparent: shell,
+      opacity: shell ? 0.28 : 1,
+      depthWrite: !shell,
+    }),
+  );
+  core.scale.setScalar(radius);
+  group.add(core);
+  if (shell) {
+    const wire = new THREE.LineSegments(new THREE.WireframeGeometry(SHELL), new THREE.LineBasicMaterial({ color: c, transparent: true, opacity: 0.9 }));
+    wire.scale.setScalar(radius * 1.02);
+    wire.raycast = () => {}; // bấm trúng nhân là đủ
+    group.add(wire);
+  }
+  if (glow > 0) {
+    const halo = new THREE.Sprite(
+      new THREE.SpriteMaterial({
+        map: glowTexture(),
+        color: c,
+        transparent: true,
+        opacity: (dark ? 0.75 : 0.38) * glow,
+        // Nền tối: cộng sáng (quầng chồng lên nhau sáng dần); nền sáng: cộng sáng sẽ thành trắng xoá nên trộn thường
+        blending: dark ? THREE.AdditiveBlending : THREE.NormalBlending,
+        depthWrite: false,
+      }),
+    );
+    halo.scale.setScalar(radius * 7);
+    halo.raycast = () => {}; // quầng sáng không nhận chuột, chỉ nhân mới bấm được
+    group.add(halo);
+  }
+  return group;
+}
+
+/** Lớp "bụi" mờ quanh graph: vài trăm chấm nhỏ cố định, cho cảm giác chiều sâu khi xoay. */
+function makeDust(color: string, dark: boolean): THREE.Points {
+  const count = 420;
+  const pos = new Float32Array(count * 3);
+  for (let i = 0; i < count; i++) {
+    // điểm ngẫu nhiên trong vỏ cầu bán kính 260–700
+    const r = 260 + Math.random() * 440;
+    const theta = Math.random() * Math.PI * 2;
+    const phi = Math.acos(2 * Math.random() - 1);
+    pos[i * 3] = r * Math.sin(phi) * Math.cos(theta);
+    pos[i * 3 + 1] = r * Math.sin(phi) * Math.sin(theta);
+    pos[i * 3 + 2] = r * Math.cos(phi);
+  }
+  const geometry = new THREE.BufferGeometry();
+  geometry.setAttribute("position", new THREE.BufferAttribute(pos, 3));
+  const points = new THREE.Points(
+    geometry,
+    new THREE.PointsMaterial({ color, size: 3.4, map: glowTexture(), transparent: true, opacity: dark ? 0.5 : 0.35, depthWrite: false, sizeAttenuation: true }),
+  );
+  points.raycast = () => {};
+  return points;
+}
+
 /** Màu nhạt hơn của một màu (trộn về phía màu nền): việc vẽ nhạt hơn dự án của nó. */
 function soften(color: string, background: string, amount = 0.45): string {
   return `#${new THREE.Color(color).lerp(new THREE.Color(background), amount).getHexString()}`;
@@ -126,6 +220,10 @@ export default function BrainGraph({ data }: { data: GraphData }) {
     nodes: data.nodes.map((n) => ({ ...n })),
     links: data.links.map((l) => ({ ...l })),
   }));
+
+  // Nền tối hay sáng quyết định cách vẽ quầng sáng; người dùng bật "giảm chuyển động" thì không xoay, không hạt chạy
+  const dark = useMemo(() => (palette ? new THREE.Color(palette["--background"]).getHSL({ h: 0, s: 0, l: 0 }).l < 0.5 : false), [palette]);
+  const [calm] = useState(() => window.matchMedia("(prefers-reduced-motion: reduce)").matches);
 
   const [selected, setSelected] = useState<GraphNode | null>(null);
   const highlight = useMemo(() => (selected ? neighborhood(selected.id, data.links) : null), [selected, data.links]);
@@ -155,13 +253,40 @@ export default function BrainGraph({ data }: { data: GraphData }) {
   useEffect(() => {
     const fg = graphRef.current;
     if (!ready || !fg) return;
-    fg.d3Force("charge")?.strength(-70);
-    fg.d3Force("link")?.distance((l: Link) => (l.kind === "mention" ? 40 : 26));
+    fg.d3Force("charge")?.strength(-95);
+    fg.d3Force("link")?.distance((l: Link) => (l.kind === "mention" ? 54 : 36));
     fg.d3Force("x", forceX(0).strength(0.035));
     fg.d3Force("y", forceY(0).strength(0.035));
     fg.d3Force("z", forceZ(0).strength(0.035));
     fg.d3ReheatSimulation();
   }, [ready]);
+
+  // Camera tự xoay rất chậm cho tới khi người dùng chạm vào graph (OrbitControls của three.js)
+  useEffect(() => {
+    const fg = graphRef.current;
+    if (!ready || !fg || calm) return;
+    const controls = fg.controls() as { autoRotate: boolean; autoRotateSpeed: number; addEventListener: (t: string, f: () => void) => void; removeEventListener: (t: string, f: () => void) => void };
+    const stop = () => {
+      controls.autoRotate = false;
+    };
+    controls.autoRotate = true;
+    controls.autoRotateSpeed = 0.35;
+    controls.addEventListener("start", stop);
+    return () => controls.removeEventListener("start", stop);
+  }, [ready, calm]);
+
+  // Lớp bụi nền: dựng lại khi đổi theme (màu khác), gỡ khi rời trang
+  useEffect(() => {
+    const fg = graphRef.current;
+    if (!ready || !fg || !palette) return;
+    const dust = makeDust(palette["--muted-foreground"], dark);
+    fg.scene().add(dust);
+    return () => {
+      fg.scene().remove(dust);
+      dust.geometry.dispose();
+      (dust.material as THREE.Material).dispose();
+    };
+  }, [ready, palette, dark]);
   const colorById = useMemo(() => new Map(data.nodes.map((n) => [n.id, colorOf(n)])), [data.nodes, colorOf]);
   const dimmed = useCallback((id: string) => Boolean(highlight && !highlight.has(id)), [highlight]);
   const shownColor = useCallback(
@@ -169,15 +294,32 @@ export default function BrainGraph({ data }: { data: GraphData }) {
     [palette],
   );
 
-  // Nhãn phải vẽ lại khi đổi theme → accessor đổi danh tính theo palette
-  // Trả rỗng → thư viện vẽ quả cầu mặc định (three-forcegraph: `if (customObj && !extendObj)`),
-  // nhưng kiểu .d.ts bắt buộc Object3D nên phải ép kiểu.
-  const hubObject = useCallback(
-    (n: Node) =>
-      (palette && isHub(n)
-        ? makeLabel(n.label, colorOf(n), palette["--foreground"], dimmed(String(n.id)) ? 0.25 : 1, n.kind === "project")
-        : undefined) as THREE.Object3D,
-    [palette, colorOf, dimmed],
+  // Bán kính: cụm to nhất, ghi chú to hơn việc; càng nhiều liên kết càng to
+  const radiusOf = useCallback(
+    (n: GraphNode) => {
+      const links = degree.get(n.id) ?? 0;
+      const mass = isHub(n) ? 2.4 + links * 0.35 : n.kind === "note" ? 1.2 + links * 0.6 : 0.7 + links * 0.3;
+      return REL_SIZE * Math.cbrt(mass);
+    },
+    [degree],
+  );
+
+  // Mọi node tự vẽ (neuron); cụm thêm nhãn tên. Vẽ lại khi đổi theme hoặc đổi node đang chọn → accessor đổi danh tính.
+  const nodeObject = useCallback(
+    (n: Node) => {
+      if (!palette) return new THREE.Group();
+      const dim = dimmed(String(n.id));
+      const hub = isHub(n);
+      const group = makeNeuron(shownColor(colorOf(n), dim), radiusOf(n), {
+        dark,
+        // việc phát sáng yếu hơn ghi chú; node bị làm mờ thì tắt quầng
+        glow: dim ? 0 : hub ? 1.15 : n.kind === "note" ? 1 : 0.55,
+        shell: n.kind === "project",
+      });
+      if (hub) group.add(makeLabel(n.label, colorOf(n), palette["--foreground"], dim ? 0.25 : 1, n.kind === "project"));
+      return group;
+    },
+    [palette, dark, colorOf, dimmed, shownColor, radiusOf],
   );
 
   /**
@@ -191,13 +333,13 @@ export default function BrainGraph({ data }: { data: GraphData }) {
     if (!box) return;
     const center = { x: (box.x[0] + box.x[1]) / 2, y: (box.y[0] + box.y[1]) / 2, z: (box.z[0] + box.z[1]) / 2 };
     const radius = Math.hypot(box.x[1] - box.x[0], box.y[1] - box.y[0], box.z[1] - box.z[0]) / 2;
-    const distance = Math.max(radius * 2.4, MIN_DISTANCE);
+    const distance = Math.max(radius * 1.65, MIN_DISTANCE);
     fg.cameraPosition({ x: center.x, y: center.y, z: center.z + distance }, center, 800);
   }
 
   function focus(node: Node) {
     const { x = 0, y = 0, z = 0 } = node;
-    const ratio = 1 + 90 / Math.max(Math.hypot(x, y, z), 1);
+    const ratio = 1 + 140 / Math.max(Math.hypot(x, y, z), 1);
     graphRef.current?.cameraPosition({ x: x * ratio, y: y * ratio, z: z * ratio }, { x, y, z }, 1000);
   }
 
@@ -241,12 +383,9 @@ export default function BrainGraph({ data }: { data: GraphData }) {
           graphData={graphData}
           backgroundColor={palette["--background"]}
           showNavInfo={false}
-          nodeRelSize={4}
-          nodeResolution={16}
-          nodeVal={(n) => (n.kind === "note" ? 1.2 + (degree.get(n.id) ?? 0) * 0.6 : 0.7 + (degree.get(n.id) ?? 0) * 0.3)}
-          nodeColor={(n) => shownColor(colorOf(n), dimmed(String(n.id)))}
-          nodeOpacity={0.92}
-          nodeThreeObject={hubObject}
+          controlType="orbit"
+          nodeRelSize={REL_SIZE}
+          nodeThreeObject={nodeObject}
           nodeLabel={(n) => escapeHtml(isHub(n) ? `${n.label} · bấm để bay tới` : `${n.label} · bấm để mở ${n.kind === "note" ? "Knowledge" : "Tasks"}`)}
           linkColor={(l) =>
             shownColor(
@@ -254,10 +393,14 @@ export default function BrainGraph({ data }: { data: GraphData }) {
               Boolean(selected) && idOf(l.source) !== selected?.id && idOf(l.target) !== selected?.id,
             )
           }
-          linkOpacity={0.35}
-          linkDirectionalParticles={(l) => (l.kind === "mention" ? 2 : 0)}
-          linkDirectionalParticleWidth={1.6}
-          linkDirectionalParticleColor={() => palette["--primary"]}
+          linkOpacity={dark ? 0.45 : 0.4}
+          // "Liên quan tới" uốn cong như một sợi nối giữa hai neuron; link về cụm để thẳng
+          linkCurvature={(l) => (l.kind === "mention" ? 0.22 : 0)}
+          // Hạt chạy dọc link như tín hiệu: nhiều và nhanh hơn trên link "liên quan tới"
+          linkDirectionalParticles={(l) => (calm ? 0 : l.kind === "mention" ? 3 : 1)}
+          linkDirectionalParticleSpeed={(l) => (l.kind === "mention" ? 0.007 : 0.0035)}
+          linkDirectionalParticleWidth={(l) => (l.kind === "mention" ? 1.8 : 1.1)}
+          linkDirectionalParticleColor={(l) => (l.kind === "mention" ? palette["--primary"] : (colorById.get(idOf(l.target)) ?? palette["--muted-foreground"]))}
           cooldownTicks={120}
           onEngineStop={() => {
             if (fitted.current) return;

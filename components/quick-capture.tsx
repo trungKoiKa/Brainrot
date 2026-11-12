@@ -1,6 +1,7 @@
 "use client";
 
 import { useActionState, useEffect, useState } from "react";
+import { Textarea } from "@/components/ui/textarea";
 import { addIdeaAction, saveDailyLogAction, type CaptureState } from "@/app/actions/capture";
 import type { DailyLog } from "@/lib/types";
 import { Status, fieldClass, primaryButtonClass } from "./form-bits";
@@ -110,7 +111,7 @@ function DailyLogForm({ todayLog, open, showExercise, day }: { todayLog: DailyLo
 
   const fields: { key: "done" | "dropped" | "learned"; label: string; hint?: string; placeholder?: string }[] = [
     { key: "done", label: "Xong", placeholder: "Việc đã xong hôm nay…" },
-    { key: "dropped", label: "Rơi / chưa xong", placeholder: "Việc bị rơi, vì sao…" },
+    { key: "dropped", label: "Chưa xong", placeholder: "Việc định làm mà chưa xong, vì sao…" },
     { key: "learned", label: "Học được", placeholder: "Một điều mới hiểu ra…" },
   ];
 
@@ -125,11 +126,12 @@ function DailyLogForm({ todayLog, open, showExercise, day }: { todayLog: DailyLo
           </span>
         )}
       </summary>
-      <form action={action} className="mt-3 grid gap-3 md:grid-cols-3">
+      <form action={action} className="mt-3 grid gap-x-4 gap-y-5 md:grid-cols-3">
         {fields.map(({ key, label, hint, placeholder }) => (
-          <label key={key} className="space-y-1 text-sm">
-            <span className="text-muted-foreground">{label}</span>
-            <textarea name={key} rows={3} value={values[key]} onChange={set(key)} placeholder={placeholder} className={fieldClass} />
+          <label key={key} className="flex flex-col gap-2 text-sm">
+            <span className="font-medium">{label}</span>
+            {/* Ô tự cao theo nội dung (field-sizing-content) nên bỏ tay kéo ở góc */}
+            <Textarea name={key} value={values[key]} onChange={set(key)} placeholder={placeholder} className="min-h-24 resize-none px-3 py-2.5 leading-relaxed" />
             {hint && <span className="text-xs text-muted-foreground">{hint}</span>}
           </label>
         ))}

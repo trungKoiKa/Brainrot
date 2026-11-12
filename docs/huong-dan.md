@@ -60,7 +60,7 @@ Thẻ **Kiến thức mới** liệt kê 5 ghi chú mới nhất (bấm tên m�
 ### 2.3 Buổi tối → Today, khối Ghi nhanh
 
 1. **Ý tưởng**: gõ một dòng → Lưu → database Ideas.
-2. **Daily Log hôm nay**: ghi Xong / Rơi – chưa xong / Học được → Lưu (đã có thì Cập nhật, mỗi ngày một bản ghi).
+2. **Daily Log hôm nay**: ghi Xong / Chưa xong / Học được → Lưu (đã có thì Cập nhật, mỗi ngày một bản ghi).
 3. **Ngày mai làm**: tích những task định làm ngày mai → đặt Ngày làm = ngày mai. Bỏ tích = bỏ lịch.
    Danh sách gồm task đã xếp ngày mai + task chưa xếp lịch (ưu tiên cao trước).
 4. Sáng hôm sau các task đó tự lên "Hôm nay làm"; việc nào không làm kịp sẽ thành **trễ lịch**.
@@ -71,7 +71,7 @@ Thẻ **Kiến thức mới** liệt kê 5 ghi chú mới nhất (bấm tên m�
 2. **Mục tiêu tuần**: thêm 1–3 mục tiêu **Ưu tiên** cho tuần tới (quá 3 có nhắc nhẹ), còn lại để **Thường**.
 3. **7 ngày trong tuần**: mỗi thẻ là một ngày, gồm:
    - task có **Ngày làm** ngày đó, task **đã xong** ngày đó, task có **Deadline** ngày đó (nhãn đỏ "hạn");
-   - ghi chú Xong / Rơi của Daily Log ngày đó;
+   - ghi chú Xong / Chưa xong của Daily Log ngày đó;
    - % ngày = task xong / tổng (ngày chưa tới hiện "0/n" thay vì % đỏ).
    Việc cần đổi ngày → menu **"Dời sang…"** chọn ngày khác hoặc "Bỏ lịch". Tích xong cũng được ngay trên thẻ.
 4. **Nhìn lại tuần**: 4 câu (làm tốt · bài học · biết ơn · 3 điều tập trung tuần sau) → Lưu.
@@ -128,7 +128,7 @@ về như cũ và báo lỗi.
 | Thêm / sửa task | `createTaskAction` / `updateTaskAction` | Tasks: các cột trong form (sửa → mở lại thì bỏ Ngày xong) |
 | Làm hôm nay · Dời sang… · Ngày mai làm | `planTaskAction` | Tasks: Ngày làm (hoặc xóa) |
 | Tích thói quen | `setDayHabitsAction` | habit_days: các thói quen đã làm trong ngày |
-| Daily Log | `saveDailyLogAction` | Daily Log hôm nay: Xong · Rơi · Học được |
+| Daily Log | `saveDailyLogAction` | Daily Log hôm nay: Xong · Chưa xong · Học được |
 | Ý tưởng | `addIdeaAction` | Ideas: dòng mới |
 | Mục tiêu | `createGoalAction` / `updateGoalAction` / `trashGoalAction` | Goals (xóa mềm, hoàn tác trong 8 giây) |
 | Nhìn lại / châm ngôn | `saveReflectionAction` | Reflections: 1 bản ghi / kỳ (có thì cập nhật) |

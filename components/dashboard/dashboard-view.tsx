@@ -203,7 +203,7 @@ export function DashboardView({ real }: { real: DashInput }) {
               <Badge variant="outline" radius="full">{daily.logged} ngày có log</Badge>
               {/* Số 0 không mang màu "tốt"/"cảnh báo" */}
               <Badge variant={daily.exercised > 0 ? "success-light" : "outline"} radius="full">{daily.exercised} ngày tập</Badge>
-              <Badge variant={daily.dropped > 0 ? "warning-light" : "outline"} radius="full">{daily.dropped} ngày rơi việc</Badge>
+              <Badge variant={daily.dropped > 0 ? "warning-light" : "outline"} radius="full">{daily.dropped} ngày có việc chưa xong</Badge>
             </span>
           }
         >
