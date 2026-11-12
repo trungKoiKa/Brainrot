@@ -1,6 +1,7 @@
 "use client";
 
 import { useActionState, useEffect, useState } from "react";
+import { ChevronRight, CircleCheck, CircleDashed, Lightbulb, type LucideIcon } from "lucide-react";
 import { Textarea } from "@/components/ui/textarea";
 import { addIdeaAction, saveDailyLogAction, type CaptureState } from "@/app/actions/capture";
 import type { DailyLog } from "@/lib/types";
@@ -107,15 +108,18 @@ function DailyLogForm({ todayLog, open, showExercise, day }: { todayLog: DailyLo
       return next;
     });
 
-  const fields: { key: "done" | "dropped" | "learned"; label: string; hint?: string; placeholder?: string }[] = [
-    { key: "done", label: "Xong", placeholder: "Việc đã xong hôm nay…" },
-    { key: "dropped", label: "Chưa xong", placeholder: "Việc định làm mà chưa xong, vì sao…" },
-    { key: "learned", label: "Học được", placeholder: "Một điều mới hiểu ra…" },
+  // Mỗi ô một màu nhấn, khớp màu cùng ý nghĩa trên Dashboard (xong = good, chưa xong = warning, học = chart-3)
+  const fields: { key: "done" | "dropped" | "learned"; label: string; tone: string; Icon: LucideIcon; placeholder: string }[] = [
+    { key: "done", label: "Xong", tone: "var(--good)", Icon: CircleCheck, placeholder: "Việc đã xong hôm nay…" },
+    { key: "dropped", label: "Chưa xong", tone: "var(--warning)", Icon: CircleDashed, placeholder: "Việc định làm mà chưa xong, vì sao…" },
+    { key: "learned", label: "Học được", tone: "var(--chart-3)", Icon: Lightbulb, placeholder: "Một điều mới hiểu ra…" },
   ];
+  const lines = (text: string) => text.split("\n").filter((l) => l.trim()).length;
 
   return (
     <details className="group" open={expanded} onToggle={(e) => setExpanded(e.currentTarget.open)}>
-      <summary className="cursor-pointer py-2.5 text-sm font-medium">
+      <summary className="flex cursor-pointer list-none items-center gap-1.5 py-2.5 text-sm font-medium [&::-webkit-details-marker]:hidden">
+        <ChevronRight aria-hidden="true" className="size-4 text-muted-foreground transition-transform duration-200 group-open:rotate-90" />
         Daily Log hôm nay{" "}
         <span className="font-normal text-muted-foreground">{todayLog || savedAt ? "· đã ghi, bấm để sửa" : "· chưa ghi"}</span>
         {savedAt && (
@@ -125,14 +129,28 @@ function DailyLogForm({ todayLog, open, showExercise, day }: { todayLog: DailyLo
         )}
       </summary>
       <form action={action} className="mt-3 grid gap-x-4 gap-y-5 md:grid-cols-3">
-        {fields.map(({ key, label, hint, placeholder }) => (
-          <label key={key} className="flex flex-col gap-2 text-sm">
-            <span className="font-medium">{label}</span>
-            {/* Ô tự cao theo nội dung (field-sizing-content) nên bỏ tay kéo ở góc */}
-            <Textarea name={key} value={values[key]} onChange={set(key)} placeholder={placeholder} className="min-h-24 resize-none px-3 py-2.5 leading-relaxed" />
-            {hint && <span className="text-xs text-muted-foreground">{hint}</span>}
-          </label>
-        ))}
+        {fields.map(({ key, label, tone, Icon, placeholder }) => {
+          const count = lines(values[key]);
+          return (
+            <label key={key} className="flex flex-col gap-2 text-sm" style={{ "--tone": tone } as React.CSSProperties}>
+              <span className="flex items-center gap-2">
+                <span aria-hidden="true" className="grid size-6 place-items-center rounded-md bg-[color-mix(in_srgb,var(--tone)_14%,transparent)] text-[var(--tone)]">
+                  <Icon className="size-3.5" strokeWidth={2.25} />
+                </span>
+                <span className="font-medium">{label}</span>
+                {count > 0 && <span className="ml-auto text-xs text-muted-foreground tabular-nums">{count} dòng</span>}
+              </span>
+              {/* Ô tự cao theo nội dung (field-sizing-content) nên bỏ tay kéo. Vạch màu bên trái + viền / vòng focus theo màu ô */}
+              <Textarea
+                name={key}
+                value={values[key]}
+                onChange={set(key)}
+                placeholder={placeholder}
+                className="min-h-24 resize-none border-l-[3px] border-l-[var(--tone)] bg-[color-mix(in_srgb,var(--tone)_3%,transparent)] px-3 py-2.5 leading-relaxed focus-visible:border-[var(--tone)] focus-visible:ring-[color-mix(in_srgb,var(--tone)_22%,transparent)] dark:bg-[color-mix(in_srgb,var(--tone)_5%,transparent)]"
+              />
+            </label>
+          );
+        })}
         <div className="flex flex-wrap items-center gap-4 md:col-span-3">
           {showExercise && (
             <label className="flex items-center gap-2 text-sm">

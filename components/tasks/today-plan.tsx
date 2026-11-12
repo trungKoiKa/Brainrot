@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useActionState, useRef, useState } from "react";
+import { ChevronRight } from "lucide-react";
 import { createTaskAction, type TaskFormState } from "@/app/actions/tasks";
 import { toast } from "sonner";
 import { Empty } from "@/components/card";
@@ -186,7 +187,8 @@ export function TomorrowPicker({
 
   return (
     <details className="group" open={open}>
-      <summary className="cursor-pointer py-2.5 text-sm font-medium">
+      <summary className="flex cursor-pointer list-none items-center gap-1.5 py-2.5 text-sm font-medium [&::-webkit-details-marker]:hidden">
+        <ChevronRight aria-hidden="true" className="size-4 text-muted-foreground transition-transform duration-200 group-open:rotate-90" />
         Ngày mai làm{" "}
         <span className="font-normal text-muted-foreground">
           · {dayLabel(tomorrow)} · đã chọn {list.filter((t) => t.plannedOn === tomorrow).length}
