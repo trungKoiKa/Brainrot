@@ -11,7 +11,7 @@ export default function SettingsPage() {
   return (
     <div className="max-w-3xl">
       <PageHeader kicker="TÀI KHOẢN" title="Cài đặt" subtitle="Thông tin của riêng bạn trên Brainrot." />
-      <Suspense fallback={<Skeleton className="h-64 rounded-none" />}>
+      <Suspense fallback={<Skeleton className="h-64 rounded-xl" />}>
         <SettingsContent />
       </Suspense>
     </div>

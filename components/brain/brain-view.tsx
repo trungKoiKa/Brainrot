@@ -12,7 +12,7 @@ const BrainGraph = dynamic(() => import("./brain-graph"), {
 /** Khung graph 3D. `className` đặt chiều cao khung. Trang gọi chỉ dựng khi đã có ít nhất một ghi chú hoặc việc. */
 export function BrainView({ data, className = "h-[calc(100dvh-13rem)] min-h-96" }: { data: GraphData; className?: string }) {
   return (
-    <div className={`relative overflow-hidden border border-line bg-background ${className}`}>
+    <div className={`relative overflow-hidden rounded-xl border border-line bg-background ${className}`}>
       <BrainGraph data={data} />
     </div>
   );

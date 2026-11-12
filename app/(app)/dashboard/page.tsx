@@ -19,7 +19,7 @@ export default function DashboardPage() {
   return (
     <div>
       <PageHeader kicker="TỔNG QUAN" title="Dashboard" subtitle="Tôi đang làm tốt không?" />
-      <Suspense fallback={<Skeleton className="h-96 rounded-none" />}>
+      <Suspense fallback={<Skeleton className="h-96 rounded-xl" />}>
         <DashboardContent />
       </Suspense>
     </div>

@@ -268,7 +268,7 @@ function NativeSelect({
       aria-label={label}
       value={value}
       onChange={(e) => onChange(e.target.value)}
-      className={`${compactField} ${value ? "" : "text-muted-foreground"}`}
+      className={`${compactField} select-chevron pr-8 ${value ? "" : "text-muted-foreground"}`}
     >
       {empty !== undefined && <option value="">{empty}</option>}
       {options.map((o) => (
@@ -428,7 +428,7 @@ function RelatedPicker({ noteTitle, others, value, onChange }: { noteTitle: stri
       {value.length > 0 && (
         <ul className="flex flex-wrap gap-1.5" aria-label={`Ghi chú liên quan tới: ${noteTitle}`}>
           {value.map((id) => (
-            <li key={id} className="inline-flex items-center gap-1 border border-line py-0.5 pr-0.5 pl-2 text-xs">
+            <li key={id} className="inline-flex items-center gap-1 rounded-md border border-line py-0.5 pr-0.5 pl-2 text-xs">
               <span className="max-w-56 truncate">{titleOf.get(id)}</span>
               <button
                 type="button"
@@ -473,7 +473,7 @@ function RelatedPicker({ noteTitle, others, value, onChange }: { noteTitle: stri
             (matches.length === 0 ? (
               <p className="text-xs text-muted-foreground">Không có ghi chú nào khớp “{query.trim()}”.</p>
             ) : (
-              <ul className="max-w-sm border border-line" aria-label="Ghi chú tìm thấy">
+              <ul className="max-w-sm overflow-clip rounded-lg border border-line" aria-label="Ghi chú tìm thấy">
                 {matches.map((o) => (
                   <li key={o.id}>
                     <button

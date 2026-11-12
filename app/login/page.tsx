@@ -12,7 +12,7 @@ export default function LoginPage({ searchParams }: { searchParams: Search }) {
       <div className="w-full max-w-sm">
         <p className="font-mono text-xs text-muted-foreground">BRAINROT · ĐĂNG NHẬP</p>
         <h1 className="mt-1 mb-6 text-3xl font-semibold tracking-tight">Mở nhật ký của bạn</h1>
-        <section className="border border-line bg-surface p-6">
+        <section className="rounded-xl border border-line bg-surface p-6">
           {/* Đọc ?next lúc request → bọc Suspense; vỏ trang vẫn dựng sẵn */}
           <Suspense fallback={<LoginForm next="" />}>
             <LoginWithNext searchParams={searchParams} />

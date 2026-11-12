@@ -114,7 +114,7 @@ export function GraphSearch({
         <ul
           id={listId}
           role="listbox"
-          className="absolute inset-x-0 top-full z-10 mt-1 overflow-hidden border border-line bg-surface py-1 text-sm shadow-lg"
+          className="absolute inset-x-0 top-full z-10 mt-1 overflow-hidden rounded-lg border border-line bg-surface py-1 text-sm shadow-lg"
         >
           {results.length === 0 ? (
             <li className="px-3 py-2 text-muted-foreground">Không có gì khớp.</li>
