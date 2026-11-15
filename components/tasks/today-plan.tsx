@@ -4,7 +4,6 @@ import Link from "next/link";
 import { useActionState, useRef, useState } from "react";
 import { ChevronRight } from "lucide-react";
 import { createTaskAction, type TaskFormState } from "@/app/actions/tasks";
-import { toast } from "sonner";
 import { Empty } from "@/components/card";
 import { ProjectPill, StatusPill } from "@/components/pill";
 import { Button } from "@/components/ui/button";
@@ -13,8 +12,9 @@ import { Input } from "@/components/ui/input";
 import { addDays, daysBetween, formatDay, weekdayShort } from "@/lib/date";
 import type { Task } from "@/lib/types";
 import { planToday, todayEmptyKind, tomorrowCandidates, type TodayEmptyKind } from "@/lib/today";
-import { ErrorNotice } from "./task-row";
+import { ErrorNotice } from "@/components/error-notice";
 import { usePlanTasks } from "./use-plan-tasks";
+import { undoToast } from "@/components/undo-toast";
 
 const dayLabel = (day: string) => `${weekdayShort(day)} ${formatDay(day, true)}`;
 
@@ -127,7 +127,7 @@ export function TodayPlan({ today, tasks: initial, projects }: { today: string; 
       return;
     }
     complete(t);
-    toast(`Đã xong “${t.title || "(Chưa đặt tên)"}”`, { action: { label: "Hoàn tác", onClick: () => reopen(t) } });
+    undoToast(`Đã xong “${t.title || "(Chưa đặt tên)"}”`, () => reopen(t));
   }
   const toToday = (t: Task) => plan(t, today);
 

@@ -1,8 +1,7 @@
 "use client";
 
-import { CircleAlertIcon, PencilIcon, Trash2Icon, XIcon } from "lucide-react";
+import { PencilIcon, Trash2Icon } from "lucide-react";
 import { Pill, ProjectPill, StatusPill } from "@/components/pill";
-import { Alert, AlertAction, AlertDescription, AlertTitle } from "@/components/reui/alert";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { daysBetween, formatDay, weekdayShort } from "@/lib/date";
@@ -120,17 +119,3 @@ export function TaskRow({
   );
 }
 
-export function ErrorNotice({ message, onDismiss }: { message: string; onDismiss: () => void }) {
-  return (
-    <Alert variant="destructive" className="mb-4">
-      <CircleAlertIcon aria-hidden="true" />
-      <AlertTitle>Lỗi khi lưu</AlertTitle>
-      <AlertDescription>{message}</AlertDescription>
-      <AlertAction>
-        <Button variant="ghost" size="icon-xs" onClick={onDismiss} aria-label="Đóng thông báo">
-          <XIcon />
-        </Button>
-      </AlertAction>
-    </Alert>
-  );
-}

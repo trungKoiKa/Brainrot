@@ -9,27 +9,17 @@ import { Textarea } from "@/components/ui/textarea";
 import type { Level } from "@/lib/period";
 import { MAX_TEXT } from "@/lib/quick-capture";
 import { MAX_MOTTO, reflectionQuestions, type ReflectionFields } from "@/lib/reflections";
+import { readJson, writeJson } from "@/lib/local-store";
 
 const EMPTY: ReflectionFields = { wentWell: "", lesson: "", grateful: "", nextFocus: "", motto: "" };
 
 const draftKey = (level: Level, periodKey: string) => `reflection-draft:${level}:${periodKey}`;
 
 /** Bản nháp đang gõ (SPEC.md mục 5.3): lưu trong trình duyệt theo kỳ, hỏng/tắt lưu trữ thì bỏ qua. */
-function readDraft(key: string): ReflectionFields | null {
-  try {
-    const raw = localStorage.getItem(key);
-    const v = raw ? (JSON.parse(raw) as Partial<ReflectionFields>) : null;
-    return v && Object.keys(EMPTY).every((k) => typeof v[k as keyof ReflectionFields] === "string") ? (v as ReflectionFields) : null;
-  } catch {
-    return null;
-  }
-}
-const writeDraft = (key: string, v: ReflectionFields | null) => {
-  try {
-    if (v) localStorage.setItem(key, JSON.stringify(v));
-    else localStorage.removeItem(key);
-  } catch {}
-};
+const asDraft = (v: unknown): ReflectionFields | null =>
+  v && typeof v === "object" && Object.keys(EMPTY).every((k) => typeof (v as Record<string, unknown>)[k] === "string") ? (v as ReflectionFields) : null;
+const readDraft = (key: string) => readJson(key, asDraft);
+const writeDraft = (key: string, v: ReflectionFields | null) => writeJson(key, v);
 const same = (a: ReflectionFields, b: ReflectionFields) => (Object.keys(EMPTY) as (keyof ReflectionFields)[]).every((k) => a[k] === b[k]);
 
 /**

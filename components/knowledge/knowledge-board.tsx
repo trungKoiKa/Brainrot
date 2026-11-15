@@ -2,14 +2,13 @@
 
 import { useActionState, useOptimistic, useRef, useState, useTransition } from "react";
 import { ExternalLinkIcon, PencilIcon, Trash2Icon, XIcon } from "lucide-react";
-import { toast } from "sonner";
 import { createNoteAction, deleteNoteAction, restoreNoteAction, updateNoteAction, type NoteFormState } from "@/app/actions/knowledge";
 import { Card, Empty } from "@/components/card";
 import { FilterRow } from "@/components/filter-row";
-import { fieldClass, selectClass } from "@/components/form-bits";
+import { fieldClass } from "@/components/form-bits";
 import { Pill } from "@/components/pill";
 import { DeadlineField } from "@/components/deadline-field";
-import { ErrorNotice } from "@/components/tasks/task-row";
+import { ErrorNotice } from "@/components/error-notice";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -18,16 +17,16 @@ import { colorVarByOrder } from "@/lib/topic-colors";
 import { fold } from "@/lib/text";
 import { KNOWLEDGE_LEVELS, MAX_NOTE_TITLE, MAX_RELATED, NO_FIELD, filterNotes, noteDay, sortNotes, type KnowledgeLevel } from "@/lib/knowledge";
 import type { Knowledge } from "@/lib/types";
+import { undoToast } from "@/components/undo-toast";
+import { focusSoon } from "@/lib/focus";
+import { NativeSelect } from "@/components/native-select";
 
-/** Thời gian hiện "Hoàn tác" sau khi xoá (SPEC.md mục 6) */
-const UNDO_MS = 8000;
 const compactField = fieldClass.replace("w-full", "w-auto");
 const LEVEL_COLOR: Record<string, string> = {
   "Mới học": "var(--muted-foreground)",
   Hiểu: "var(--primary)",
   "Áp dụng được": "var(--good)",
 };
-const focusSoon = (selector: string) => requestAnimationFrame(() => document.querySelector<HTMLElement>(selector)?.focus());
 
 type Change = { type: "delete"; id: string } | { type: "restore"; note: Knowledge };
 
@@ -97,30 +96,24 @@ export function KnowledgeBoard({
       const res = await deleteNoteAction(n.id);
       if (!res.ok) setError(`Chưa xóa được “${n.title}”. ${res.error}`);
     });
-    toast(`Đã xóa “${n.title}”`, {
-      duration: UNDO_MS,
-      action: {
-        label: "Hoàn tác",
-        onClick: () => {
-          setError(null);
-          startTransition(async () => {
-            apply({ type: "restore", note: n });
-            const res = await restoreNoteAction({
-              id: n.id,
-              title: n.title,
-              field: n.field,
-              level: (n.level ?? "Mới học") as KnowledgeLevel,
-              summary: n.summary,
-              source: n.source,
-              learnedOn: n.learnedOn,
-              createdTime: n.createdTime,
-              related: n.related,
-            });
-            if (!res.ok) setError(`Chưa hoàn tác được “${n.title}”. ${res.error}`);
-          });
-          focusSoon(`[data-note-id="${n.id}"] button[aria-label^="Sửa"]`);
-        },
-      },
+    undoToast(`Đã xóa “${n.title}”`, () => {
+      setError(null);
+      startTransition(async () => {
+        apply({ type: "restore", note: n });
+        const res = await restoreNoteAction({
+          id: n.id,
+          title: n.title,
+          field: n.field,
+          level: (n.level ?? "Mới học") as KnowledgeLevel,
+          summary: n.summary,
+          source: n.source,
+          learnedOn: n.learnedOn,
+          createdTime: n.createdTime,
+          related: n.related,
+        });
+        if (!res.ok) setError(`Chưa hoàn tác được “${n.title}”. ${res.error}`);
+      });
+      focusSoon(`[data-note-id="${n.id}"] button[aria-label^="Sửa"]`);
     });
   }
 
@@ -244,39 +237,6 @@ export function KnowledgeBoard({
         </Card>
       )}
     </div>
-  );
-}
-
-function NativeSelect({
-  name,
-  label,
-  value,
-  options,
-  empty,
-  onChange,
-}: {
-  name: string;
-  label: string;
-  value: string;
-  options: readonly string[];
-  empty?: string;
-  onChange: (v: string) => void;
-}) {
-  return (
-    <select
-      name={name}
-      aria-label={label}
-      value={value}
-      onChange={(e) => onChange(e.target.value)}
-      className={`${selectClass} ${value ? "" : "text-muted-foreground"}`}
-    >
-      {empty !== undefined && <option value="">{empty}</option>}
-      {options.map((o) => (
-        <option key={o} value={o}>
-          {o}
-        </option>
-      ))}
-    </select>
   );
 }
 

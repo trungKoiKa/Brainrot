@@ -2,23 +2,12 @@
 
 // Biểu đồ SVG tự vẽ cho Dashboard (thay Recharts, bớt ~118 KB JS nén). Chỉ những gì Dashboard cần: cột nhóm, vùng hai
 // đường, sparkline. Màu luôn là CSS variable (đặt qua `style` để chạy được cả hai theme).
-import { useEffect, useRef, useState, type ReactNode } from "react";
+import { useState, type ReactNode } from "react";
 import { niceMax } from "@/lib/dashboard/chart-scale";
+import { useElementSize } from "@/hooks/use-element-size";
 
 /** 5 mốc trục Y từ 0 tới `top` (top luôn là 4 bước tròn, xem niceMax). */
 const yTicks = (top: number) => [0, 1, 2, 3, 4].map((i) => (top / 4) * i);
-
-function useWidth<T extends HTMLElement>() {
-  const ref = useRef<T>(null);
-  const [width, setWidth] = useState(0);
-  useEffect(() => {
-    if (!ref.current) return;
-    const observer = new ResizeObserver(([entry]) => setWidth(entry.contentRect.width));
-    observer.observe(ref.current);
-    return () => observer.disconnect();
-  }, []);
-  return [ref, width] as const;
-}
 
 const PAD = { top: 8, right: 8, left: 36 };
 const LABEL_GAP = 56; // khoảng cách tối thiểu giữa hai nhãn trục X (px)
@@ -48,7 +37,7 @@ function Frame({
   onSlotClick?: (i: number) => void;
   children: (g: { x: (i: number) => number; slot: number; y: (v: number) => number; base: number }) => ReactNode;
 }) {
-  const [ref, width] = useWidth<HTMLDivElement>();
+  const [ref, { width }] = useElementSize<HTMLDivElement>();
   const [hover, setHover] = useState<number | null>(null);
   const bottom = angled ? 56 : 24;
   const plotW = Math.max(0, width - PAD.left - PAD.right);

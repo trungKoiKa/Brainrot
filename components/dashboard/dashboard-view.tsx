@@ -35,29 +35,12 @@ import {
   ToneDot,
   WeeklyArea,
 } from "./dashboard-blocks";
+import { readChoice, writeChoice } from "@/lib/local-store";
 
 type Mode = "real" | "sample";
 
 const MODE_KEY = "dashboard.mode";
 const PERIOD_KEY = "dashboard.period";
-
-function readStored<T>(key: string, allowed: readonly T[], fallback: T): T {
-  try {
-    const raw = localStorage.getItem(key);
-    const value = allowed.find((a) => String(a) === raw);
-    return value ?? fallback;
-  } catch {
-    return fallback;
-  }
-}
-
-function store(key: string, value: string) {
-  try {
-    localStorage.setItem(key, value);
-  } catch {
-    // localStorage bị chặn → chỉ nhớ trong phiên
-  }
-}
 
 const fmt = new Intl.NumberFormat("vi-VN");
 const linkClass = "font-medium text-primary underline-offset-4 hover:underline";
@@ -71,15 +54,15 @@ type Block = { key: string; span: 1 | 2 | 3; full: boolean; title: string; node:
 const capitalize = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
 
 export function DashboardView({ real }: { real: DashInput }) {
-  const [mode, setModeState] = useState<Mode>(() => readStored<Mode>(MODE_KEY, ["real", "sample"], "real"));
-  const [period, setPeriod] = useState<Period>(() => readStored<Period>(PERIOD_KEY, PERIODS, 30));
+  const [mode, setModeState] = useState<Mode>(() => readChoice<Mode>(MODE_KEY, ["real", "sample"], "real"));
+  const [period, setPeriod] = useState<Period>(() => readChoice<Period>(PERIOD_KEY, PERIODS, 30));
   const sample = useMemo(
     () => sampleDashboard(real.today, real.thesisDeadline ?? undefined),
     [real.today, real.thesisDeadline],
   );
   const setMode = (m: Mode) => {
     setModeState(m);
-    store(MODE_KEY, m);
+    writeChoice(MODE_KEY, m);
   };
 
   // "Thật là thật" (Trung chốt 07/11/2026, thay SPEC.md mục 5.4): chế độ Thật không bao giờ lấp bằng mẫu;
@@ -273,7 +256,7 @@ export function DashboardView({ real }: { real: DashInput }) {
           options={PERIODS.map((p) => ({ value: p, label: `${p} ngày` }))}
           onChange={(p) => {
             setPeriod(p);
-            store(PERIOD_KEY, String(p));
+            writeChoice(PERIOD_KEY, p);
           }}
         />
         <Segmented
