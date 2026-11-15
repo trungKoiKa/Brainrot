@@ -8,44 +8,24 @@ import { Badge } from "@/components/reui/badge";
 import { formatDay } from "@/lib/date";
 import { goalCounts } from "@/lib/goals";
 import { sampleDashboard } from "@/lib/dashboard/sample";
-import {
-  backlogKpi,
-  dailyRhythm,
-  doneKpi,
-  habitKpis,
-  PERIODS,
-  dueSoon,
-  tasksByProject,
-  thesisKpi,
-  weeklyRhythm,
-  weekSummary,
-  type DashInput,
-  type Period,
-  weekKpi,
-} from "@/lib/dashboard/stats";
-import {
-  ChangeBadge,
-  DailyBars,
-  DueSoonList,
-  HabitBars,
-  KpiStrip,
-  MIN_ACTIVE_WEEKS,
-  MonthGoals,
-  ProjectBars,
-  ToneDot,
-  WeeklyArea,
-} from "./dashboard-blocks";
+import { backlogKpi, dailyRhythm, doneKpi, habitKpis, PERIODS, dueSoon, tasksByProject, thesisKpi, weeklyRhythm, weekSummary, type DashInput, type Period, weekKpi } from "@/lib/dashboard/stats";
+import { ChangeBadge, DailyBars, DueSoonList, HabitBars, KpiStrip, MIN_ACTIVE_WEEKS, MonthGoals, ProjectBars, ToneDot, WeeklyArea } from "./dashboard-blocks";
 import { readChoice, writeChoice } from "@/lib/local-store";
+import { Segmented } from "./segmented";
 
 type Mode = "real" | "sample";
 
 const MODE_KEY = "dashboard.mode";
+
 const PERIOD_KEY = "dashboard.period";
 
 const fmt = new Intl.NumberFormat("vi-VN");
+
 const linkClass = "font-medium text-primary underline-offset-4 hover:underline";
+
 // Khung trong lưới cao bằng hàng
 const fill = "h-full";
+
 const SPAN = { 1: "", 2: "lg:col-span-2", 3: "lg:col-span-3" } as const;
 
 /** Một khối có dữ liệu (vẽ trong lưới) hoặc không (một dòng trong khung "Chưa có dữ liệu"). */
@@ -377,41 +357,6 @@ export function DashboardView({ real }: { real: DashInput }) {
           </ul>
         </Card>
       )}
-    </div>
-  );
-}
-
-function Segmented<T extends string | number>({
-  label,
-  value,
-  options,
-  onChange,
-  className = "",
-}: {
-  label: string;
-  value: T;
-  options: { value: T; label: string }[];
-  onChange: (v: T) => void;
-  className?: string;
-}) {
-  return (
-    <div role="group" aria-label={label} className={`flex items-center gap-2 ${className}`}>
-      <span className="font-mono text-xs text-muted-foreground uppercase">{label}</span>
-      <div className="flex rounded-lg border border-line bg-surface p-0.5">
-        {options.map((o) => (
-          <button
-            key={o.value}
-            type="button"
-            aria-pressed={o.value === value}
-            onClick={() => onChange(o.value)}
-            className={`min-h-10 px-3 py-1 text-sm transition-colors md:min-h-0 ${
-              o.value === value ? "bg-accent-soft font-medium text-primary" : "text-muted-foreground hover:text-foreground"
-            }`}
-          >
-            {o.label}
-          </button>
-        ))}
-      </div>
     </div>
   );
 }

@@ -2,7 +2,7 @@
 
 import { getGoals, getTaskProjects } from "@/lib/db/data";
 import { BAD_REQUEST, okOnly, runWrite, type OkResult } from "@/lib/db/actions-db";
-import { createTask, deleteTask, markTaskDone, reopenTask, restoreTask, setTaskPlannedOn, updateTask, type TaskSnapshot } from "@/lib/db/mutations";
+import { createTask, deleteTask, markTaskDone, reopenTask, restoreTask, setTaskPlannedOn, updateTask, type TaskSnapshot } from "@/lib/db/tasks";
 import { isDay, isId } from "@/lib/ids";
 import { MAX_TEXT } from "@/lib/quick-capture";
 import { SESSION_EXPIRED, isSignedIn } from "@/lib/session";

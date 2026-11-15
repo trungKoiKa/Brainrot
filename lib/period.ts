@@ -150,3 +150,6 @@ export function shortLabel(p: Period): string {
   if (p.level === "week") return `${Number(p.start.slice(8))}/${Number(p.start.slice(5, 7))}`;
   return p.key;
 }
+
+/** Đường dẫn trang Goal mở đúng kỳ `p`. */
+export const goalsHref = (p: Period) => `/goals?level=${p.level}&period=${p.key}`;

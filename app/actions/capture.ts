@@ -2,7 +2,7 @@
 
 import { workdayVN } from "@/lib/date";
 import { runWrite } from "@/lib/db/actions-db";
-import { createIdea, saveDailyLog } from "@/lib/db/mutations";
+import { createIdea, saveDailyLog } from "@/lib/db/daily-logs";
 import { parseDailyLog, parseIdea } from "@/lib/quick-capture";
 import { SESSION_EXPIRED, isSignedIn } from "@/lib/session";
 

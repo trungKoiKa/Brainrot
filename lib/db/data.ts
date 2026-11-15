@@ -1,17 +1,12 @@
 import "server-only";
 import { cache } from "react";
 import { getDb } from "./client";
-import {
-  listDailyLogsBetween,
-  listGoals,
-  listHabits,
-  listProjectNames,
-  listRecentDailyLogs,
-  listReflections,
-  listTasks,
-  getProfileRow,
-  listProjectsWithCounts,
-} from "./queries";
+import { getProfileRow } from "./account";
+import { listDailyLogsBetween, listRecentDailyLogs } from "./daily-logs";
+import { listGoals, listReflections } from "./goals";
+import { listHabits } from "./habits";
+import { listProjectNames, listProjectsWithCounts } from "./projects";
+import { listTasks } from "./tasks";
 import { listFieldNames, listFieldsWithCounts, listKnowledge } from "./knowledge";
 import { requireUserId } from "@/lib/session";
 import { DEFAULT_USER_ID } from "./schema";
@@ -86,7 +81,7 @@ export const getTaskProjects = cache(async (): Promise<string[]> => {
   return listProjectNames(db, userId);
 });
 
-export type { Profile } from "./queries";
+export type { Profile } from "./account";
 
 /**
  * Hồ sơ + đếm ngược của người đang đăng nhập. Thẻ đếm ngược: hạn trong Cài đặt; riêng user mặc định (Trung) chưa đặt thì
