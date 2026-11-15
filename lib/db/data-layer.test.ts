@@ -1,36 +1,17 @@
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import type { Db } from "./client";
-import {
-  carryOverGoals,
-  createGoal,
-  createHabit,
-  deleteHabit,
-  restoreHabit,
-  createIdea,
-  createTask,
-  deleteTask,
-  markTaskDone,
-  reopenTask,
-  restoreTask,
-  createProject,
-  deleteUser,
-  getUserEmail,
-  deleteProject,
-  renameProject,
-  getPasswordHash,
-  setPasswordHash,
-  updateProfile,
-  saveDailyLog,
-  saveReflection,
-  setDayHabits,
-  setHabitEnd,
-  setTaskGoal,
-  setTaskPlannedOn,
-  trashGoal,
-  updateGoal,
-  updateTask,
-} from "./mutations";
-import { getProfileRow, listProjectsWithCounts, listDailyLogsBetween, listGoals, listHabits, listProjectNames, listRecentDailyLogs, listReflections, listTasks } from "./queries";
+import { deleteUser, getUserEmail, getPasswordHash, setPasswordHash, updateProfile } from "./account";
+import { createIdea, saveDailyLog, setDayHabits } from "./daily-logs";
+import { carryOverGoals, createGoal, saveReflection, setTaskGoal, trashGoal, updateGoal } from "./goals";
+import { createHabit, deleteHabit, restoreHabit, setHabitEnd } from "./habits";
+import { createProject, deleteProject, renameProject } from "./projects";
+import { createTask, deleteTask, markTaskDone, reopenTask, restoreTask, setTaskPlannedOn, updateTask } from "./tasks";
+import { getProfileRow } from "./account";
+import { listDailyLogsBetween, listRecentDailyLogs } from "./daily-logs";
+import { listGoals, listReflections } from "./goals";
+import { listHabits } from "./habits";
+import { listProjectsWithCounts, listProjectNames } from "./projects";
+import { listTasks } from "./tasks";
 import { DEFAULT_USER_ID, habits, users } from "./schema";
 import { eq } from "drizzle-orm";
 import { createTestDb } from "./test-db";

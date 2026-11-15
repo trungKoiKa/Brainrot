@@ -44,13 +44,19 @@ Trình duyệt ──► Next.js trên Vercel (Server Components + Server Action
   (`lib/db/revalidate.ts`). Giao diện cập nhật lạc quan; lỗi thì trả về như cũ và báo lỗi.
 - Một database Neon dùng chung cho dev và production. Migration ở `lib/db/migrations/`.
 - Quyết định kỹ thuật lâu dài: `docs/decisions/`.
-- **Tổ chức code** (dọn 12/11/2026):
-  - `app/(app)/<màn>/page.tsx` trang; `app/actions/` Server Actions (kiểm tra đầu vào → gọi `lib/db/` → `refreshData()`).
-  - `components/<màn>/` giao diện riêng từng màn (`tasks`, `goals`, `habits`, `dashboard`, `knowledge`, `brain`,
-    `settings`); file nằm thẳng trong `components/` là thứ nhiều màn dùng chung (`card`, `pill`, `readout`,
-    `deadline-field`, `filter-row`, `form-bits`, `sidebar`…); `components/ui/`, `components/reui/` là component thư viện.
-  - `lib/db/` mọi truy vấn (server-only); phần còn lại của `lib/` là hàm thuần có test đặt cạnh (`*.test.ts`), gom thư
-    mục khi có từ 2 file cùng chủ đề (`lib/dashboard/`, `lib/graph/`).
+- **Tổ chức code** (dọn 12/11/2026, gom code lặp và tách file 15/11/2026):
+  - `app/(app)/<màn>/page.tsx` chỉ đọc dữ liệu và ghép thẻ; thẻ / form nằm ở `components/<màn>/`, trang không
+    định nghĩa helper cho nơi khác import.
+  - `app/actions/` Server Actions: kiểm tra đăng nhập (`isSignedIn`) → kiểm tra đầu vào (`isId`, `isDay` ở `lib/ids.ts`)
+    → `runWrite()` (`lib/db/actions-db.ts`: lấy `userId` từ cookie, đổi lỗi đã biết sang câu dễ hiểu, `refreshData()`).
+  - `components/<màn>/` giao diện riêng từng màn (`today`, `tasks`, `goals`, `habits`, `dashboard`, `knowledge`,
+    `brain`, `settings`); file nằm thẳng trong `components/` là thứ nhiều màn dùng chung (`card`, `pill`, `readout`,
+    `deadline-field`, `filter-row`, `form-bits`, `native-select`, `error-notice`, `undo-toast`, `sidebar`…);
+    `components/ui/`, `components/reui/` là component thư viện; hook dùng chung ở `hooks/`.
+  - `lib/db/` mọi truy vấn (server-only), mỗi màn một file đọc + ghi (`tasks`, `projects`, `daily-logs`, `habits`,
+    `goals`, `knowledge`, `account`); `data.ts` là lớp đọc mà trang dùng. Phần còn lại của `lib/` là hàm thuần có test
+    đặt cạnh (`*.test.ts`), gom thư mục khi có từ 2 file cùng chủ đề (`lib/dashboard/`, `lib/graph/`).
+  - Một file component nên dưới ~400 dòng; dài hơn thì tách component con ra file cùng thư mục.
 
 ## 3. Dữ liệu
 

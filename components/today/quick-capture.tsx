@@ -5,7 +5,7 @@ import { ChevronRight, CircleCheck, CircleDashed, Lightbulb, type LucideIcon } f
 import { Textarea } from "@/components/ui/textarea";
 import { addIdeaAction, saveDailyLogAction, type CaptureState } from "@/app/actions/capture";
 import type { DailyLog } from "@/lib/types";
-import { Status } from "./form-bits";
+import { Status } from "@/components/form-bits";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { readJson, writeJson } from "@/lib/local-store";

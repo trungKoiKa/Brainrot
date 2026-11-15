@@ -1,3 +1,5 @@
+// SPEC.md mục 5.3. Bước 3: 4 chế độ + mục tiêu; Nhìn lại ở mọi chế độ; thẻ 7 ngày ở chế độ Tuần.
+
 import { Suspense } from "react";
 import Link from "next/link";
 import { connection } from "next/server";
@@ -8,32 +10,17 @@ import { PrevFocus } from "@/components/goals/prev-focus";
 import { ReflectionForm } from "@/components/goals/reflection-form";
 import { PeriodBars, type PeriodBar } from "@/components/goals/period-bars";
 import { WeekCards } from "@/components/goals/week-cards";
-import { ProgressRing } from "@/components/goals/progress-ring";
 import { HabitMonth } from "@/components/habits/habit-month";
 import { PageHeader } from "@/components/page-header";
 import { Skeleton } from "@/components/ui/skeleton";
 import { todayVN } from "@/lib/date";
-import { goalCounts, goalsOf, isGoalDone, type Goal } from "@/lib/goals";
+import { goalCounts, goalsOf, isGoalDone } from "@/lib/goals";
 import { doneHabits } from "@/lib/habits";
 import { getDailyLogsBetween, getGoals, getHabits, getReflections, getTasks } from "@/lib/db/data";
 import { resolveGoals } from "@/lib/db/goal-status";
 import { previousFocus, reflectionOf } from "@/lib/reflections";
-import {
-  childPeriods,
-  LEVEL_LABEL,
-  LEVELS,
-  monthOf,
-  parsePeriod,
-  periodLabel,
-  periodOf,
-  shiftPeriod,
-  shortLabel,
-  type Level,
-  type Period,
-} from "@/lib/period";
-
-// SPEC.md mục 5.3. Bước 3: 4 chế độ + mục tiêu; Nhìn lại ở mọi chế độ; thẻ 7 ngày ở chế độ Tuần.
-const href = (p: Period) => `/goals?level=${p.level}&period=${p.key}`;
+import { childPeriods, goalsHref, LEVEL_LABEL, LEVELS, monthOf, parsePeriod, periodLabel, periodOf, shiftPeriod, shortLabel, type Level, type Period } from "@/lib/period";
+import { ChildCard } from "../../../components/goals/child-card";
 
 export default function GoalsPage({ searchParams }: PageProps<"/goals">) {
   return (
@@ -79,11 +66,11 @@ async function GoalsContent({ searchParams }: Pick<PageProps<"/goals">, "searchP
     (h) => monthOf(h.from) <= monthOf(period.end) && (h.to === null || monthOf(h.to) >= monthOf(period.start)),
   );
   const panelGoals = goalsOf(goals, period);
-  const panelKey = href(period); // chỉ đổi khi đổi kỳ; dữ liệu mới vào qua prop `initial` (giữ popover, focus, thông báo)
+  const panelKey = goalsHref(period); // chỉ đổi khi đổi kỳ; dữ liệu mới vào qua prop `initial` (giữ popover, focus, thông báo)
   const bars = (list: Period[]): PeriodBar[] =>
     list.map((p) => {
       const c = goalCounts(goalsOf(goals, p));
-      return { href: href(p), label: shortLabel(p), pct: c.progress, total: c.total, current: p.start <= today && today <= p.end, ended: p.end < today };
+      return { href: goalsHref(p), label: shortLabel(p), pct: c.progress, total: c.total, current: p.start <= today && today <= p.end, ended: p.end < today };
     });
 
   // Chuỗi Mục tiêu → Việc → Ngày (SPEC.md mục 5.3)
@@ -129,7 +116,7 @@ async function GoalsContent({ searchParams }: Pick<PageProps<"/goals">, "searchP
             <Link
               key={l}
               // đổi cấp giữ ngữ cảnh: đang xem tháng 10 → bấm Năm ra năm 2026
-              href={href(periodOf(l, period.start <= today && today <= period.end ? today : period.start))}
+              href={goalsHref(periodOf(l, period.start <= today && today <= period.end ? today : period.start))}
               aria-current={l === level ? "page" : undefined}
               className={`px-3 py-1 text-sm transition-colors ${
                 l === level ? "bg-accent-soft font-medium text-primary" : "text-muted-foreground hover:text-foreground"
@@ -140,15 +127,15 @@ async function GoalsContent({ searchParams }: Pick<PageProps<"/goals">, "searchP
           ))}
         </nav>
         <nav aria-label="Đổi kỳ" className="ml-auto flex items-center gap-1">
-          <Link href={href(shiftPeriod(period, -1))} aria-label="Kỳ trước" className="rounded-md p-1.5 text-muted-foreground hover:bg-surface-muted hover:text-foreground">
+          <Link href={goalsHref(shiftPeriod(period, -1))} aria-label="Kỳ trước" className="rounded-md p-1.5 text-muted-foreground hover:bg-surface-muted hover:text-foreground">
             <ChevronLeftIcon className="size-4" />
           </Link>
           <span className="min-w-40 text-center text-base font-semibold tabular-nums">{periodLabel(period)}</span>
-          <Link href={href(shiftPeriod(period, 1))} aria-label="Kỳ sau" className="rounded-md p-1.5 text-muted-foreground hover:bg-surface-muted hover:text-foreground">
+          <Link href={goalsHref(shiftPeriod(period, 1))} aria-label="Kỳ sau" className="rounded-md p-1.5 text-muted-foreground hover:bg-surface-muted hover:text-foreground">
             <ChevronRightIcon className="size-4" />
           </Link>
           {period.key !== current.key && (
-            <Link href={href(current)} className="ml-2 rounded-full border border-line px-3 py-1 text-sm hover:border-primary">
+            <Link href={goalsHref(current)} className="ml-2 rounded-full border border-line px-3 py-1 text-sm hover:border-primary">
               Kỳ này
             </Link>
           )}
@@ -236,7 +223,7 @@ async function GoalsContent({ searchParams }: Pick<PageProps<"/goals">, "searchP
               {childCards.map((c) => (
                 <li key={c.period.key}>
                   <Link
-                    href={href(c.period)}
+                    href={goalsHref(c.period)}
                     aria-current={c.current ? "true" : undefined}
                     className={`inline-flex min-h-10 items-center border px-3 text-sm tabular-nums outline-none hover:border-primary focus-visible:ring-3 focus-visible:ring-ring md:min-h-8 ${c.current ? "border-primary text-primary" : "border-line"}`}
                   >
@@ -269,42 +256,5 @@ async function GoalsContent({ searchParams }: Pick<PageProps<"/goals">, "searchP
         <ReflectionForm key={`${period.key}|${reflection?.id ?? "new"}`} level={level} periodKey={period.key} initial={reflection} />
       </Card>
     </div>
-  );
-}
-
-/** Thẻ quý (trong Năm) / tháng (trong Quý): % + mục tiêu Ưu tiên, bấm để mở (SPEC.md mục 5.3). */
-function ChildCard({ period, goals, monthGoals, current, today }: { period: Period; goals: Goal[]; monthGoals: number; current: boolean; today: string }) {
-  const c = goalCounts(goals);
-  const priority = goals.filter((g) => g.type === "Ưu tiên" && g.title.trim());
-  return (
-    // Viền nổi bật đặt ở ring của link (Card đã có border-line, thêm border-* nữa thì không chắc class nào thắng)
-    <Link
-      href={href(period)}
-      className={`block ring-primary transition-shadow hover:ring-1 focus-visible:outline-2 focus-visible:outline-primary ${current ? "ring-1" : ""}`}
-    >
-      <Card className="h-full">
-        <div className="flex items-center gap-4">
-          <ProgressRing pct={c.progress} size={64} empty={c.total === 0} neutral={period.end >= today} />
-          <div>
-            <h2 className="text-base font-semibold tabular-nums">{periodLabel(period)}</h2>
-            <p className="text-xs text-muted-foreground">
-              {c.completed}/{c.total} mục tiêu
-            </p>
-            {monthGoals > 0 && <p className="text-xs text-muted-foreground tabular-nums">+{monthGoals} mục tiêu ở các tháng</p>}
-          </div>
-        </div>
-        <ul className="mt-4 space-y-1.5 text-sm">
-          {priority.length === 0 ? (
-            <li className="text-muted-foreground">Chưa có mục tiêu ưu tiên.</li>
-          ) : (
-            priority.map((g) => (
-              <li key={g.id} className={`truncate ${g.done ? "text-muted-foreground line-through" : ""}`}>
-                {g.title}
-              </li>
-            ))
-          )}
-        </ul>
-      </Card>
-    </Link>
   );
 }

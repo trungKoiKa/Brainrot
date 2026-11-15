@@ -12,7 +12,7 @@ import {
   restoreNote,
   updateNote,
 } from "./knowledge";
-import { deleteUser } from "./mutations";
+import { deleteUser } from "./account";
 import { DEFAULT_USER_ID, knowledge, knowledgeLinks, users } from "./schema";
 import { createTestDb } from "./test-db";
 import type { NoteInput } from "@/lib/knowledge";

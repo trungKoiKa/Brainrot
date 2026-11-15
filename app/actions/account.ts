@@ -5,17 +5,8 @@ import { redirect } from "next/navigation";
 import { SESSION_COOKIE } from "@/lib/auth";
 import { BAD_REQUEST, UserError, runWrite } from "@/lib/db/actions-db";
 import type { Db } from "@/lib/db/client";
-import {
-  MAX_PROJECT_NAME,
-  createProject,
-  deleteProject,
-  deleteUser,
-  getUserEmail,
-  getPasswordHash,
-  renameProject,
-  setPasswordHash,
-  updateProfile,
-} from "@/lib/db/mutations";
+import { deleteUser, getUserEmail, getPasswordHash, setPasswordHash, updateProfile } from "@/lib/db/account";
+import { MAX_PROJECT_NAME, createProject, deleteProject, renameProject } from "@/lib/db/projects";
 import { isDay, isId } from "@/lib/ids";
 import { MIN_PASSWORD_LENGTH, hashPassword, verifyPassword } from "@/lib/password";
 import { SESSION_EXPIRED, isSignedIn } from "@/lib/session";

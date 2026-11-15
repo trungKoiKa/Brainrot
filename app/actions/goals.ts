@@ -2,7 +2,7 @@
 
 import { GOAL_TYPES, MAX_GOAL_TITLE, type GoalType } from "@/lib/goals";
 import { BAD_REQUEST, okOnly, runWrite, type OkResult } from "@/lib/db/actions-db";
-import { carryOverGoals, createGoal, setTaskGoal, trashGoal, updateGoal, type GoalPatch } from "@/lib/db/mutations";
+import { carryOverGoals, createGoal, setTaskGoal, trashGoal, updateGoal, type GoalPatch } from "@/lib/db/goals";
 import { isId } from "@/lib/ids";
 import { LEVELS, parsePeriod, shiftPeriod, type Level } from "@/lib/period";
 import { SESSION_EXPIRED, isSignedIn } from "@/lib/session";

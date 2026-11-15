@@ -1,7 +1,7 @@
 "use server";
 
 import { BAD_REQUEST, runWrite } from "@/lib/db/actions-db";
-import { saveReflection } from "@/lib/db/mutations";
+import { saveReflection } from "@/lib/db/goals";
 import { LEVELS, parsePeriod, type Level } from "@/lib/period";
 import { parseReflection, type ReflectionFields } from "@/lib/reflections";
 import { SESSION_EXPIRED, isSignedIn } from "@/lib/session";
