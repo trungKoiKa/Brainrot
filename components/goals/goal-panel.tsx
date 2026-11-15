@@ -15,16 +15,14 @@ import { completeTask, reopenTaskAction } from "@/app/actions/tasks";
 import Link from "next/link";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
-import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { carryOverGoalsAction, createGoalAction, linkTaskAction, trashGoalAction, updateGoalAction } from "@/app/actions/goals";
 import { formatDay } from "@/lib/date";
 import { fold } from "@/lib/text";
-import { selectClass } from "@/components/form-bits";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/reui/badge";
-import { ErrorNotice } from "@/components/tasks/task-row";
+import { ErrorNotice } from "@/components/error-notice";
 import {
   DEFAULT_THRESHOLD,
   goalCounts,
@@ -38,10 +36,10 @@ import {
 } from "@/lib/goals";
 import type { Level } from "@/lib/period";
 import { ProgressRing } from "./progress-ring";
+import { undoToast } from "@/components/undo-toast";
+import { NativeSelect } from "@/components/native-select";
 
 export type LinkedTask = { id: string; title: string; plannedOn: string | null; done: boolean };
-
-const UNDO_MS = 8000;
 
 /**
  * Khối mục tiêu của một kỳ (SPEC.md mục 5.3): bộ đếm + vòng tròn %, nhóm Ưu tiên / Thường (Badge),
@@ -140,15 +138,9 @@ export function GoalPanel({
       goals.filter((g) => g.id !== goal.id),
       () => trashGoalAction(goal.id, true),
     );
-    toast(`Đã xóa “${goal.title}”`, {
-      duration: UNDO_MS,
-      action: {
-        label: "Hoàn tác",
-        onClick: () => {
-          setError(null);
-          trashGoalAction(goal.id, false).then((res) => !res.ok && setError(res.error));
-        },
-      },
+    undoToast(`Đã xóa “${goal.title}”`, () => {
+      setError(null);
+      trashGoalAction(goal.id, false).then((res) => !res.ok && setError(res.error));
     });
   }
 
@@ -279,10 +271,7 @@ function GoalRow({
   // Bỏ gắn việc → toast "Hoàn tác" 8 giây (SPEC.md mục 5.3; sonner thay dải tự viết)
   async function unlink(t: LinkedTask) {
     if (!(await onLinkTask(t.id, null))) return; // lỗi thì không hiện Hoàn tác
-    toast(`Đã bỏ gắn “${t.title || "(Chưa đặt tên)"}”`, {
-      duration: UNDO_MS,
-      action: { label: "Hoàn tác", onClick: () => void onLinkTask(t.id, goal.id) },
-    });
+    undoToast(`Đã bỏ gắn “${t.title || "(Chưa đặt tên)"}”`, () => void onLinkTask(t.id, goal.id));
   }
   const [linking, setLinking] = useState(false);
   const [editing, setEditing] = useState(false);
@@ -458,18 +447,13 @@ function LinkHabit({
   return (
     <div className="mt-2 flex flex-wrap items-center gap-2 pl-7 text-sm">
       <span className="text-muted-foreground">Tự xong khi</span>
-      <select
-        aria-label="Thói quen"
+      <NativeSelect
+        label="Thói quen"
         value={habitId}
-        onChange={(e) => setHabitId(e.target.value)}
-        className={selectClass}
-      >
-        {habits.map((h) => (
-          <option key={h.id} value={h.id}>
-            {h.name}
-          </option>
-        ))}
-      </select>
+        options={habits.map((h) => h.id)}
+        labels={Object.fromEntries(habits.map((h) => [h.id, h.name]))}
+        onChange={setHabitId}
+      />
       <span className="text-muted-foreground">đạt ≥</span>
       <Input
         aria-label="Ngưỡng %"
@@ -535,15 +519,7 @@ function AddGoal({
         onChange={(e) => setTitle(e.target.value)}
         className="min-w-48 flex-1 max-md:h-10"
       />
-      <select
-        aria-label="Loại"
-        value={type}
-        onChange={(e) => setType(e.target.value as GoalType)}
-        className={`${selectClass} max-md:h-10`}
-      >
-        <option value="Thường">Thường</option>
-        <option value="Ưu tiên">Ưu tiên</option>
-      </select>
+      <NativeSelect label="Loại" value={type} options={["Thường", "Ưu tiên"]} onChange={(v) => setType(v as GoalType)} className="max-md:h-10" />
       <Button type="submit" disabled={pending || !title.trim()} className="max-md:h-10">
         {pending ? "Đang thêm…" : "Thêm"}
       </Button>
@@ -589,20 +565,17 @@ function CarryOver({
             const text = res.ids.length
               ? `Đã chuyển ${res.ids.length} mục tiêu sang ${label}${skipped ? ` (${skipped} đã có sẵn)` : ""}.`
               : `${label} đã có đủ các mục tiêu này.`;
-            toast(text, {
-              duration: UNDO_MS,
-              action: res.ids.length
-                ? {
-                    label: "Hoàn tác",
-                    onClick: async () => {
-                      const results = await Promise.all(res.ids.map((id) => trashGoalAction(id, true)));
-                      const failed = results.find((r) => !r.ok);
-                      if (failed && !failed.ok) return onError(failed.error);
-                      setCarried(null);
-                    },
+            undoToast(
+              text,
+              res.ids.length
+                ? async () => {
+                    const results = await Promise.all(res.ids.map((id) => trashGoalAction(id, true)));
+                    const failed = results.find((r) => !r.ok);
+                    if (failed && !failed.ok) return onError(failed.error);
+                    setCarried(null);
                   }
                 : undefined,
-            });
+            );
           })
         }
       >

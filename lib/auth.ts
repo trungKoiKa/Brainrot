@@ -1,6 +1,8 @@
 // Ký/kiểm tra cookie đăng nhập bằng HMAC-SHA256 (Web Crypto có sẵn, không cần thư viện).
 // Dùng được cả trong proxy.ts lẫn Server Action.
 
+import { isId } from "./ids";
+
 export const SESSION_COOKIE = "sb_session";
 export const SESSION_MAX_AGE = 60 * 60 * 24 * 30; // 30 ngày (giây)
 
@@ -39,8 +41,6 @@ function safeEqual(a: string, b: string): boolean {
   return diff === 0;
 }
 
-const USER_ID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
-
 /** Token dạng `<userId>.<hạn (ms)>.<chữ ký>`; chữ ký phủ cả userId nên không đổi sang user khác được. */
 export async function createSessionToken(userId: string, now = Date.now()): Promise<string> {
   const payload = `${userId}.${now + SESSION_MAX_AGE * 1000}`;
@@ -51,7 +51,7 @@ export async function createSessionToken(userId: string, now = Date.now()): Prom
 export async function readSessionToken(token: string | undefined): Promise<string | null> {
   if (!token) return null;
   const [userId, expires, signature] = token.split(".");
-  if (!userId || !expires || !signature || !USER_ID.test(userId) || !/^\d+$/.test(expires)) return null;
+  if (!userId || !expires || !signature || !isId(userId) || !/^\d+$/.test(expires)) return null;
   if (Number(expires) < Date.now()) return null;
   try {
     return safeEqual(signature, await hmac(`${userId}.${expires}`)) ? userId : null;

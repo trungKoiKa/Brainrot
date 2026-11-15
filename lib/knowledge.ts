@@ -1,4 +1,5 @@
 // Ghi chú kiến thức (SPEC.md mục 5.6). Hàm thuần, không gọi database → test được.
+import { isDay, isId } from "./ids";
 import { MAX_TEXT, type Parsed } from "./quick-capture";
 import { fold } from "./text";
 import type { Knowledge } from "./types";
@@ -12,8 +13,6 @@ export const MAX_SOURCE_URL = 500;
 /** Số ghi chú "liên quan tới" tối đa của một ghi chú (đủ dùng, giữ graph đọc được) */
 export const MAX_RELATED = 20;
 
-const DAY = /^\d{4}-\d{2}-\d{2}$/;
-const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 export type NoteInput = {
   title: string;
@@ -69,10 +68,10 @@ export function parseNote(form: {
   if (source !== null && typeof source === "object") return { ok: false, error: source.error };
 
   const learnedOn = text(form.learnedOn);
-  if (learnedOn && !DAY.test(learnedOn)) return { ok: false, error: "Ngày học không hợp lệ." };
+  if (learnedOn && !isDay(learnedOn)) return { ok: false, error: "Ngày học không hợp lệ." };
 
   const related = [...new Set(text(form.related).split(",").map((s) => s.trim()).filter(Boolean))];
-  if (related.some((id) => !UUID.test(id))) return { ok: false, error: "Ghi chú liên quan không hợp lệ." };
+  if (related.some((id) => !isId(id))) return { ok: false, error: "Ghi chú liên quan không hợp lệ." };
   if (related.length > MAX_RELATED) return { ok: false, error: `Tối đa ${MAX_RELATED} ghi chú liên quan.` };
 
   return {

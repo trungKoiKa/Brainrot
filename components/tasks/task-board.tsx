@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import { toast } from "sonner";
 import { ChevronRightIcon } from "lucide-react";
 import { Card, Empty } from "@/components/card";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
@@ -11,21 +10,14 @@ import { compareTasks } from "@/lib/today";
 import type { Priority, Task } from "@/lib/types";
 import { PRIORITIES } from "@/lib/task-form";
 import { EditTaskForm, NewTaskForm, type GoalOption } from "./task-forms";
-import { ErrorNotice, TaskRow } from "./task-row";
+import { TaskRow } from "./task-row";
+import { ErrorNotice } from "@/components/error-notice";
 import { useTaskCompletion } from "./use-task-completion";
+import { undoToast } from "@/components/undo-toast";
+import { focusSoon, focusUndo } from "@/lib/focus";
 
 const NO_PROJECT = "Không có dự án";
-/** Toast "Hoàn tác" hiện 8 giây (SPEC.md mục 5.2, 07/11/2026); sonner tạm dừng khi rê chuột/focus và xếp chồng nhiều toast. */
-const UNDO_MS = 8000;
-
 const projectOf = (t: Task) => t.project ?? NO_PROJECT;
-/** Sau khi dòng biến mất: focus sang nút "Hoàn tác" của toast mới nhất (rà soát cuối A3, WCAG 2.4.3). */
-const focusUndo = () =>
-  requestAnimationFrame(() => requestAnimationFrame(() => document.querySelector<HTMLElement>("[data-sonner-toast] [data-button]")?.focus()));
-
-/** Đưa con trỏ bàn phím tới phần tử đầu tiên khớp `selector` sau khi React vẽ lại (không để rơi về đầu trang). */
-const focusSoon = (selector: string) => requestAnimationFrame(() => document.querySelector<HTMLElement>(selector)?.focus());
-
 export function TaskBoard({
   tasks: initial,
   projects: allProjects,
@@ -93,30 +85,18 @@ export function TaskBoard({
   // Mỗi thao tác một toast riêng có nút Hoàn tác → xoá nhanh 2 việc vẫn hoàn tác được cả 2 (rà soát A2)
   function onComplete(t: Task) {
     complete(t);
-    toast(`Đã xong “${t.title || "(Chưa đặt tên)"}”`, {
-      duration: UNDO_MS,
-      action: {
-        label: "Hoàn tác",
-        onClick: () => {
-          reopen(t);
-          focusSoon(`[data-task-id="${t.id}"] [role=checkbox]`);
-        },
-      },
+    undoToast(`Đã xong “${t.title || "(Chưa đặt tên)"}”`, () => {
+      reopen(t);
+      focusSoon(`[data-task-id="${t.id}"] [role=checkbox]`);
     });
     focusUndo();
   }
 
   function onDelete(t: Task) {
     remove(t);
-    toast(`Đã xóa “${t.title || "(Chưa đặt tên)"}”`, {
-      duration: UNDO_MS,
-      action: {
-        label: "Hoàn tác",
-        onClick: () => {
-          restore(t);
-          focusSoon(`[data-task-id="${t.id}"] button[aria-label^="Sửa"], [data-task-id="${t.id}"] [role=checkbox]`);
-        },
-      },
+    undoToast(`Đã xóa “${t.title || "(Chưa đặt tên)"}”`, () => {
+      restore(t);
+      focusSoon(`[data-task-id="${t.id}"] button[aria-label^="Sửa"], [data-task-id="${t.id}"] [role=checkbox]`);
     });
     focusUndo();
   }

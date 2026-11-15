@@ -2,11 +2,10 @@
 
 import { useState, useTransition } from "react";
 import { ArrowDownIcon, ArrowUpIcon, CircleStopIcon, Trash2Icon } from "lucide-react";
-import { toast } from "sonner";
 import { addHabitAction, deleteHabitAction, moveHabitAction, restoreHabitAction, stopHabitAction, type HabitResult } from "@/app/actions/habits";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { ErrorNotice } from "@/components/tasks/task-row";
+import { ErrorNotice } from "@/components/error-notice";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -21,6 +20,7 @@ import {
 import { MAX_HABIT_NAME } from "@/lib/habits";
 import type { Habit } from "@/lib/types";
 import { monthLabel, monthOf, shiftMonth } from "@/lib/period";
+import { undoToast } from "@/components/undo-toast";
 
 const iconButton =
   "flex size-10 md:size-7 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-surface-muted hover:text-foreground disabled:opacity-30 disabled:hover:bg-transparent";
@@ -45,17 +45,12 @@ export function HabitManager({ month, habits }: { month: string; habits: Habit[]
       setError(null);
       const res = await deleteHabitAction(h.id);
       if (!res.ok) return setError(res.error);
-      toast(`Đã xoá thói quen “${h.name}”`, {
-        duration: 8000,
-        action: {
-          label: "Hoàn tác",
-          onClick: () =>
-            start(async () => {
-              const back = await restoreHabitAction(res.snapshot);
-              if (!back.ok) setError(back.error);
-            }),
-        },
-      });
+      undoToast(`Đã xoá thói quen “${h.name}”`, () =>
+        start(async () => {
+          const back = await restoreHabitAction(res.snapshot);
+          if (!back.ok) setError(back.error);
+        }),
+      );
     });
 
   return (

@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { CheckIcon } from "lucide-react";
-import { ErrorNotice } from "@/components/tasks/task-row";
+import { ErrorNotice } from "@/components/error-notice";
 import { addDays, formatDay, weekdayShort } from "@/lib/date";
 import { useHabitDays } from "./use-habit-days";
 

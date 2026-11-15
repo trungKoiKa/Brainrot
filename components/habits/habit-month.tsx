@@ -3,7 +3,7 @@
 import { useEffect, useRef } from "react";
 import { CheckIcon } from "lucide-react";
 import { Card } from "@/components/card";
-import { ErrorNotice } from "@/components/tasks/task-row";
+import { ErrorNotice } from "@/components/error-notice";
 import { Progress } from "@/components/ui/progress";
 import { monthStats } from "@/lib/habits";
 import type { Habit } from "@/lib/types";

@@ -4,51 +4,15 @@ import { useActionState, useEffect, useRef, useState } from "react";
 import { createTaskAction, updateTaskAction, type TaskFormState } from "@/app/actions/tasks";
 import type { Task } from "@/lib/types";
 import { EDITABLE_STATUSES, PRIORITIES } from "@/lib/task-form";
-import { Status, fieldClass, selectClass } from "@/components/form-bits";
+import { Status, fieldClass } from "@/components/form-bits";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { DeadlineField } from "@/components/deadline-field";
+import { NativeSelect } from "@/components/native-select";
 
 // Ô select/date hẹp hơn ô tên; giữ cùng kiểu viền với fieldClass
 const compactField = fieldClass.replace("w-full", "w-auto");
-
-function Select({
-  name,
-  label,
-  value,
-  options,
-  empty,
-  labels,
-  onChange,
-}: {
-  name: string;
-  label: string;
-  value: string;
-  options: readonly string[];
-  empty?: string;
-  /** Nhãn hiển thị khác giá trị (vd. id mục tiêu → tên) */
-  labels?: Record<string, string>;
-  onChange: (v: string) => void;
-}) {
-  return (
-    <select
-      name={name}
-      aria-label={label}
-      value={value}
-      onChange={(e) => onChange(e.target.value)}
-      // Chưa chọn → chữ mờ như ô ngày trống, để không trông như đã chọn
-      className={`${selectClass} ${value ? "" : "text-muted-foreground"}`}
-    >
-      {empty !== undefined && <option value="">{empty}</option>}
-      {options.map((o) => (
-        <option key={o} value={o}>
-          {labels?.[o] ?? o}
-        </option>
-      ))}
-    </select>
-  );
-}
 
 const EMPTY_NEW = { title: "", project: "", priority: "", deadline: "", plannedOn: "" };
 
@@ -91,8 +55,8 @@ export function NewTaskForm({ projects, defaultProject = "" }: { projects: strin
           autoComplete="off"
           className="min-w-56 flex-1"
         />
-        <Select name="project" label="Dự án" value={values.project} options={projects} empty="Dự án" onChange={set("project")} />
-        <Select name="priority" label="Ưu tiên" value={values.priority} options={PRIORITIES} empty="Ưu tiên" onChange={set("priority")} />
+        <NativeSelect name="project" label="Dự án" value={values.project} options={projects} empty="Dự án" onChange={set("project")} />
+        <NativeSelect name="priority" label="Ưu tiên" value={values.priority} options={PRIORITIES} empty="Ưu tiên" onChange={set("priority")} />
         <DeadlineField value={values.deadline} onChange={set("deadline")} triggerClass={compactField} />
         <DeadlineField name="plannedOn" label="Ngày làm" value={values.plannedOn} onChange={set("plannedOn")} triggerClass={compactField} />
         <Button type="submit" disabled={pending || !values.title.trim()}>
@@ -162,13 +126,13 @@ export function EditTaskForm({
           autoComplete="off"
         />
         <div className="flex flex-wrap gap-2">
-          <Select name="status" label="Trạng thái" value={values.status} options={EDITABLE_STATUSES} onChange={set("status")} />
-          <Select name="project" label="Dự án" value={values.project} options={projects} empty="Không có dự án" onChange={set("project")} />
-          <Select name="priority" label="Ưu tiên" value={values.priority} options={PRIORITIES} empty="Không ưu tiên" onChange={set("priority")} />
+          <NativeSelect name="status" label="Trạng thái" value={values.status} options={EDITABLE_STATUSES} onChange={set("status")} />
+          <NativeSelect name="project" label="Dự án" value={values.project} options={projects} empty="Không có dự án" onChange={set("project")} />
+          <NativeSelect name="priority" label="Ưu tiên" value={values.priority} options={PRIORITIES} empty="Không ưu tiên" onChange={set("priority")} />
           <DeadlineField value={values.deadline} onChange={set("deadline")} triggerClass={compactField} />
           <DeadlineField name="plannedOn" label="Ngày làm" value={values.plannedOn} onChange={set("plannedOn")} triggerClass={compactField} />
           {goals && (
-            <Select
+            <NativeSelect
               name="goal"
               label="Mục tiêu"
               value={values.goal}

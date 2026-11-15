@@ -8,6 +8,7 @@ import type { DailyLog } from "@/lib/types";
 import { Status } from "./form-bits";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { readJson, writeJson } from "@/lib/local-store";
 
 /**
  * Ghi nhanh trên Today (SPEC.md mục 5.1): ý tưởng → Ideas, Daily Log hôm nay → Daily Log.
@@ -180,20 +181,11 @@ function DailyLogForm({ todayLog, open, showExercise, day }: { todayLog: DailyLo
 
 type DailyDraft = { done: string; dropped: string; learned: string; exercised: boolean };
 /** Bản nháp Daily Log đang gõ (SPEC.md mục 5.1): lưu trong trình duyệt theo ngày làm việc; hỏng/tắt lưu trữ thì bỏ qua. */
-function readDraft(key: string): DailyDraft | null {
-  try {
-    const raw = localStorage.getItem(key);
-    const v = raw ? (JSON.parse(raw) as Partial<DailyDraft>) : null;
-    return v && typeof v.done === "string" && typeof v.dropped === "string" && typeof v.learned === "string"
-      ? { done: v.done, dropped: v.dropped, learned: v.learned, exercised: v.exercised === true }
-      : null;
-  } catch {
-    return null;
-  }
-}
-function writeDraft(key: string, v: DailyDraft | null) {
-  try {
-    if (v) localStorage.setItem(key, JSON.stringify(v));
-    else localStorage.removeItem(key);
-  } catch {}
-}
+const asDraft = (v: unknown): DailyDraft | null => {
+  const d = v as Partial<DailyDraft> | null;
+  return d && typeof d.done === "string" && typeof d.dropped === "string" && typeof d.learned === "string"
+    ? { done: d.done, dropped: d.dropped, learned: d.learned, exercised: d.exercised === true }
+    : null;
+};
+const readDraft = (key: string) => readJson(key, asDraft);
+const writeDraft = (key: string, v: DailyDraft | null) => writeJson(key, v);

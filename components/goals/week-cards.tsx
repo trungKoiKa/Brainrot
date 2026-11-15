@@ -1,22 +1,20 @@
 "use client";
 
-import { toast } from "sonner";
 import { useState } from "react";
 import { CalendarDaysIcon, ChevronDownIcon } from "lucide-react";
 import { Empty } from "@/components/card";
 import { Badge } from "@/components/reui/badge";
 import { StatusPill } from "@/components/pill";
-import { ErrorNotice, TaskCheckbox } from "@/components/tasks/task-row";
+import { TaskCheckbox } from "@/components/tasks/task-row";
+import { ErrorNotice } from "@/components/error-notice";
 import { usePlanTasks } from "@/components/tasks/use-plan-tasks";
 import { addDays, formatDay } from "@/lib/date";
 import type { DailyLog, Task } from "@/lib/types";
 import { weekDayCards } from "@/lib/week-days";
+import { undoToast } from "@/components/undo-toast";
 
 const WEEKDAY = ["Thứ Hai", "Thứ Ba", "Thứ Tư", "Thứ Năm", "Thứ Sáu", "Thứ Bảy", "Chủ nhật"];
 const SHORT = ["T2", "T3", "T4", "T5", "T6", "T7", "CN"];
-/** Thời gian hiện "Hoàn tác" sau khi dời ngày (SPEC.md mục 5.3) */
-const UNDO_MS = 8000;
-
 
 /**
  * 7 thẻ ngày (SPEC.md mục 5.3): task theo Ngày làm / Ngày xong / Hạn + Daily Log của tuần đang xem.
@@ -53,10 +51,7 @@ export function WeekCards({
     setMoving(null);
     const from = t.plannedOn;
     plan(t, to);
-    toast(`Đã dời “${t.title || "(Chưa đặt tên)"}” sang ${where(to)}`, {
-      duration: UNDO_MS,
-      action: { label: "Hoàn tác", onClick: () => plan({ ...t, plannedOn: to }, from) },
-    });
+    undoToast(`Đã dời “${t.title || "(Chưa đặt tên)"}” sang ${where(to)}`, () => plan({ ...t, plannedOn: to }, from));
   }
 
   const where = (d: string | null) => {
