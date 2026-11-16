@@ -141,14 +141,20 @@ function AlertDialogDescription({
   )
 }
 
+// Bấm nút xác nhận thì đóng hộp ngay (như Cancel), không chờ thao tác ghi xong — trước đây hộp
+// ở lại tới khi trang tải lại, người dùng bấm lần nữa thành gửi trùng (Trung báo 17/11/2026).
 function AlertDialogAction({
   className,
+  variant = "default",
+  size = "default",
   ...props
-}: React.ComponentProps<typeof Button>) {
+}: AlertDialogPrimitive.Close.Props &
+  Pick<React.ComponentProps<typeof Button>, "variant" | "size">) {
   return (
-    <Button
+    <AlertDialogPrimitive.Close
       data-slot="alert-dialog-action"
       className={cn(className)}
+      render={<Button variant={variant} size={size} />}
       {...props}
     />
   )

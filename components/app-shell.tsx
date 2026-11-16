@@ -50,7 +50,9 @@ export function AppShell({ account, children }: { account?: React.ReactNode; chi
           <main id="noi-dung" tabIndex={-1} className="w-full flex-1 px-4 py-6 outline-none md:px-8 md:py-8">
             <div className="mx-auto w-full max-w-7xl">{children}</div>
           </main>
-          <Toaster position="bottom-center" containerAriaLabel="Thông báo" />
+          {/* closeButton: nút ✕ để tắt toast sớm, không phải chờ hết 8 giây (Trung yêu cầu 17/11/2026) */}
+          <Toaster position="bottom-center" containerAriaLabel="Thông báo" closeButton />
+
         </SidebarInset>
       </SidebarProvider>
     </TooltipProvider>

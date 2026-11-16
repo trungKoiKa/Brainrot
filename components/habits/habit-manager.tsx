@@ -39,19 +39,35 @@ export function HabitManager({ month, habits }: { month: string; habits: Habit[]
       after?.();
     });
 
-  // Xoá hẳn → toast "Hoàn tác" 8 giây chèn lại thói quen, ngày đã tích và liên kết mục tiêu
-  const remove = (h: Habit) =>
+  // Xoá hẳn → ẩn dòng ngay (không chờ server + tải lại trang), toast "Hoàn tác" 8 giây chèn lại thói quen,
+  // ngày đã tích và liên kết mục tiêu. Lỗi thì hiện lại dòng và báo.
+  const [hidden, setHidden] = useState<ReadonlySet<string>>(new Set());
+  const hide = (id: string, on: boolean) =>
+    setHidden((s) => {
+      const next = new Set(s);
+      if (on) next.add(id);
+      else next.delete(id);
+      return next;
+    });
+  const remove = (h: Habit) => {
+    setError(null);
+    hide(h.id, true);
     start(async () => {
-      setError(null);
       const res = await deleteHabitAction(h.id);
-      if (!res.ok) return setError(res.error);
+      if (!res.ok) {
+        hide(h.id, false);
+        return setError(res.error);
+      }
       undoToast(`Đã xoá thói quen “${h.name}”`, () =>
         start(async () => {
           const back = await restoreHabitAction(res.snapshot);
-          if (!back.ok) setError(back.error);
+          if (!back.ok) return setError(back.error);
+          hide(h.id, false);
         }),
       );
     });
+  };
+  const shown = habits.filter((h) => !hidden.has(h.id));
 
   return (
     <div>
@@ -76,7 +92,7 @@ export function HabitManager({ month, habits }: { month: string; habits: Habit[]
         </Button>
       </form>
       <ul className="divide-y divide-line-soft">
-        {habits.map((h, i) => {
+        {shown.map((h, i) => {
           const ending = h.to !== null && monthOf(h.to) === month;
           return (
             <li key={h.id} className="flex items-center gap-1 py-2 text-sm">
@@ -96,7 +112,7 @@ export function HabitManager({ month, habits }: { month: string; habits: Habit[]
               <button
                 type="button"
                 className={iconButton}
-                disabled={pending || i === habits.length - 1}
+                disabled={pending || i === shown.length - 1}
                 aria-label={`Đưa ${h.name} xuống`}
                 onClick={() => run(() => moveHabitAction(month, h.id, 1))}
               >
