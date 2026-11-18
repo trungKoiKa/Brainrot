@@ -18,7 +18,7 @@ export function HabitToday({ habits, doneByDay, today }: { habits: string[]; don
     return (
       <p className="text-sm text-muted-foreground">
         Chưa có thói quen nào cho tháng này.{" "}
-        <Link href="/goals?level=month" className="text-primary underline underline-offset-2">
+        <Link href="/goals" className="text-primary underline underline-offset-2">
           Thêm ở trang Mục tiêu
         </Link>
       </p>
@@ -83,7 +83,7 @@ export function HabitToday({ habits, doneByDay, today }: { habits: string[]; don
           {todayCount}/{habits.length}
         </span>{" "}
         hôm nay ·{" "}
-        <Link href="/goals?level=month" className="underline underline-offset-2 hover:text-foreground">
+        <Link href="/goals" className="underline underline-offset-2 hover:text-foreground">
           xem cả tháng
         </Link>
       </p>

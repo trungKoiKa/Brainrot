@@ -6,6 +6,7 @@ import { Card } from "@/components/card";
 import { ErrorNotice } from "@/components/error-notice";
 import { Progress } from "@/components/ui/progress";
 import { monthStats } from "@/lib/habits";
+import { monthLabel } from "@/lib/period";
 import type { Habit } from "@/lib/types";
 import { HabitManager } from "./habit-manager";
 import { useHabitDays } from "./use-habit-days";
@@ -43,7 +44,7 @@ export function HabitMonth({
 
   return (
     <div className="space-y-5">
-      <Card title="Thói quen" action={<span className="text-sm text-muted-foreground">{stats.elapsed} ngày đã qua</span>}>
+      <Card title={`Thói quen · ${monthLabel(month).toLowerCase()}`} action={<span className="text-sm text-muted-foreground">{stats.elapsed} ngày đã qua</span>}>
         {error && <ErrorNotice message={error} onDismiss={dismissError} />}
         {stats.rows.length === 0 ? (
           <div className="space-y-4">

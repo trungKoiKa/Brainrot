@@ -45,13 +45,22 @@ async function GoalsContent({ searchParams }: Pick<PageProps<"/goals">, "searchP
   // Một lần đọc Daily Log phủ cả kỳ đang xem lẫn các kỳ con (tuần lấn sang tháng bên cạnh) → resolveGoals dùng lại (rà soát A4)
   const logFrom = [period, ...children].reduce((m, p) => (p.start < m ? p.start : m), period.start);
   const logTo = [period, ...children].reduce((m, p) => (p.end > m ? p.end : m), period.end);
-  const [allGoals, habits, reflections, logs, weekTasks] = await Promise.all([
+  // Bảng thói quen luôn ở trên cùng, mọi cấp (Trung chốt 19/11/2026): tháng chứa hôm nay nếu kỳ đang xem
+  // có hôm nay, không thì tháng đầu của kỳ. Một lần đọc Daily Log phủ cả tháng này lẫn kỳ đang xem.
+  const habitMonth = periodOf("month", period.start <= today && today <= period.end ? today : period.start);
+  const readFrom = habitMonth.start < logFrom ? habitMonth.start : logFrom;
+  const readTo = habitMonth.end > logTo ? habitMonth.end : logTo;
+  const [allGoals, habits, reflections, allLogs, weekTasks] = await Promise.all([
     getGoals(),
     getHabits(),
     getReflections(),
-    level === "month" || level === "week" ? getDailyLogsBetween(logFrom, logTo) : null,
+    getDailyLogsBetween(readFrom, readTo),
     getTasks(), // việc gắn dưới mỗi mục tiêu (mọi cấp) + thẻ ngày / khay ở Tuần
   ]);
+  const inRange = (from: string, to: string) => allLogs.filter((l) => l.date && from <= l.date && l.date <= to);
+  // Tháng / Tuần: Daily Log cho mục tiêu tự xong và thẻ 7 ngày (như trước); Năm / Quý không dùng
+  const logs = level === "month" || level === "week" ? inRange(logFrom, logTo) : null;
+  const habitLogs = inRange(habitMonth.start, habitMonth.end);
   const reflection = reflectionOf(reflections, period);
   const prevFocus = previousFocus(reflections, period);
   const motto = reflectionOf(reflections, periodOf("year", period.start))?.motto.trim() || null;
@@ -141,6 +150,15 @@ async function GoalsContent({ searchParams }: Pick<PageProps<"/goals">, "searchP
           )}
         </nav>
       </div>
+
+      {/* Thói quen là phần chính của Goal: luôn ở trên cùng, mọi cấp (Trung chốt 19/11/2026) */}
+      <HabitMonth
+        key={habitMonth.key}
+        month={habitMonth.key}
+        today={today}
+        habits={habits}
+        doneByDay={Object.fromEntries(habitLogs.flatMap((l) => (l.date ? [[l.date, doneHabits(l)]] : [])))}
+      />
 
       {/* Tuần: 7 ngày là việc của tuần, đứng trước danh sách mục tiêu */}
       {level === "week" && logs && weekTasks && (
@@ -240,16 +258,6 @@ async function GoalsContent({ searchParams }: Pick<PageProps<"/goals">, "searchP
             ))}
           </div>
         ))}
-
-      {level === "month" && logs && (
-          <HabitMonth
-            key={period.key}
-            month={period.key}
-            today={today}
-            habits={habits}
-            doneByDay={Object.fromEntries(logs.flatMap((l) => (l.date ? [[l.date, doneHabits(l)]] : [])))}
-          />
-        )}
 
       <Card title={`Nhìn lại ${LEVEL_LABEL[level].toLowerCase()}`}>
         {/* key theo kỳ + bản ghi → đổi kỳ / dữ liệu mới thì form nạp lại */}
