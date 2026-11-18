@@ -116,6 +116,18 @@ for (const [i, t] of taskRows.entries()) {
   taskId[t.title] = row.id;
 }
 
+// "3 việc" (SPEC.md mục 12.1): hôm nay 3 việc (1 đã xong), ngày mai 1 việc chọn từ tối, vài ngày trước cho Dashboard
+const tops = [
+  ["Viết chương 3: thiết kế phần cứng", 0],
+  ["Đo dòng tiêu thụ ESP32 ở chế độ ngủ", 0],
+  ["Đọc paper YOLOv8 phần head", 0],
+  ["Cập nhật báo cáo tuần cho anh mentor", 1],
+  ["Xem bài giảng attention cơ bản", -1],
+  ["Sửa lỗi mất kết nối MQTT khi Wi-Fi yếu", -2],
+  ["Gọi điện về nhà", -2],
+];
+for (const [title, d] of tops) await sql`update tasks set top_on = ${addDays(today, d)} where id = ${taskId[title]}`;
+
 // ---------- thói quen + ngày đã làm (3 tuần gần nhất, tỉ lệ khác nhau) ----------
 const habitDefs = [
   ["Ngủ trước 0h", 0.8],
@@ -150,23 +162,29 @@ for (const [d, done, dropped, learned] of logs) {
 // ---------- mục tiêu ----------
 const goal = async (level, start, title, type, extra = {}) => {
   const [g] = await sql`
-    insert into goals (user_id, level, start, title, type, done, habit_id, threshold)
-    values (${uid}, ${level}, ${start}, ${title}, ${type}, ${extra.done ?? false}, ${extra.habit ? habitId[extra.habit] : null}, ${extra.threshold ?? null})
+    insert into goals (user_id, level, start, title, type, done, habit_id, threshold, parent_id)
+    values (${uid}, ${level}, ${start}, ${title}, ${type}, ${extra.done ?? false}, ${extra.habit ? habitId[extra.habit] : null}, ${extra.threshold ?? null}, ${extra.parent ?? null})
     returning id`;
   for (const t of extra.tasks ?? []) await sql`insert into goal_tasks (goal_id, task_id) values (${g.id}, ${taskId[t]})`;
   return g.id;
 };
-await goal("month", month, "Hoàn thành chương 3 đồ án", "Ưu tiên", {
+const chapter3 = await goal("month", month, "Hoàn thành chương 3 đồ án", "Ưu tiên", {
   tasks: ["Viết chương 3: thiết kế phần cứng", "Vẽ lại sơ đồ nguyên lý trên KiCad", "Chụp ảnh mạch thật cho báo cáo"],
 });
 await goal("month", month, "Ngủ trước 0h ít nhất 80% số ngày", "Ưu tiên", { habit: "Ngủ trước 0h", threshold: 80 });
 await goal("month", month, "Học xong khoá Computer Vision tuần 1–4", "Thường", { tasks: ["Làm bài tập tuần 3 khoá Computer Vision", "Ghi chú lại cách tính mAP"] });
 await goal("month", month, "Chạy bộ đủ 8 buổi", "Thường", { habit: "Tập thể dục", threshold: 60 });
+// Chia mục tiêu tháng xuống tuần (SPEC.md mục 12.2): tuần này + tuần trước thuộc "Hoàn thành chương 3"
+const inMonth = (mon) => mon.slice(0, 7) === month.slice(0, 7) || addDays(mon, 6).slice(0, 7) === month.slice(0, 7);
 await goal("week", monday, "Gửi chương 2 và đo xong dòng tiêu thụ", "Ưu tiên", {
+  parent: inMonth(monday) ? chapter3 : null,
   tasks: ["Gửi bản nháp chương 2 cho thầy", "Đo dòng tiêu thụ ESP32 ở chế độ ngủ"],
 });
 await goal("week", monday, "Báo cáo tuần thực tập đúng hạn", "Thường", { tasks: ["Cập nhật báo cáo tuần cho anh mentor", "Review pull request firmware cảm biến"] });
-await goal("week", mondayOf(addDays(today, -7)), "Sửa xong lỗi MQTT", "Ưu tiên", { done: true, tasks: ["Sửa lỗi mất kết nối MQTT khi Wi-Fi yếu"] });
+await goal("week", mondayOf(addDays(today, -7)), "Sửa xong lỗi MQTT", "Ưu tiên", {
+  done: true,
+  parent: inMonth(mondayOf(addDays(today, -7))) ? chapter3 : null,
+  tasks: ["Sửa lỗi mất kết nối MQTT khi Wi-Fi yếu"] });
 
 // ---------- nhìn lại kỳ trước (để thấy "Kỳ trước bạn định tập trung") ----------
 await sql`
