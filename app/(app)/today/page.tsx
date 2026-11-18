@@ -14,7 +14,7 @@ import { monthOf, periodOf } from "@/lib/period";
 import { addDays, daysBetween, formatDay, greetingVN, isEveningVN, longDateVN, workdayClock, workdayVN } from "@/lib/date";
 import { getGoals, getHabits, getKnowledge, getKnowledgeFields, getProfile, getRecentDailyLogs, getTaskProjects, getTasks } from "@/lib/db/data";
 import { resolveGoals } from "@/lib/db/goal-status";
-import { latestKnowledge, planToday, todayProgress, upcomingDeadlines } from "@/lib/today";
+import { latestKnowledge, planToday, todayProgress, topOf, upcomingDeadlines } from "@/lib/today";
 import { DeadlinesCard, LatestNotesCard, TodayPlanCard, TodaySkeleton } from "../../../components/today/today-cards";
 
 export default function TodayPage() {
@@ -54,7 +54,7 @@ async function TodayContent() {
   const habits = habitsForMonth(allHabits, monthOf(today)).map((h) => h.name);
   const habitsDone = todayLog ? doneHabits(todayLog).filter((h) => habits.includes(h)).length : 0;
   // Hạn sắp tới: bỏ việc đã nằm trong "Hôm nay làm" để không lặp (rà soát A1 P1)
-  const inPlan = new Set([...plan.planned, ...plan.late, ...plan.due].map((t) => t.id));
+  const inPlan = new Set([...topOf(today, tasks), ...plan.planned, ...plan.late, ...plan.due].map((t) => t.id));
   const deadlines = upcomingDeadlines(today, tasks).filter((t) => !inPlan.has(t.id));
   const target = profile.target.date ? { days: daysBetween(today, profile.target.date), ...profile.target } : null;
 

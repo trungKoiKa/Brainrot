@@ -9,41 +9,43 @@ import { TodayPlan } from "@/components/tasks/today-plan";
 import { formatDay } from "@/lib/date";
 import { isGoalDone, type Goal } from "@/lib/goals";
 import type { Knowledge, Task } from "@/lib/types";
-import { planToday, type DeadlineItem } from "@/lib/today";
+import { type DeadlineItem } from "@/lib/today";
 import { noteDay } from "@/lib/knowledge";
 import { colorVarByOrder } from "@/lib/topic-colors";
 import { Pill } from "@/components/pill";
 
-/** "Hôm nay làm" (SPEC.md mục 5.1) + mục tiêu tuần Ưu tiên ở cuối (SPEC.md mục 5.1). */
+/** "3 việc hôm nay" + "Hôm nay làm" (SPEC.md mục 12.1, 5.1) + mục tiêu tuần Ưu tiên ở cuối "Hôm nay làm". */
 export function TodayPlanCard({ today, tasks, projects, weekGoals }: { today: string; tasks: Task[]; projects: string[]; weekGoals: Goal[] }) {
-  const rows = planToday(today, tasks);
-  const count = rows.planned.length + rows.late.length + rows.due.length;
   return (
-    <Card title="Hôm nay làm" focal flush action={<span className="text-xs text-muted-foreground tabular-nums">{count} dòng</span>}>
-      <TodayPlan today={today} tasks={tasks} projects={projects} />
-      {weekGoals.length > 0 && (
-        <div className="border-t border-line-soft px-4 py-3">
-          <p className="mb-2 flex items-baseline justify-between text-xs text-muted-foreground">
-            <span className="font-mono uppercase">Mục tiêu tuần</span>
-            <Link href="/goals?level=week" className="hover:text-foreground">
-              Mở
-            </Link>
-          </p>
-          <ul className="flex flex-col gap-1 text-sm">
-            {weekGoals.map((g) => (
-              <li key={g.id} className={`flex items-start gap-2 ${isGoalDone(g) ? "text-muted-foreground line-through" : ""}`}>
-                {isGoalDone(g) ? (
-                  <CheckIcon aria-label="Đã xong" className="mt-[3px] size-3.5 shrink-0 text-good" />
-                ) : (
-                  <span aria-hidden="true" className="mx-1 mt-[7px] size-1.5 shrink-0 bg-muted-foreground" />
-                )}
-                <span>{g.title}</span>
-              </li>
-            ))}
-          </ul>
-        </div>
-      )}
-    </Card>
+    <TodayPlan
+      today={today}
+      tasks={tasks}
+      projects={projects}
+      footer={
+        weekGoals.length > 0 && (
+          <div className="border-t border-line-soft px-4 py-3">
+            <p className="mb-2 flex items-baseline justify-between text-xs text-muted-foreground">
+              <span className="font-mono uppercase">Mục tiêu tuần</span>
+              <Link href="/goals?level=week" className="hover:text-foreground">
+                Mở
+              </Link>
+            </p>
+            <ul className="flex flex-col gap-1 text-sm">
+              {weekGoals.map((g) => (
+                <li key={g.id} className={`flex items-start gap-2 ${isGoalDone(g) ? "text-muted-foreground line-through" : ""}`}>
+                  {isGoalDone(g) ? (
+                    <CheckIcon aria-label="Đã xong" className="mt-[3px] size-3.5 shrink-0 text-good" />
+                  ) : (
+                    <span aria-hidden="true" className="mx-1 mt-[7px] size-1.5 shrink-0 bg-muted-foreground" />
+                  )}
+                  <span>{g.title}</span>
+                </li>
+              ))}
+            </ul>
+          </div>
+        )
+      }
+    />
   );
 }
 

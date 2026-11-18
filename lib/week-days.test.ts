@@ -4,7 +4,7 @@ import { tasksOnDay, weekDayCards } from "./week-days";
 
 const task = (id: string, over: Partial<Task>): Task => ({
   id, title: id, project: null, status: "Chưa làm", priority: null, deadline: null, plannedOn: null, note: "",
-  doneOn: null, createdTime: "", goalIds: [], ...over,
+  doneOn: null, topOn: null, createdTime: "", goalIds: [], ...over,
 });
 const log = (date: string, done: string, dropped = ""): DailyLog => ({
   id: date, title: "", date, done, dropped, learned: "", tomorrowTop3: "", exercised: false, habits: [],

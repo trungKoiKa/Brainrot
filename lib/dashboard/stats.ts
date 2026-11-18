@@ -17,6 +17,8 @@ export type DashTask = {
   /** Ngày làm (SPEC.md mục 5.4) */
   plannedOn: string | null;
   createdOn: string;
+  /** "3 việc" của ngày nào (SPEC.md mục 12.1); dữ liệu mẫu không có */
+  topOn?: string | null;
 };
 
 export type DashLog = {

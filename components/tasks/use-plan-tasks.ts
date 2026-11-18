@@ -1,10 +1,10 @@
 "use client";
 
 import { useOptimistic, useState, useTransition } from "react";
-import { completeTask, planTaskAction, reopenTaskAction } from "@/app/actions/tasks";
+import { completeTask, planTaskAction, reopenTaskAction, setTopAction } from "@/app/actions/tasks";
 import type { Task } from "@/lib/types";
 
-type Patch = { id: string; status?: "Xong" | "Chưa làm" | "Đang làm"; plannedOn?: string | null };
+type Patch = { id: string; status?: "Xong" | "Chưa làm" | "Đang làm"; plannedOn?: string | null; topOn?: string | null };
 
 /**
  * Tích xong + đặt Ngày làm, đổi UI ngay (optimistic). Lỗi → useOptimistic tự quay về dữ liệu server, chỉ cần báo lỗi.
@@ -14,7 +14,16 @@ export function usePlanTasks(initial: Task[]) {
   const [error, setError] = useState<string | null>(null);
   const [, startTransition] = useTransition();
   const [tasks, apply] = useOptimistic(initial, (state, p: Patch) =>
-    state.map((t) => (t.id === p.id ? { ...t, ...(p.status && { status: p.status }), ...(p.plannedOn !== undefined && { plannedOn: p.plannedOn }) } : t)),
+    state.map((t) =>
+      t.id === p.id
+        ? {
+            ...t,
+            ...(p.status && { status: p.status }),
+            ...(p.plannedOn !== undefined && { plannedOn: p.plannedOn }),
+            ...(p.topOn !== undefined && { topOn: p.topOn }),
+          }
+        : t,
+    ),
   );
 
   const run = (patch: Patch, call: () => Promise<{ ok: true } | { ok: false; error: string }>, what: string) => {
@@ -37,8 +46,20 @@ export function usePlanTasks(initial: Task[]) {
       const status = t.status === "Đang làm" ? "Đang làm" : "Chưa làm";
       run({ id: t.id, status }, () => reopenTaskAction(t.id, status), `Chưa mở lại được “${t.title}”.`);
     },
+    // Dời sang ngày khác thì mất sao "3 việc" (SPEC.md mục 12.1); server giữ sao của ngày đã qua
     plan: (t: Task, day: string | null) =>
-      run({ id: t.id, plannedOn: day }, () => planTaskAction(t.id, day), `Chưa đổi Ngày làm của “${t.title}”.`),
+      run(
+        { id: t.id, plannedOn: day, ...(t.topOn && t.topOn !== day && { topOn: null }) },
+        () => planTaskAction(t.id, day),
+        `Chưa đổi Ngày làm của “${t.title}”.`,
+      ),
+    /** Gắn sao "3 việc" cho ngày `day` (Ngày làm theo luôn) / bỏ sao (`null`). */
+    star: (t: Task, day: string | null) =>
+      run(
+        day ? { id: t.id, topOn: day, plannedOn: day } : { id: t.id, topOn: null },
+        () => setTopAction(t.id, day),
+        day ? `Chưa thêm “${t.title}” vào 3 việc.` : `Chưa bỏ “${t.title}” khỏi 3 việc.`,
+      ),
   };
 }
 

@@ -2,23 +2,47 @@
 
 import Link from "next/link";
 import { useActionState, useRef, useState } from "react";
-import { ChevronRight } from "lucide-react";
+import { ChevronRight, StarIcon } from "lucide-react";
 import { createTaskAction, type TaskFormState } from "@/app/actions/tasks";
-import { Empty } from "@/components/card";
+import { Card, Empty } from "@/components/card";
 import { ProjectPill, StatusPill } from "@/components/pill";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import { addDays, daysBetween, formatDay, weekdayShort } from "@/lib/date";
 import type { Task } from "@/lib/types";
-import { planToday, todayEmptyKind, tomorrowCandidates, type TodayEmptyKind } from "@/lib/today";
+import { MAX_TOP, planToday, todayEmptyKind, tomorrowCandidates, topOf, type TodayEmptyKind } from "@/lib/today";
 import { ErrorNotice } from "@/components/error-notice";
 import { usePlanTasks } from "./use-plan-tasks";
 import { undoToast } from "@/components/undo-toast";
 
 const dayLabel = (day: string) => `${weekdayShort(day)} ${formatDay(day, true)}`;
 
-type RowState = "late" | "due" | "plan" | "suggest";
+type RowState = "late" | "due" | "plan" | "suggest" | "top";
+
+/** Nút ☆ "3 việc" (SPEC.md mục 12.1): đặc khi đã gắn; mờ khi ngày đó đã đủ 3 việc. */
+export function StarButton({ on, full, title, onClick }: { on: boolean; full: boolean; title: string; onClick: () => void }) {
+  const blocked = full && !on;
+  return (
+    <button
+      type="button"
+      aria-pressed={on}
+      aria-disabled={blocked || undefined}
+      aria-label={on ? `Bỏ khỏi 3 việc: ${title}` : `Thêm vào 3 việc: ${title}`}
+      title={blocked ? "Đã đủ 3 việc — bỏ sao một việc trước" : on ? "Bỏ khỏi 3 việc" : "Thêm vào 3 việc"}
+      onClick={() => !blocked && onClick()}
+      className={`flex size-10 shrink-0 items-center justify-center rounded-md transition-colors md:size-7 ${
+        on
+          ? "text-primary hover:bg-surface-muted"
+          : blocked
+            ? "cursor-not-allowed text-muted-foreground/40"
+            : "text-muted-foreground hover:bg-surface-muted hover:text-primary"
+      }`}
+    >
+      <StarIcon aria-hidden="true" className={`size-4 ${on ? "fill-current" : ""}`} />
+    </button>
+  );
+}
 
 /**
  * Một dòng việc kiểu "nhật ký kỹ thuật" (DESIGN.md → Bảng việc): số thứ tự mono · ô tích · tên · pill.
@@ -32,6 +56,7 @@ function Row({
   projects,
   onToggle,
   onPlan,
+  star,
 }: {
   n: number;
   task: Task;
@@ -40,6 +65,7 @@ function Row({
   projects: readonly string[];
   onToggle: (t: Task) => void;
   onPlan: (t: Task) => void;
+  star?: { on: boolean; full: boolean; onClick: () => void };
 }) {
   const done = task.status === "Xong";
   const late = state === "late" && task.plannedOn ? daysBetween(task.plannedOn, today) : 0;
@@ -56,7 +82,7 @@ function Row({
           {state === "plan" && task.deadline && task.deadline !== today && (
             <span className="text-xs whitespace-nowrap text-muted-foreground tabular-nums">hạn {formatDay(task.deadline, true)}</span>
           )}
-          {state !== "plan" && (
+          {state !== "plan" && state !== "top" && (
             <Button variant="outline" size="xs" className="rounded-full" aria-label={`Làm hôm nay: ${task.title || "(Chưa đặt tên)"}`} onClick={() => onPlan(task)}>
               Làm hôm nay
             </Button>
@@ -82,6 +108,7 @@ function Row({
         <div className="mt-1.5 flex flex-wrap items-center gap-1.5 md:hidden">{tags}</div>
       </div>
       <div className="hidden shrink-0 flex-wrap items-center justify-end gap-1.5 md:flex">{tags}</div>
+      {star && !done && <StarButton {...star} title={task.title || "(Chưa đặt tên)"} />}
     </li>
   );
 }
@@ -108,11 +135,22 @@ function EmptyPlan({ kind }: { kind: TodayEmptyKind }) {
 }
 
 /**
- * Khối "Hôm nay làm" trên Today (SPEC.md mục 5.1): trễ · hạn hôm nay · Ngày làm hôm nay · gợi ý khi trống.
+ * "3 việc hôm nay" (SPEC.md mục 12.1) + "Hôm nay làm" (SPEC.md mục 5.1): trễ · hạn hôm nay · Ngày làm hôm nay · gợi ý khi
+ * trống. Chung một trạng thái optimistic nên gắn / bỏ sao là việc chuyển thẻ ngay. `footer`: phần cuối thẻ "Hôm nay làm".
  * Redesign 11/2026 (P0): việc tích xong trong ngày ở nguyên chỗ, gạch ngang, bỏ tích được; toast có nút Hoàn tác.
  */
-export function TodayPlan({ today, tasks: initial, projects }: { today: string; tasks: Task[]; projects: readonly string[] }) {
-  const { tasks, complete, reopen, plan, error, dismissError } = usePlanTasks(initial);
+export function TodayPlan({
+  today,
+  tasks: initial,
+  projects,
+  footer,
+}: {
+  today: string;
+  tasks: Task[];
+  projects: readonly string[];
+  footer?: React.ReactNode;
+}) {
+  const { tasks, complete, reopen, plan, star, error, dismissError } = usePlanTasks(initial);
   // Việc xong trong ngày (kể cả vừa tích) vẫn xếp vào nhóm cũ: coi như chưa xong khi chia nhóm, rồi vẽ theo trạng thái thật
   const doneToday = (t: Task) => t.status === "Xong" && (t.doneOn === today || initial.find((i) => i.id === t.id)?.status !== "Xong");
   const p = planToday(
@@ -120,6 +158,8 @@ export function TodayPlan({ today, tasks: initial, projects }: { today: string; 
     tasks.map((t) => (doneToday(t) ? { ...t, status: null } : t)),
   );
   const shown = (t: Task) => tasks.find((x) => x.id === t.id) ?? t;
+  const top = topOf(today, tasks);
+  const full = top.length >= MAX_TOP;
 
   function toggle(t: Task) {
     if (t.status === "Xong") {
@@ -130,6 +170,7 @@ export function TodayPlan({ today, tasks: initial, projects }: { today: string; 
     undoToast(`Đã xong “${t.title || "(Chưa đặt tên)"}”`, () => reopen(t));
   }
   const toToday = (t: Task) => plan(t, today);
+  const starOf = (t: Task) => ({ on: t.topOn === today, full, onClick: () => star(t, t.topOn === today ? null : today) });
 
   const rows: { task: Task; state: RowState }[] = [
     ...p.late.map((t) => ({ task: shown(t), state: "late" as const })),
@@ -138,34 +179,74 @@ export function TodayPlan({ today, tasks: initial, projects }: { today: string; 
   ];
 
   return (
-    <div>
-      {error && (
-        <div className="px-4 pt-4">
-          <ErrorNotice message={error} onDismiss={dismissError} />
-        </div>
-      )}
-      {rows.length > 0 ? (
-        <ul>
-          {rows.map((r, i) => (
-            <Row key={r.task.id} n={i + 1} {...r} today={today} projects={projects} onToggle={toggle} onPlan={toToday} />
-          ))}
-        </ul>
-      ) : p.suggest.length === 0 ? (
-        <EmptyPlan kind={todayEmptyKind(tasks)} />
-      ) : (
-        <>
-          <p className="px-4 pt-3 text-sm text-muted-foreground">Chưa xếp việc nào cho hôm nay. Gợi ý:</p>
+    <>
+      <Card
+        title="3 việc hôm nay"
+        focal
+        flush
+        action={
+          <span className="text-xs text-muted-foreground tabular-nums">
+            {top.filter((t) => t.status === "Xong").length}/{MAX_TOP} xong
+          </span>
+        }
+      >
+        {error && (
+          <div className="px-4 pt-4">
+            <ErrorNotice message={error} onDismiss={dismissError} />
+          </div>
+        )}
+        {top.length > 0 ? (
           <ul>
-            {p.suggest.map((t, i) => (
-              <Row key={t.id} n={i + 1} task={shown(t)} state="suggest" today={today} projects={projects} onToggle={toggle} onPlan={toToday} />
+            {top.map((t, i) => (
+              <Row key={t.id} n={i + 1} task={t} state="top" today={today} projects={projects} onToggle={toggle} onPlan={toToday} star={starOf(t)} />
             ))}
           </ul>
-        </>
-      )}
-      <div className="border-t border-line-soft px-4 py-3">
-        <TodayAdd today={today} />
-      </div>
-    </div>
+        ) : (
+          <p className="px-4 py-3 text-sm text-pretty text-muted-foreground">
+            Chọn tối đa 3 việc giúp bạn tiến gần hơn 1% hôm nay: bấm{" "}
+            <StarIcon aria-label="ngôi sao" className="inline size-3.5 align-[-2px]" /> ở “Hôm nay làm” bên dưới, hoặc chọn từ tối
+            hôm trước ở “Ngày mai làm”.
+          </p>
+        )}
+      </Card>
+
+      <Card title="Hôm nay làm" flush action={<span className="text-xs text-muted-foreground tabular-nums">{rows.length} dòng</span>}>
+        {rows.length > 0 ? (
+          <ul>
+            {rows.map((r, i) => (
+              <Row key={r.task.id} n={i + 1} {...r} today={today} projects={projects} onToggle={toggle} onPlan={toToday} star={starOf(r.task)} />
+            ))}
+          </ul>
+        ) : top.length > 0 ? (
+          <p className="px-4 py-3 text-sm text-muted-foreground">Không còn việc nào khác cho hôm nay.</p>
+        ) : p.suggest.length === 0 ? (
+          <EmptyPlan kind={todayEmptyKind(tasks)} />
+        ) : (
+          <>
+            <p className="px-4 pt-3 text-sm text-muted-foreground">Chưa xếp việc nào cho hôm nay. Gợi ý:</p>
+            <ul>
+              {p.suggest.map((t, i) => (
+                <Row
+                  key={t.id}
+                  n={i + 1}
+                  task={shown(t)}
+                  state="suggest"
+                  today={today}
+                  projects={projects}
+                  onToggle={toggle}
+                  onPlan={toToday}
+                  star={starOf(shown(t))}
+                />
+              ))}
+            </ul>
+          </>
+        )}
+        <div className="border-t border-line-soft px-4 py-3">
+          <TodayAdd today={today} />
+        </div>
+        {footer}
+      </Card>
+    </>
   );
 }
 
@@ -180,8 +261,9 @@ export function TomorrowPicker({
   /** Mở sẵn (Today: sau 18:00). */
   open?: boolean;
 }) {
-  const { tasks, plan, error, dismissError } = usePlanTasks(initial);
+  const { tasks, plan, star, error, dismissError } = usePlanTasks(initial);
   const tomorrow = addDays(today, 1);
+  const starred = tasks.filter((t) => t.topOn === tomorrow).length;
   // Danh sách cố định theo dữ liệu server; trạng thái tích lấy từ bản optimistic
   const list = tomorrowCandidates(today, initial).map((t) => tasks.find((x) => x.id === t.id) ?? t);
 
@@ -191,7 +273,7 @@ export function TomorrowPicker({
         <ChevronRight aria-hidden="true" className="size-4 text-muted-foreground transition-transform duration-200 group-open:rotate-90" />
         Ngày mai làm{" "}
         <span className="font-normal text-muted-foreground">
-          · {dayLabel(tomorrow)} · đã chọn {list.filter((t) => t.plannedOn === tomorrow).length}
+          · {dayLabel(tomorrow)} · đã chọn {list.filter((t) => t.plannedOn === tomorrow).length} · 3 việc {starred}/{MAX_TOP}
         </span>
       </summary>
       <div className="mt-3 space-y-2">
@@ -202,21 +284,32 @@ export function TomorrowPicker({
           <ul className="grid gap-x-6 gap-y-2 md:grid-cols-2">
             {list.map((t) => {
               const on = t.plannedOn === tomorrow;
+              const top = t.topOn === tomorrow;
               return (
-                <li key={t.id}>
-                  <label className="flex cursor-pointer items-start gap-2 text-sm">
+                <li key={t.id} className="flex items-start gap-1">
+                  <label className="flex min-w-0 flex-1 cursor-pointer items-start gap-2 py-1 text-sm">
                     <Checkbox className="mt-0.5" checked={on} onCheckedChange={() => plan(t, on ? null : tomorrow)} />
                     <span className="min-w-0 break-words">
                       {t.title || "(Chưa đặt tên)"}
                       {t.priority && <span className="ml-2 text-xs text-muted-foreground">{t.priority}</span>}
                     </span>
                   </label>
+                  <StarButton
+                    on={top}
+                    full={starred >= MAX_TOP}
+                    title={t.title || "(Chưa đặt tên)"}
+                    onClick={() => star(t, top ? null : tomorrow)}
+                  />
                 </li>
               );
             })}
           </ul>
         )}
-        {list.length > 0 && <p className="text-xs text-muted-foreground">Việc đã chọn sẽ hiện ở “Hôm nay làm” sáng mai.</p>}
+        {list.length > 0 && (
+          <p className="text-xs text-muted-foreground">
+            Việc đã tích hiện ở “Hôm nay làm” sáng mai; gắn ☆ (tối đa 3) để nó vào “3 việc hôm nay”.
+          </p>
+        )}
       </div>
     </details>
   );
