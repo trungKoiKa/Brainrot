@@ -149,10 +149,14 @@ Màn nào chưa có dữ liệu thì hiện một câu hướng dẫn kèm đư�
   dòng việc thật (ô tích, tên mở trang Tasks, Ngày làm hoặc "chưa xếp ngày", nút bỏ gắn có Hoàn tác).
 - **Kỳ con:** Năm có biểu đồ 4 quý + 12 tháng và 4 thẻ quý; Quý có 3 thẻ tháng; Tháng có biểu đồ các tuần. Biểu đồ chỉ
   hiện khi từ hai kỳ con có mục tiêu. Mọi kỳ con còn trống thì thay các thẻ bằng một dòng link tới từng kỳ. Thẻ quý ở Năm: % chỉ tính mục tiêu của quý, kèm dòng phụ "+N mục tiêu ở các tháng".
-- **Bảng thói quen × ngày (phần chính, mọi cấp):** luôn ở trên cùng Goal dù đang xem Năm / Quý / Tháng / Tuần; hiện
-  tháng chứa hôm nay nếu kỳ đang xem có hôm nay, không thì tháng đầu của kỳ. Ô tích cho hôm nay và ngày đã qua; % mỗi thói quen = ngày đã tích / ngày đã qua;
-  quản lý thói quen tại chỗ: thêm, đổi thứ tự, **Ngừng theo dõi** từ tháng sau (giữ lịch sử), **Xoá hẳn** (xoá cả
-  ngày đã tích, gỡ liên kết mục tiêu, có Hoàn tác).
+- **Thói quen (phần chính, mọi cấp):** luôn ở trên cùng Goal, phạm vi đúng kỳ đang xem. % mỗi thói quen = ngày đã
+  tích / ngày đã qua mà thói quen được theo dõi (tháng chưa theo dõi không tính là bỏ).
+  - **Tuần:** bảng thói quen × 7 ngày của tuần, tích được hôm nay và ngày đã qua; "Quản lý thói quen" thu gọn bên dưới.
+  - **Tháng:** bảng thói quen × ngày của tháng + Tổng kết tháng + Quản lý thói quen.
+  - **Quý / Năm:** lưới từng ngày kiểu GitHub (mỗi thói quen 7 hàng T2→CN × các tuần), **chỉ xem**, kèm % cả kỳ và
+    chuỗi dài nhất; link "Tích ở tuần này".
+  - Quản lý (chỉ ở Tuần và Tháng): thêm, đổi thứ tự, **Ngừng theo dõi** từ tháng sau (giữ lịch sử), **Xoá hẳn** (xoá cả
+    ngày đã tích, gỡ liên kết mục tiêu, có Hoàn tác). Ở Tuần, thao tác áp vào tháng có hôm nay (hoặc tháng của thứ Hai).
 - **Tuần — 7 thẻ ngày** đứng trước mục tiêu: mỗi thẻ gồm việc có Ngày làm ngày đó, việc xong ngày đó, việc có Deadline
   ngày đó (nhãn "hạn"), ghi chú Daily Log; % ngày = việc xong / tổng. **Dời sang…** chỉ cho chọn từ hôm nay trở đi,
   có "Bỏ lịch" và Hoàn tác. Khay **Chưa xếp ngày** cho việc đã gắn mục tiêu tuần mà chưa có Ngày làm. Dải **Tập trung
@@ -299,3 +303,4 @@ token mã hoá AES-GCM) còn trong lịch sử git của file này nếu sau nà
 | 12/11/2026 | Giao diện "bản mềm": khung bo 12px, control bo 8px, bỏ chữ mono, hàng chỉ số thành ô rời | `DESIGN.md` |
 | 12/11/2026 | Knowledge và Brain xong; trên Brain nhãn Dự án dùng chấm rỗng, Lĩnh vực chấm đặc (hai nhóm chung 4 màu) | mục 5.6, 5.7 |
 | 19/11/2026 | Goal mặc định mở cấp Tuần (thay Tháng); bảng thói quen thành phần chính, luôn ở trên cùng Goal ở mọi cấp | mục 5.3 |
+| 19/11/2026 | Thói quen ở Goal theo đúng kỳ: Tuần 7 ngày, Tháng cả tháng, Quý / Năm lưới kiểu GitHub chỉ xem; quản lý ở Tuần và Tháng | mục 5.3 |

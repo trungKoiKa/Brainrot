@@ -8,6 +8,9 @@ export const LEGACY_EXERCISE = "Tập thể dục";
 
 export const MAX_HABIT_NAME = 60;
 
+// Ngưỡng màu giống chấm trạng thái Dashboard: ≥ 70% ổn, còn lại "cần để ý" (vàng, không phải lỗi) — DESIGN.md → Colors
+export const habitTone = (pct: number) => (pct >= 70 ? "var(--good)" : "var(--warning)");
+
 /** Các thói quen đã làm trong một ngày Daily Log: cột "Thói quen" + checkbox "Tập thể dục" cũ. */
 export function doneHabits(log: { habits: string[]; exercised: boolean }): string[] {
   return log.exercised && !log.habits.includes(LEGACY_EXERCISE) ? [...log.habits, LEGACY_EXERCISE] : log.habits;
@@ -37,25 +40,43 @@ export function streaks(done: Set<string>, today: string): { current: number; be
   return { current, best };
 }
 
-export type HabitRow = { habit: Habit; done: Set<string>; count: number; pct: number; streak: number; best: number };
+export type HabitRow = {
+  habit: Habit;
+  done: Set<string>;
+  count: number;
+  /** Số ngày đã qua trong khoảng mà thói quen được theo dõi (mẫu số của %). */
+  tracked: number;
+  pct: number;
+  streak: number;
+  best: number;
+};
+
+/** Thói quen được theo dõi ở ít nhất một ngày trong `days`, theo thứ tự. */
+export function habitsForDays(habits: Habit[], days: string[]): Habit[] {
+  const months = [...new Set(days.map(monthOf))];
+  return habits
+    .filter((h) => months.some((m) => isHabitActive(h, m)))
+    .sort((a, b) => a.order - b.order || a.name.localeCompare(b.name, "vi"));
+}
 
 /**
- * Số liệu bảng thói quen của tháng (SPEC.md mục 5.3).
- * % thói quen chia cho số ngày **đã qua** của tháng (tháng hiện tại), không chia cả tháng → đầu tháng không bị thấp vô lý.
- * `doneByDay`: ngày → tên thói quen đã làm (đã gộp checkbox cũ bằng `doneHabits`).
+ * Số liệu thói quen cho một dãy ngày bất kỳ: tuần, tháng, quý, năm (SPEC.md mục 5.3).
+ * % chia cho số ngày **đã qua** mà thói quen được theo dõi → đầu kỳ không bị thấp vô lý, tháng chưa theo dõi không bị
+ * tính là bỏ. `doneByDay`: ngày → tên thói quen đã làm (đã gộp checkbox cũ bằng `doneHabits`).
  */
-export function monthStats(habits: Habit[], doneByDay: Record<string, string[]>, month: string, today: string) {
-  const days = daysOfMonth(month);
+export function rangeStats(habits: Habit[], doneByDay: Record<string, string[]>, days: string[], today: string) {
   const elapsedDays = days.filter((d) => d <= today);
-  const rows: HabitRow[] = habitsForMonth(habits, month).map((habit) => {
+  const rows: HabitRow[] = habitsForDays(habits, days).map((habit) => {
     const all = new Set(Object.keys(doneByDay).filter((d) => doneByDay[d].includes(habit.name)));
-    const done = new Set(elapsedDays.filter((d) => all.has(d)));
+    const tracked = elapsedDays.filter((d) => isHabitActive(habit, monthOf(d)));
+    const done = new Set(tracked.filter((d) => all.has(d)));
     const { current, best } = streaks(all, today);
     return {
       habit,
       done,
       count: done.size,
-      pct: elapsedDays.length ? Math.round((done.size / elapsedDays.length) * 100) : 0,
+      tracked: tracked.length,
+      pct: tracked.length ? Math.round((done.size / tracked.length) * 100) : 0,
       streak: current,
       best,
     };
@@ -68,6 +89,12 @@ export function monthStats(habits: Habit[], doneByDay: Record<string, string[]>,
   );
   return { days, elapsed: elapsedDays.length, rows, dayPct };
 }
+
+export type HabitStats = ReturnType<typeof rangeStats>;
+
+/** Bảng thói quen của một tháng "YYYY-MM". */
+export const monthStats = (habits: Habit[], doneByDay: Record<string, string[]>, month: string, today: string) =>
+  rangeStats(habits, doneByDay, daysOfMonth(month), today);
 
 /** Bật/tắt một thói quen trong danh sách của ngày, giữ thứ tự ổn định. */
 export function toggleHabit(list: string[], name: string, on: boolean): string[] {
