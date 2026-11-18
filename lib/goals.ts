@@ -20,6 +20,8 @@ export type Goal = {
   threshold: number | null;
   /** Relation "Tasks" */
   taskIds: string[];
+  /** Mục tiêu tuần thuộc mục tiêu tháng nào (SPEC.md mục 12.2); null với cấp khác hoặc chưa gắn */
+  parentId: string | null;
   /** Tự xong (chỉ tính trên web, không ghi ngược vào cột Xong) — server tính bằng `autoStatus` */
   autoDone?: boolean;
   auto?: AutoInfo[];

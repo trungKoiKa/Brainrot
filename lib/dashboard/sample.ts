@@ -127,6 +127,7 @@ export function sampleDashboard(today: string, thesisDeadline = "2026-12-06"): D
     habitId: null,
     threshold: null,
     taskIds: [],
+    parentId: null,
   }));
 
   // Thứ tự dự án mẫu: như danh sách tên mẫu ở trên ("Khác" đóng vai dự án thứ 6)

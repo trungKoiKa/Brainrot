@@ -11,6 +11,7 @@ import { ProgressRing } from "./progress-ring";
 import { undoToast } from "@/components/undo-toast";
 import { GoalRow } from "./goal-row";
 import { AddGoal, CarryOver } from "./goal-forms";
+import type { Split } from "./goal-split";
 
 export type LinkedTask = { id: string; title: string; plannedOn: string | null; done: boolean };
 
@@ -29,6 +30,7 @@ export function GoalPanel({
   linked,
   next: carry,
   openTasks,
+  split,
 }: {
   level: Level;
   periodKey: string;
@@ -42,6 +44,8 @@ export function GoalPanel({
   next: { label: string } | null;
   /** Việc chưa xong, chưa gắn mục tiêu nào — chọn được ở "Gắn việc" (SPEC.md mục 5.3) */
   openTasks: { id: string; title: string }[];
+  /** Chia mục tiêu tháng xuống tuần (SPEC.md mục 12.2) */
+  split?: Split;
 }) {
   const [goals, setGoals] = useState(initial);
   // Dữ liệu server mới (sau mỗi Server Action) thay danh sách, không dựng lại cả khối → popover / focus / thông báo còn nguyên
@@ -161,6 +165,8 @@ export function GoalPanel({
                   onPatch={(c) => patch(g.id, c)}
                   onLink={(h, t) => link(g.id, h, t)}
                   onRemove={() => remove(g)}
+                  split={split}
+                  onError={setError}
                 />
               ))}
             </ul>
@@ -191,6 +197,7 @@ export function GoalPanel({
       <AddGoal
         level={level}
         periodKey={periodKey}
+        parents={split?.kind === "week" ? split.parents : []}
         onAdded={(goal) => {
           setGoals((list) => [...list, goal]);
         }}

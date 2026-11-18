@@ -2,6 +2,7 @@
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import type { Db } from "./client";
 import { createTask, listTasks, setTaskPlannedOn, setTaskTop, TOP_FULL } from "./tasks";
+import { BAD_PARENT, carryOverGoals, createGoal, listGoals, setGoalParent, trashGoal } from "./goals";
 import { DEFAULT_USER_ID, users } from "./schema";
 import { createTestDb } from "./test-db";
 
@@ -57,5 +58,46 @@ describe("3 việc hôm nay (SPEC.md mục 12.1)", () => {
     await setTaskTop(db, ME, await idOf(ME, "Của tôi"), "2026-11-22");
     await expect(setTaskTop(db, ME, await idOf(other, "X"), "2026-11-23")).rejects.toThrow();
     expect((await listTasks(db, other)).find((t) => t.title === "X")!.topOn).toBe("2026-11-22");
+  });
+});
+
+describe("chia mục tiêu tháng xuống tuần (SPEC.md mục 12.2)", () => {
+  const goal = async (userId: string, id: string) => (await listGoals(db, userId)).find((g) => g.id === id)!;
+
+  it("tuần chạm tháng mới gắn được; tuần vắt hai tháng gắn được cả hai", async () => {
+    const nov = await createGoal(db, ME, "month", "2026-11-01", "Xong chương 3", "Ưu tiên");
+    const dec = await createGoal(db, ME, "month", "2026-12-01", "Nộp đồ án", "Ưu tiên");
+    const w47 = await createGoal(db, ME, "week", "2026-11-16", "Viết 3.1", "Thường", nov);
+    expect((await goal(ME, w47)).parentId).toBe(nov);
+    await expect(createGoal(db, ME, "week", "2026-11-16", "Sai tháng", "Thường", dec)).rejects.toThrow(BAD_PARENT);
+    // Tuần 30/11 → 06/12 chạm cả tháng 11 và 12
+    const w49 = await createGoal(db, ME, "week", "2026-11-30", "Chốt slide", "Thường", dec);
+    await setGoalParent(db, ME, w49, nov);
+    expect((await goal(ME, w49)).parentId).toBe(nov);
+    await setGoalParent(db, ME, w49, null);
+    expect((await goal(ME, w49)).parentId).toBeNull();
+  });
+
+  it("chỉ tuần có cha; cha phải là tháng, của đúng người, chưa xoá", async () => {
+    const nov = await createGoal(db, ME, "month", "2026-11-01", "Cha", "Thường");
+    await expect(createGoal(db, ME, "month", "2026-11-01", "Tháng có cha", "Thường", nov)).rejects.toThrow(BAD_PARENT);
+    const w = await createGoal(db, ME, "week", "2026-11-16", "Con", "Thường");
+    await expect(setGoalParent(db, ME, w, w)).rejects.toThrow(BAD_PARENT); // tuần không làm cha
+    const theirs = await createGoal(db, other, "month", "2026-11-01", "Của bạn", "Thường");
+    await expect(setGoalParent(db, ME, w, theirs)).rejects.toThrow(BAD_PARENT);
+    await trashGoal(db, ME, nov, true);
+    await expect(setGoalParent(db, ME, w, nov)).rejects.toThrow(BAD_PARENT);
+    const mine = await createGoal(db, ME, "month", "2026-11-01", "Của tôi", "Thường");
+    await expect(setGoalParent(db, other, w, mine)).rejects.toThrow(); // người khác không sửa được mục tiêu của tôi
+  });
+
+  it("chuyển sang tuần sau giữ cha nếu tuần sau còn chạm tháng, không thì bỏ", async () => {
+    const nov = await createGoal(db, ME, "month", "2026-11-01", "Tháng 11", "Thường");
+    const a = await createGoal(db, ME, "week", "2026-11-16", "Giữ cha", "Thường", nov);
+    const [copied] = await carryOverGoals(db, ME, "week", "2026-11-16", "2026-11-23", [a]);
+    expect((await goal(ME, copied)).parentId).toBe(nov);
+    const b = await createGoal(db, ME, "week", "2026-11-30", "Mất cha", "Thường", nov);
+    const [moved] = await carryOverGoals(db, ME, "week", "2026-11-30", "2026-12-07", [b]);
+    expect((await goal(ME, moved)).parentId).toBeNull();
   });
 });

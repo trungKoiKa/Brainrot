@@ -3,7 +3,7 @@ import { autoStatus, goalCounts, goalsOf, groupGoals, type Goal } from "./goals"
 import { childPeriods, parsePeriod, periodLabel, periodOf, shiftPeriod } from "./period";
 
 const goal = (title: string, o: Partial<Goal> = {}): Goal => ({
-  id: title, title, level: "month", start: "2026-10-01", type: "Thường", done: false, habitId: null, threshold: null, taskIds: [], ...o,
+  id: title, title, level: "month", start: "2026-10-01", type: "Thường", done: false, habitId: null, threshold: null, taskIds: [], parentId: null, ...o,
 });
 
 describe("kỳ Năm / Quý / Tháng / Tuần", () => {

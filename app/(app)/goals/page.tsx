@@ -6,6 +6,7 @@ import { connection } from "next/server";
 import { ChevronLeftIcon, ChevronRightIcon } from "lucide-react";
 import { Card } from "@/components/card";
 import { GoalPanel } from "@/components/goals/goal-panel";
+import type { Split } from "@/components/goals/goal-split";
 import { PrevFocus } from "@/components/goals/prev-focus";
 import { ReflectionForm } from "@/components/goals/reflection-form";
 import { PeriodBars, type PeriodBar } from "@/components/goals/period-bars";
@@ -21,7 +22,7 @@ import { doneHabits } from "@/lib/habits";
 import { getDailyLogsBetween, getGoals, getHabits, getReflections, getTasks } from "@/lib/db/data";
 import { resolveGoals } from "@/lib/db/goal-status";
 import { previousFocus, reflectionOf } from "@/lib/reflections";
-import { childPeriods, goalsHref, LEVEL_LABEL, LEVELS, monthOf, parsePeriod, periodLabel, periodOf, shiftPeriod, shortLabel, type Level, type Period } from "@/lib/period";
+import { childPeriods, goalsHref, LEVEL_LABEL, LEVELS, monthOf, monthsOfWeek, parsePeriod, periodLabel, periodOf, shiftPeriod, shortLabel, type Level, type Period } from "@/lib/period";
 import { ChildCard } from "../../../components/goals/child-card";
 
 export default function GoalsPage({ searchParams }: PageProps<"/goals">) {
@@ -76,6 +77,34 @@ async function GoalsContent({ searchParams }: Pick<PageProps<"/goals">, "searchP
     (h) => monthOf(h.from) <= monthOf(period.end) && (h.to === null || monthOf(h.to) >= monthOf(period.start)),
   );
   const panelGoals = goalsOf(goals, period);
+  // Chia mục tiêu tháng xuống tuần (SPEC.md mục 12.2)
+  const split: Split | undefined =
+    level === "month"
+      ? {
+          kind: "month",
+          weeks: children.map((w) => ({ key: w.key, label: periodLabel(w) })),
+          defaultWeek: (children.find((w) => w.start <= today && today <= w.end) ?? children[0]).key,
+          children: Object.fromEntries(
+            panelGoals.map((g) => [
+              g.id,
+              goals
+                .filter((c) => c.level === "week" && c.parentId === g.id && c.title.trim())
+                .sort((a, b) => a.start.localeCompare(b.start))
+                .map((c) => {
+                  const w = periodOf("week", c.start);
+                  return { id: c.id, title: c.title, done: isGoalDone(c), manual: c.done, weekKey: w.key, weekLabel: `Tuần ${Number(w.key.slice(6))}`, href: goalsHref(w) };
+                }),
+            ]),
+          ),
+        }
+      : level === "week"
+        ? {
+            kind: "week",
+            parents: allGoals
+              .filter((g) => g.level === "month" && g.title.trim() && monthsOfWeek(period.start).includes(monthOf(g.start)))
+              .map((g) => ({ id: g.id, title: g.title, href: goalsHref(periodOf("month", g.start)) })),
+          }
+        : undefined;
   const panelKey = goalsHref(period); // chỉ đổi khi đổi kỳ; dữ liệu mới vào qua prop `initial` (giữ popover, focus, thông báo)
   const bars = (list: Period[]): PeriodBar[] =>
     list.map((p) => {
@@ -230,6 +259,7 @@ async function GoalsContent({ searchParams }: Pick<PageProps<"/goals">, "searchP
               linked={linkedTasks}
               openTasks={openTasks}
               next={hasUndone ? { label: periodLabel(nextPeriod) } : null}
+              split={split}
             />
           </Card>
           {showBars && (

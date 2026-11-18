@@ -3,7 +3,7 @@
 // Một dòng mục tiêu trên Goal (SPEC.md mục 5.3): tích xong, sửa tên, đổi loại, gắn thói quen, gắn / bỏ gắn việc.
 
 import { useRef, useState } from "react";
-import { ArrowDownUpIcon, EllipsisIcon, ListPlusIcon, XIcon, CheckIcon, Link2Icon, PencilIcon, Trash2Icon } from "lucide-react";
+import { ArrowDownUpIcon, ArrowUpIcon, EllipsisIcon, ListPlusIcon, XIcon, CheckIcon, Link2Icon, PencilIcon, Trash2Icon } from "lucide-react";
 import Link from "next/link";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
@@ -17,6 +17,7 @@ import { DEFAULT_THRESHOLD, isGoalDone, MAX_GOAL_TITLE, type AutoInfo, type Goal
 import { undoToast } from "@/components/undo-toast";
 import { NativeSelect } from "@/components/native-select";
 import type { LinkedTask } from "./goal-panel";
+import { ParentLine, WeekChildren, type Split } from "./goal-split";
 
 /** Lý do tự xong / tiến độ liên kết, hiện nhỏ dưới tên mục tiêu. */
 function AutoChips({ auto }: { auto: AutoInfo[] }) {
@@ -47,6 +48,8 @@ export function GoalRow({
   onLinkTask,
   onToggleTask,
   onRemove,
+  split,
+  onError,
 }: {
   goal: Goal;
   tasks: LinkedTask[];
@@ -57,7 +60,11 @@ export function GoalRow({
   onLinkTask: (taskId: string, goalId: string | null) => Promise<boolean>;
   onToggleTask: (task: LinkedTask) => void;
   onRemove: () => void;
+  /** Chia mục tiêu tháng xuống tuần (SPEC.md mục 12.2); không có ở Năm / Quý */
+  split?: Split;
+  onError: (message: string) => void;
 }) {
+  const [reparenting, setReparenting] = useState(false);
   const [picking, setPicking] = useState(false);
   // Bỏ gắn việc → toast "Hoàn tác" 8 giây (SPEC.md mục 5.3; sonner thay dải tự viết)
   async function unlink(t: LinkedTask) {
@@ -135,6 +142,11 @@ export function GoalRow({
                 <DropdownMenuItem onClick={() => setLinking(true)}>
                   <Link2Icon aria-hidden="true" /> Gắn thói quen
                 </DropdownMenuItem>
+                {split?.kind === "week" && (
+                  <DropdownMenuItem onClick={() => setReparenting(true)}>
+                    <ArrowUpIcon aria-hidden="true" /> Đổi mục tiêu tháng
+                  </DropdownMenuItem>
+                )}
                 <DropdownMenuItem onClick={() => onPatch({ type: other })}>
                   <ArrowDownUpIcon aria-hidden="true" /> Chuyển sang {other}
                 </DropdownMenuItem>
@@ -146,6 +158,9 @@ export function GoalRow({
           </span>
         )}
       </div>
+      {split?.kind === "week" && (
+        <ParentLine goal={goal} parents={split.parents} editing={reparenting} onDone={() => setReparenting(false)} onError={onError} />
+      )}
       {goal.auto && goal.auto.length > 0 && (
         <div className="mt-0.5 pl-7">
           <AutoChips auto={goal.auto} />
@@ -194,6 +209,7 @@ export function GoalRow({
           }
         />
       </div>
+      {split?.kind === "month" && <WeekChildren goal={goal} split={split} onError={onError} />}
       {linking && (
         <LinkHabit
           goal={goal}
