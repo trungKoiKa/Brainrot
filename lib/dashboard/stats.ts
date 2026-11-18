@@ -282,7 +282,7 @@ const ACTION: Record<WeekSignal["key"] | "overdue" | "review", SummaryAction> = 
   overdue: { label: "Xem việc quá hạn ở Tasks", href: "/tasks" },
   log: { label: "Ghi log hôm nay ở Today", href: "/today" },
   tasks: { label: "Xếp việc tuần này ở Today", href: "/today" },
-  habits: { label: "Xem thói quen ở Goal", href: "/goals?level=month" },
+  habits: { label: "Xem thói quen ở Goal", href: "/goals" },
   review: { label: "Nhìn lại tuần ở Goal", href: "/goals?level=week" },
 };
 
