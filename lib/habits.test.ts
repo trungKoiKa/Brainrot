@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { doneHabits, habitsForMonth, monthStats, streaks, toggleHabit } from "./habits";
+import { doneHabits, habitsForMonth, monthStats, rangeStats, streaks, toggleHabit } from "./habits";
 import type { Habit } from "./types";
 import { daysOfMonth, shiftMonth, weeksOfMonth } from "./period";
 
@@ -80,5 +80,29 @@ describe("thói quen", () => {
     expect(toggleHabit(["A"], "B", true)).toEqual(["A", "B"]);
     expect(toggleHabit(["A", "B"], "A", false)).toEqual(["B"]);
     expect(toggleHabit(["A"], "A", true)).toEqual(["A"]);
+  });
+});
+
+describe("rangeStats: thói quen theo tuần / quý / năm (SPEC.md mục 5.3, 19/11/2026)", () => {
+  // Tuần 27/10 → 02/11/2026 vắt qua hai tháng
+  const week = ["2026-10-26", "2026-10-27", "2026-10-28", "2026-10-29", "2026-10-30", "2026-10-31", "2026-11-01"];
+
+  it("% chỉ chia cho ngày đã qua mà thói quen được theo dõi", () => {
+    const novOnly = habit("Đọc sách", { from: "2026-11-01" });
+    const s = rangeStats([novOnly], { "2026-11-01": ["Đọc sách"] }, week, "2026-11-01");
+    expect(s.rows[0].tracked).toBe(1); // tháng 10 chưa theo dõi → không tính là bỏ
+    expect(s.rows[0].pct).toBe(100);
+  });
+
+  it("thói quen đã ngừng trước kỳ thì không có hàng", () => {
+    const stopped = habit("Chạy", { from: "2026-01-01", to: "2026-09-01" });
+    expect(rangeStats([stopped], {}, week, "2026-11-01").rows).toHaveLength(0);
+  });
+
+  it("ngày tương lai không vào mẫu số", () => {
+    const h = habit("Ngủ sớm");
+    const s = rangeStats([h], { "2026-10-26": ["Ngủ sớm"] }, week, "2026-10-27");
+    expect(s.elapsed).toBe(2);
+    expect(s.rows[0]).toMatchObject({ count: 1, tracked: 2, pct: 50 });
   });
 });

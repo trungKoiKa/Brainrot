@@ -10,10 +10,12 @@ import { PrevFocus } from "@/components/goals/prev-focus";
 import { ReflectionForm } from "@/components/goals/reflection-form";
 import { PeriodBars, type PeriodBar } from "@/components/goals/period-bars";
 import { WeekCards } from "@/components/goals/week-cards";
+import { HabitGrid } from "@/components/habits/habit-grid";
 import { HabitMonth } from "@/components/habits/habit-month";
+import { HabitWeek } from "@/components/habits/habit-week";
 import { PageHeader } from "@/components/page-header";
 import { Skeleton } from "@/components/ui/skeleton";
-import { todayVN } from "@/lib/date";
+import { addDays, todayVN } from "@/lib/date";
 import { goalCounts, goalsOf, isGoalDone } from "@/lib/goals";
 import { doneHabits } from "@/lib/habits";
 import { getDailyLogsBetween, getGoals, getHabits, getReflections, getTasks } from "@/lib/db/data";
@@ -45,22 +47,21 @@ async function GoalsContent({ searchParams }: Pick<PageProps<"/goals">, "searchP
   // Một lần đọc Daily Log phủ cả kỳ đang xem lẫn các kỳ con (tuần lấn sang tháng bên cạnh) → resolveGoals dùng lại (rà soát A4)
   const logFrom = [period, ...children].reduce((m, p) => (p.start < m ? p.start : m), period.start);
   const logTo = [period, ...children].reduce((m, p) => (p.end > m ? p.end : m), period.end);
-  // Bảng thói quen luôn ở trên cùng, mọi cấp (Trung chốt 19/11/2026): tháng chứa hôm nay nếu kỳ đang xem
-  // có hôm nay, không thì tháng đầu của kỳ. Một lần đọc Daily Log phủ cả tháng này lẫn kỳ đang xem.
-  const habitMonth = periodOf("month", period.start <= today && today <= period.end ? today : period.start);
-  const readFrom = habitMonth.start < logFrom ? habitMonth.start : logFrom;
-  const readTo = habitMonth.end > logTo ? habitMonth.end : logTo;
   const [allGoals, habits, reflections, allLogs, weekTasks] = await Promise.all([
     getGoals(),
     getHabits(),
     getReflections(),
-    getDailyLogsBetween(readFrom, readTo),
+    getDailyLogsBetween(logFrom, logTo), // mọi cấp: thói quen của kỳ cần Daily Log
     getTasks(), // việc gắn dưới mỗi mục tiêu (mọi cấp) + thẻ ngày / khay ở Tuần
   ]);
   const inRange = (from: string, to: string) => allLogs.filter((l) => l.date && from <= l.date && l.date <= to);
   // Tháng / Tuần: Daily Log cho mục tiêu tự xong và thẻ 7 ngày (như trước); Năm / Quý không dùng
   const logs = level === "month" || level === "week" ? inRange(logFrom, logTo) : null;
-  const habitLogs = inRange(habitMonth.start, habitMonth.end);
+  // Thói quen của đúng kỳ đang xem (Trung chốt 19/11/2026): Tuần 7 ngày, Tháng cả tháng, Quý / Năm lưới chỉ xem
+  const habitDone = Object.fromEntries(
+    inRange(period.start, period.end).flatMap((l) => (l.date ? [[l.date, doneHabits(l)]] : [])),
+  );
+  const isCurrent = period.start <= today && today <= period.end;
   const reflection = reflectionOf(reflections, period);
   const prevFocus = previousFocus(reflections, period);
   const motto = reflectionOf(reflections, periodOf("year", period.start))?.motto.trim() || null;
@@ -151,14 +152,30 @@ async function GoalsContent({ searchParams }: Pick<PageProps<"/goals">, "searchP
         </nav>
       </div>
 
-      {/* Thói quen là phần chính của Goal: luôn ở trên cùng, mọi cấp (Trung chốt 19/11/2026) */}
-      <HabitMonth
-        key={habitMonth.key}
-        month={habitMonth.key}
-        today={today}
-        habits={habits}
-        doneByDay={Object.fromEntries(habitLogs.flatMap((l) => (l.date ? [[l.date, doneHabits(l)]] : [])))}
-      />
+      {/* Thói quen là phần chính của Goal: luôn ở trên cùng, phạm vi đúng kỳ đang xem (Trung chốt 19/11/2026) */}
+      {level === "week" ? (
+        <HabitWeek
+          key={period.key}
+          title="Thói quen tuần"
+          days={Array.from({ length: 7 }, (_, i) => addDays(period.start, i))}
+          month={monthOf(isCurrent ? today : period.start)}
+          today={today}
+          habits={habits}
+          doneByDay={habitDone}
+        />
+      ) : level === "month" ? (
+        <HabitMonth key={period.key} month={period.key} today={today} habits={habits} doneByDay={habitDone} />
+      ) : (
+        <HabitGrid
+          title={`Thói quen ${level === "year" ? "năm" : "quý"}`}
+          start={period.start}
+          end={period.end}
+          today={today}
+          habits={habits}
+          doneByDay={habitDone}
+          tickHref={goalsHref(periodOf("week", today))}
+        />
+      )}
 
       {/* Tuần: 7 ngày là việc của tuần, đứng trước danh sách mục tiêu */}
       {level === "week" && logs && weekTasks && (
