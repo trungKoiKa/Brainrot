@@ -37,7 +37,7 @@ async function GoalsContent({ searchParams }: Pick<PageProps<"/goals">, "searchP
   await connection(); // kỳ hiện tại, ô tích được phụ thuộc ngày hôm nay
   const today = todayVN();
   const params = await searchParams;
-  const level: Level = LEVELS.includes(params.level as Level) ? (params.level as Level) : "month";
+  const level: Level = LEVELS.includes(params.level as Level) ? (params.level as Level) : "week"; // mặc định Tuần (Trung chốt 19/11/2026)
   const period = (typeof params.period === "string" && parsePeriod(level, params.period)) || periodOf(level, today);
   const current = periodOf(level, today);
 

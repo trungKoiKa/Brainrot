@@ -204,7 +204,7 @@ export function DashboardView({ real }: { real: DashInput }) {
         >
           <p className="-mt-3 mb-4 text-sm text-muted-foreground">
             {period} ngày ·{" "}
-            <Link href="/goals" className="underline underline-offset-2 hover:text-foreground">
+            <Link href="/goals?level=month" className="underline underline-offset-2 hover:text-foreground">
               xem bảng tháng
             </Link>
           </p>
@@ -214,7 +214,7 @@ export function DashboardView({ real }: { real: DashInput }) {
       empty: (
         <>
           Chưa có thói quen nào trong kỳ này.{" "}
-          <Link href="/goals" className={linkClass}>
+          <Link href="/goals?level=month" className={linkClass}>
             Thêm ở Goal
           </Link>
         </>

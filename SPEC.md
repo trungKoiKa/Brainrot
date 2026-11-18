@@ -136,7 +136,7 @@ Màn nào chưa có dữ liệu thì hiện một câu hướng dẫn kèm đư�
 
 ### 5.3 Goal — "Tôi đang hướng tới điều gì?"
 
-- Chế độ **Năm / Quý / Tháng / Tuần**, mặc định **Tháng**; ‹ › đổi kỳ, nút "Kỳ này". URL giữ kỳ:
+- Chế độ **Năm / Quý / Tháng / Tuần**, mặc định **Tuần** (bấm Goal ở thanh bên mở tuần này; link về thói quen mở thẳng Tháng); ‹ › đổi kỳ, nút "Kỳ này". URL giữ kỳ:
   `/goals?level=month&period=2026-10` (`2026`, `2026-Q4`, `2026-10`, `2026-W44`). Tuần bắt đầu thứ Hai; tuần vắt qua
   hai tháng là một bộ mục tiêu, hiện ở cả hai tháng.
 - **Mục tiêu:** thêm nhanh (một dòng + chọn loại), sửa tên bằng nút bút, tích / bỏ tích, xoá (xoá mềm, có Hoàn tác);
@@ -297,3 +297,4 @@ token mã hoá AES-GCM) còn trong lịch sử git của file này nếu sau nà
 | 12/11/2026 | Daily Log đổi nhãn "Rơi / chưa xong" thành "Chưa xong"; Brain vẽ node kiểu neuron phát sáng | mục 5.1, 5.7 |
 | 12/11/2026 | Giao diện "bản mềm": khung bo 12px, control bo 8px, bỏ chữ mono, hàng chỉ số thành ô rời | `DESIGN.md` |
 | 12/11/2026 | Knowledge và Brain xong; trên Brain nhãn Dự án dùng chấm rỗng, Lĩnh vực chấm đặc (hai nhóm chung 4 màu) | mục 5.6, 5.7 |
+| 19/11/2026 | Goal mặc định mở cấp Tuần (thay Tháng); link về thói quen mở thẳng `?level=month` | mục 5.3 |
