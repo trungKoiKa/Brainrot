@@ -304,3 +304,46 @@ token mã hoá AES-GCM) còn trong lịch sử git của file này nếu sau nà
 | 12/11/2026 | Knowledge và Brain xong; trên Brain nhãn Dự án dùng chấm rỗng, Lĩnh vực chấm đặc (hai nhóm chung 4 màu) | mục 5.6, 5.7 |
 | 19/11/2026 | Goal mặc định mở cấp Tuần (thay Tháng); bảng thói quen thành phần chính, luôn ở trên cùng Goal ở mọi cấp | mục 5.3 |
 | 19/11/2026 | Thói quen ở Goal theo đúng kỳ: Tuần 7 ngày, Tháng cả tháng, Quý / Năm lưới kiểu GitHub chỉ xem; quản lý ở Tuần và Tháng | mục 5.3 |
+
+## 12. v1.2 — "3 việc hôm nay" và chia mục tiêu tháng xuống tuần (chờ Trung duyệt)
+
+**Vì sao (Trung, 19/11/2026):** app không thay đổi cuộc đời trong một ngày; nó cho một đích đến rồi chia nhỏ ra:
+năm muốn trở thành ai → tháng xây điều gì → tuần tập trung đâu → **hôm nay làm 3 việc gì để tiến gần hơn 1%**.
+Cần một hệ thống đủ rõ để mỗi sáng mở ra là biết làm gì, không cần thêm động lực.
+Trung chọn làm hai phần dưới; "chuỗi đích đến ở đầu Today" và "mục tiêu chính tháng / câu trở thành ai" **chưa làm**.
+
+### 12.1 3 việc hôm nay
+
+- **Dữ liệu:** thêm cột `tasks.top_on` (date, trống được): việc là một trong "3 việc" của ngày `top_on`.
+  Tối đa **3 việc mỗi ngày** mỗi người; server chặn việc thứ 4 ("Đã đủ 3 việc cho ngày này").
+- **Today:** thẻ tiêu điểm **"3 việc hôm nay"** đứng **trên cùng**, trên "Hôm nay làm"; ghi "x/3 xong". Tích xong tại
+  chỗ, có Hoàn tác; việc đã xong vẫn nằm lại (gạch ngang). Việc trong "3 việc" **không lặp** ở "Hôm nay làm".
+  Trống: "Chọn tối đa 3 việc giúp bạn tiến gần hơn 1% hôm nay" + hướng dẫn bấm ☆.
+- **Gắn sao (☆):** mỗi dòng ở "Hôm nay làm" có nút ☆ (gắn / bỏ); gắn sao một việc trễ thì Ngày làm = hôm nay.
+  Hết chỗ (đủ 3) thì ☆ mờ, rê vào thấy lý do.
+- **Buổi tối chọn cho ngày mai:** ở "Ngày mai làm" (Cuối ngày) mỗi việc có ☆; gắn sao = Ngày làm ngày mai + `top_on` ngày
+  mai. Sáng hôm sau mở ra là thấy sẵn 3 việc.
+- **Không tự chuyển:** sang ngày mới, việc chưa xong **mất sao** (chỉ tính `top_on` = hôm nay); việc vẫn còn ở "Hôm nay
+  làm" (mục trễ) để chọn lại. "Hôm nay" theo mốc 4:00 như mục 5.1.
+- **Dashboard:** trong khối "Nhịp làm" thêm một dòng "3 việc: N ngày xong đủ 3/3 · M ngày có chọn" cho kỳ đang xem.
+
+### 12.2 Chia mục tiêu tháng xuống tuần
+
+- **Dữ liệu:** thêm cột `goals.parent_id` (uuid, trống được, → `goals.id` ON DELETE SET NULL). Chỉ mục tiêu **tuần** có
+  cha; cha phải là mục tiêu **tháng** của cùng người, tháng đó chạm tuần (tuần vắt hai tháng chọn được cả hai).
+- **Ở Tháng:** dưới mỗi mục tiêu, các mục tiêu tuần con dạng dòng "Tuần 47 · tên" (ô tích như mục tiêu, bấm "Tuần 47" mở
+  tuần đó) + chip **"x/y mục tiêu tuần xong"**. Nút **"+ Chia cho tuần…"**: chọn tuần trong tháng (mặc định tuần này;
+  tháng đã qua thì tuần đầu) + gõ tên → tạo mục tiêu tuần con, cùng loại (Ưu tiên / Thường) với cha.
+- **Ở Tuần:** form thêm mục tiêu có ô **"Thuộc mục tiêu tháng"** (không bắt buộc). Mục tiêu tuần có cha hiện dòng phụ
+  "↑ tên mục tiêu tháng" (bấm mở tháng). Menu "⋯" có **"Đổi mục tiêu tháng"** (gồm bỏ liên kết).
+- **Tiến độ:** mục tiêu tháng **không** tự xong theo con; chỉ hiện chip x/y. Luật tự xong hiện có (mục 5.3) giữ nguyên.
+- **Xoá / chuyển kỳ:** xoá mục tiêu tháng (xoá mềm) thì con mất dòng "↑", Hoàn tác hiện lại. "Chuyển sang tuần sau" giữ
+  cha nếu tuần sau vẫn chạm tháng của cha, không thì bỏ cha.
+
+### 12.3 Tiêu chí hoàn thành
+
+- Migration chỉ **thêm** hai cột (dev và production chung database); Trung chạy `npm run db:migrate` trước khi merge PR
+  dùng cột đó.
+- Test: giới hạn 3 việc / ngày, cách ly user (không gắn sao / gắn cha vào dữ liệu người khác), cha phải là tháng chạm
+  tuần. Lint + test + build sạch; ảnh 1440×900 hai theme của Today, Goal Tháng, Goal Tuần, Dashboard.
+- Duyệt xong: chuyển nội dung 12.1 vào mục 5.1 / 5.4, 12.2 vào mục 5.3, cột mới vào mục 3; mục 12 chỉ còn một dòng.
