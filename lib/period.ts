@@ -153,3 +153,6 @@ export function shortLabel(p: Period): string {
 
 /** Đường dẫn trang Goal mở đúng kỳ `p`. */
 export const goalsHref = (p: Period) => `/goals?level=${p.level}&period=${p.key}`;
+
+/** Tháng ("YYYY-MM") mà tuần bắt đầu `monday` chạm tới: một, hoặc hai nếu tuần vắt qua hai tháng (SPEC.md mục 12.2). */
+export const monthsOfWeek = (monday: string) => [...new Set([monthOf(monday), monthOf(addDays(monday, 6))])];

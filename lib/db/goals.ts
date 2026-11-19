@@ -5,7 +5,7 @@ import type { Db } from "./client";
 import { goals, goalTasks, habits, reflections, tasks } from "./schema";
 import type { Goal, GoalType } from "@/lib/goals";
 import type { Reflection, ReflectionFields } from "@/lib/reflections";
-import type { Level } from "@/lib/period";
+import { monthOf, monthsOfWeek, type Level } from "@/lib/period";
 import { ownTask } from "./tasks";
 
 export async function listGoals(db: Db, userId: string): Promise<Goal[]> {
@@ -29,7 +29,31 @@ export async function listGoals(db: Db, userId: string): Promise<Goal[]> {
     habitId: g.habitId,
     threshold: g.threshold,
     taskIds: tasksOf.get(g.id) ?? [],
+    parentId: g.parentId,
   }));
+}
+
+export const BAD_PARENT = "Mục tiêu tháng không hợp lệ cho tuần này.";
+
+
+/** Mục tiêu tháng làm cha được cho tuần `monday` (SPEC.md mục 12.2): của đúng user, chưa xoá, tháng chạm tuần. */
+async function checkParent(db: Db, userId: string, monday: string, parentId: string): Promise<void> {
+  const [p] = await db
+    .select({ level: goals.level, start: goals.start })
+    .from(goals)
+    .where(and(eq(goals.id, parentId), eq(goals.userId, userId), isNull(goals.deletedAt)));
+  if (!p || p.level !== "month" || !monthsOfWeek(monday).includes(monthOf(p.start))) throw new Error(BAD_PARENT);
+}
+
+/** Gắn / bỏ mục tiêu tháng cho một mục tiêu tuần (SPEC.md mục 12.2). `parentId` null = bỏ. */
+export async function setGoalParent(db: Db, userId: string, id: string, parentId: string | null): Promise<void> {
+  const [g] = await db
+    .select({ level: goals.level, start: goals.start })
+    .from(goals)
+    .where(and(eq(goals.id, id), eq(goals.userId, userId), isNull(goals.deletedAt)));
+  if (!g || g.level !== "week") throw new Error("Không tìm thấy mục tiêu");
+  if (parentId) await checkParent(db, userId, g.start, parentId);
+  await db.update(goals).set({ parentId }).where(and(eq(goals.id, id), eq(goals.userId, userId)));
 }
 
 export async function listReflections(db: Db, userId: string): Promise<Reflection[]> {
@@ -46,8 +70,21 @@ export async function listReflections(db: Db, userId: string): Promise<Reflectio
   }));
 }
 
-export async function createGoal(db: Db, userId: string, level: Level, start: string, title: string, type: GoalType): Promise<string> {
-  const [row] = await db.insert(goals).values({ userId, level, start, title, type }).returning({ id: goals.id });
+/** Thêm mục tiêu; `parentId` (chỉ cấp tuần) = mục tiêu tháng nó thuộc về (SPEC.md mục 12.2). */
+export async function createGoal(
+  db: Db,
+  userId: string,
+  level: Level,
+  start: string,
+  title: string,
+  type: GoalType,
+  parentId: string | null = null,
+): Promise<string> {
+  if (parentId) {
+    if (level !== "week") throw new Error(BAD_PARENT);
+    await checkParent(db, userId, start, parentId);
+  }
+  const [row] = await db.insert(goals).values({ userId, level, start, title, type, parentId }).returning({ id: goals.id });
   return row.id;
 }
 
@@ -104,7 +141,7 @@ export async function saveReflection(db: Db, userId: string, level: Level, start
  */
 export async function carryOverGoals(db: Db, userId: string, level: Level, from: string, to: string, onlyIds?: readonly string[]): Promise<string[]> {
   const rows = await db
-    .select({ id: goals.id, title: goals.title, type: goals.type, done: goals.done, start: goals.start })
+    .select({ id: goals.id, title: goals.title, type: goals.type, done: goals.done, start: goals.start, parentId: goals.parentId })
     .from(goals)
     .where(and(eq(goals.userId, userId), eq(goals.level, level), isNull(goals.deletedAt), inArray(goals.start, [from, to])));
   const existing = new Set(rows.filter((g) => g.start === to).map((g) => g.title.trim().toLowerCase()));
@@ -112,9 +149,21 @@ export async function carryOverGoals(db: Db, userId: string, level: Level, from:
     (g) => g.start === from && !g.done && g.title.trim() && !existing.has(g.title.trim().toLowerCase()) && (!onlyIds || onlyIds.includes(g.id)),
   );
   if (!todo.length) return [];
+  // Tuần: giữ mục tiêu tháng cha nếu tuần sau vẫn chạm tháng của cha, không thì bỏ (SPEC.md mục 12.2)
+  const parentIds = [...new Set(todo.flatMap((g) => (g.parentId ? [g.parentId] : [])))];
+  const parents = parentIds.length
+    ? await db
+        .select({ id: goals.id, start: goals.start })
+        .from(goals)
+        .where(and(eq(goals.userId, userId), isNull(goals.deletedAt), inArray(goals.id, parentIds)))
+    : [];
+  const months = level === "week" ? monthsOfWeek(to) : [];
+  const keep = new Set(parents.filter((p) => months.includes(monthOf(p.start))).map((p) => p.id));
   const created = await db
     .insert(goals)
-    .values(todo.map((g) => ({ userId, level, start: to, title: g.title, type: g.type })))
+    .values(
+      todo.map((g) => ({ userId, level, start: to, title: g.title, type: g.type, parentId: g.parentId && keep.has(g.parentId) ? g.parentId : null })),
+    )
     .returning({ id: goals.id });
   return created.map((c) => c.id);
 }

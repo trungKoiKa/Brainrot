@@ -43,7 +43,11 @@ Dòng task hiện "Làm: T4 28/10" — **đỏ** khi Ngày làm đã qua mà ch�
 
 ### 2.2 Buổi sáng → Today
 
-Khối **"Hôm nay làm"** tự gom, theo thứ tự:
+Trên cùng là **"3 việc hôm nay"**: tối đa 3 việc giúp mình tiến gần hơn 1% hôm nay. Bấm **☆** ở một dòng "Hôm nay làm"
+để đưa việc vào (việc trễ được kéo về hôm nay), bấm lại để bỏ ra; đủ 3 thì ☆ mờ. Sang ngày mới, việc chưa xong mất sao
+và nằm ở mục trễ để chọn lại.
+
+Khối **"Hôm nay làm"** tự gom những việc còn lại, theo thứ tự:
 
 1. Task chưa xong có **Ngày làm = hôm nay** (Ưu tiên Cao trước).
 2. **Trễ lịch**: Ngày làm đã qua mà chưa xong → nút **"Làm hôm nay"**.
@@ -65,12 +69,15 @@ Thẻ **Kiến thức mới** liệt kê 5 ghi chú mới nhất (bấm tên m�
 2. **Daily Log hôm nay**: ghi Xong / Chưa xong / Học được → Lưu (đã có thì Cập nhật, mỗi ngày một bản ghi).
 3. **Ngày mai làm**: tích những task định làm ngày mai → đặt Ngày làm = ngày mai. Bỏ tích = bỏ lịch.
    Danh sách gồm task đã xếp ngày mai + task chưa xếp lịch (ưu tiên cao trước).
-4. Sáng hôm sau các task đó tự lên "Hôm nay làm"; việc nào không làm kịp sẽ thành **trễ lịch**.
+   Bấm **☆** cạnh tối đa 3 việc để chúng là **"3 việc hôm nay"** của ngày mai.
+4. Sáng hôm sau các task đó tự lên "3 việc hôm nay" / "Hôm nay làm"; việc nào không làm kịp sẽ thành **trễ lịch**.
 
 ### 2.4 Chủ nhật → Goal, chế độ Tuần
 
 1. Bấm **Goal** trên sidebar → chọn **Tuần** (‹ › để đổi tuần, "Hôm nay" để về tuần hiện tại).
 2. **Mục tiêu tuần**: thêm 1–3 mục tiêu **Ưu tiên** cho tuần tới (quá 3 có nhắc nhẹ), còn lại để **Thường**.
+   Ô **"Thuộc mục tiêu tháng"** cho biết mục tiêu tuần này phục vụ mục tiêu tháng nào (hiện dòng "↑" bên dưới;
+   đổi ở menu "⋯" → "Đổi mục tiêu tháng").
 3. **7 ngày trong tuần**: mỗi thẻ là một ngày, gồm:
    - task có **Ngày làm** ngày đó, task **đã xong** ngày đó, task có **Deadline** ngày đó (nhãn đỏ "hạn");
    - ghi chú Xong / Chưa xong của Daily Log ngày đó;
@@ -85,10 +92,12 @@ Trên điện thoại 7 thẻ thành danh sách dọc, ngày hôm nay mở sẵn
 
 1. **Mục tiêu tháng**: thêm như mục tiêu tuần. Bấm 🔗 trên dòng mục tiêu để **gắn thói quen + ngưỡng %**
    (mặc định 80%) → mục tiêu **tự xong** khi % ngày làm thói quen trong tháng đạt ngưỡng.
-2. **Tiến độ các tuần**: cột % mục tiêu của từng tuần trong tháng; bấm cột để mở tuần đó.
-3. **Thói quen**: bảng cả tháng (tích được cho hôm nay và ngày đã qua), **Tổng kết tháng** (% · chuỗi · dài nhất),
+2. **Chia xuống tuần**: dưới mỗi mục tiêu tháng bấm **"+ Chia cho tuần…"**, chọn tuần và gõ việc cần làm tuần đó →
+   thành mục tiêu tuần con. Chip "x/y mục tiêu tuần xong" cho thấy tiến độ; mục tiêu tháng vẫn tự tích khi xong.
+3. **Tiến độ các tuần**: cột % mục tiêu của từng tuần trong tháng; bấm cột để mở tuần đó.
+4. **Thói quen**: bảng cả tháng (tích được cho hôm nay và ngày đã qua), **Tổng kết tháng** (% · chuỗi · dài nhất),
    **Quản lý thói quen** (thêm, đổi thứ tự, ngừng từ tháng sau — lịch sử cũ giữ nguyên).
-4. Cuối tháng: **Nhìn lại tháng**.
+5. Cuối tháng: **Nhìn lại tháng**.
 
 ### 2.6 Đầu quý / năm → Goal, chế độ Quý và Năm
 
@@ -144,7 +153,9 @@ về như cũ và báo lỗi.
 |---|---|---|
 | Tích task xong | `completeTask` | Tasks: Trạng thái = Xong, Ngày xong = hôm nay |
 | Thêm / sửa task | `createTaskAction` / `updateTaskAction` | Tasks: các cột trong form (sửa → mở lại thì bỏ Ngày xong) |
-| Làm hôm nay · Dời sang… · Ngày mai làm | `planTaskAction` | Tasks: Ngày làm (hoặc xóa) |
+| Làm hôm nay · Dời sang… · Ngày mai làm | `planTaskAction` | Tasks: Ngày làm (hoặc xóa); dời việc có sao thì bỏ sao |
+| ☆ "3 việc" | `setTopAction` | Tasks: top_on (+ Ngày làm), tối đa 3 việc / ngày |
+| Chia cho tuần · Thuộc / Đổi mục tiêu tháng | `createGoalAction` / `setGoalParentAction` | Goals: parent_id của mục tiêu tuần |
 | Tích thói quen | `setDayHabitsAction` | habit_days: các thói quen đã làm trong ngày |
 | Daily Log | `saveDailyLogAction` | Daily Log hôm nay: Xong · Chưa xong · Học được |
 | Ý tưởng | `addIdeaAction` | Ideas: dòng mới |

@@ -1,10 +1,11 @@
 // Việc (Tasks): đọc + ghi. Mọi hàm nhận `userId` và mọi truy vấn đều lọc theo nó (SPEC.md mục 3).
 
-import { and, asc, eq, isNull, inArray } from "drizzle-orm";
+import { and, asc, count, eq, isNull, inArray, ne, sql } from "drizzle-orm";
 import type { Db } from "./client";
 import { goals, goalTasks, projects, tasks } from "./schema";
 import type { Task } from "@/lib/types";
-import { todayVN } from "@/lib/date";
+import { todayVN, workdayVN } from "@/lib/date";
+import { MAX_TOP } from "@/lib/today";
 import type { TaskInput, TaskUpdate } from "@/lib/task-form";
 
 export async function listTasks(db: Db, userId: string): Promise<Task[]> {
@@ -33,6 +34,7 @@ export async function listTasks(db: Db, userId: string): Promise<Task[]> {
     plannedOn: t.plannedOn,
     note: t.note,
     doneOn: t.doneOn,
+    topOn: t.topOn,
     createdTime: t.createdAt.toISOString(),
     goalIds: goalsOf.get(t.id) ?? [],
   }));
@@ -68,9 +70,38 @@ export async function deleteTask(db: Db, userId: string, id: string): Promise<vo
   if (!res.length) throw new Error("Không tìm thấy task");
 }
 
-/** Đặt / bỏ Ngày làm (SPEC.md mục 3). */
+/**
+ * Đặt / bỏ Ngày làm (SPEC.md mục 3). Việc đang là "3 việc" của hôm nay / ngày tới mà dời sang ngày khác (hoặc bỏ lịch)
+ * thì mất sao (SPEC.md mục 12.1); sao của ngày đã qua giữ lại làm lịch sử cho Dashboard.
+ */
 export async function setTaskPlannedOn(db: Db, userId: string, id: string, day: string | null): Promise<void> {
-  const res = await db.update(tasks).set({ plannedOn: day }).where(ownTask(userId, id)).returning({ id: tasks.id });
+  const today = workdayVN();
+  const keepTop = day
+    ? sql`case when ${tasks.topOn} >= ${today} and ${tasks.topOn} <> ${day} then null else ${tasks.topOn} end`
+    : sql`case when ${tasks.topOn} >= ${today} then null else ${tasks.topOn} end`;
+  const res = await db.update(tasks).set({ plannedOn: day, topOn: keepTop }).where(ownTask(userId, id)).returning({ id: tasks.id });
+  if (!res.length) throw new Error("Không tìm thấy task");
+}
+
+export const TOP_FULL = "Đã đủ 3 việc cho ngày này.";
+
+/**
+ * Gắn / bỏ sao "3 việc" (SPEC.md mục 12.1). Gắn cho ngày `day` thì Ngày làm cũng thành `day` (việc trễ được kéo về).
+ * Ngày đó đã đủ 3 việc khác → lỗi TOP_FULL. `day` null = bỏ sao, giữ Ngày làm.
+ */
+export async function setTaskTop(db: Db, userId: string, id: string, day: string | null): Promise<void> {
+  if (day) {
+    const [{ n }] = await db
+      .select({ n: count() })
+      .from(tasks)
+      .where(and(eq(tasks.userId, userId), eq(tasks.topOn, day), ne(tasks.id, id)));
+    if (n >= MAX_TOP) throw new Error(TOP_FULL);
+  }
+  const res = await db
+    .update(tasks)
+    .set(day ? { topOn: day, plannedOn: day } : { topOn: null })
+    .where(ownTask(userId, id))
+    .returning({ id: tasks.id });
   if (!res.length) throw new Error("Không tìm thấy task");
 }
 
@@ -124,6 +155,8 @@ export type TaskSnapshot = {
   deadline: string | null;
   plannedOn: string | null;
   doneOn: string | null;
+  /** Thiếu ở ảnh chụp cũ → không gắn sao */
+  topOn?: string | null;
   note: string;
   createdTime: string;
   goalIds: string[];
@@ -143,6 +176,7 @@ export async function restoreTask(db: Db, userId: string, s: TaskSnapshot): Prom
     deadline: s.deadline,
     plannedOn: s.plannedOn,
     doneOn: s.doneOn,
+    topOn: s.topOn ?? null,
     note: s.note,
     createdAt: new Date(s.createdTime),
   });

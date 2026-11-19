@@ -67,8 +67,8 @@ Mọi bảng có `user_id` → `users.id` **ON DELETE CASCADE**. Ngày lưu ki�
 |---|---|
 | `users` | email (duy nhất), name, password_hash (scrypt), target_date, target_label |
 | `projects` | name (duy nhất theo user, ≤ 40 ký tự), sort |
-| `tasks` | title, project_id?, status (Chưa làm / Đang làm / Xong), priority? (Cao / Vừa / Thấp), deadline?, planned_on?, done_on?, note |
-| `goals` | title, level (năm / quý / tháng / tuần), start (ngày đầu kỳ; tuần = thứ Hai), type (Ưu tiên / Thường), done, habit_id?, threshold?, deleted_at (xoá mềm) |
+| `tasks` | title, project_id?, status (Chưa làm / Đang làm / Xong), priority? (Cao / Vừa / Thấp), deadline?, planned_on?, done_on?, top_on? ("3 việc" của ngày đó, tối đa 3 việc / ngày), note |
+| `goals` | title, level (năm / quý / tháng / tuần), start (ngày đầu kỳ; tuần = thứ Hai), type (Ưu tiên / Thường), done, habit_id?, threshold?, parent_id? (mục tiêu tuần → mục tiêu tháng nó thuộc về), deleted_at (xoá mềm) |
 | `goal_tasks` | goal_id, task_id (mỗi việc gắn tối đa một mục tiêu) |
 | `habits` | name, from_month, to_month? (trống = còn theo dõi), sort |
 | `habit_days` | habit_id, day (lưu theo id nên đổi tên không mất lịch sử) |
@@ -106,13 +106,21 @@ Màn nào chưa có dữ liệu thì hiện một câu hướng dẫn kèm đư�
 - **Ngày làm việc đổi lúc 4:00:** 0:00–3:59 vẫn tính là tối hôm trước cho lời chào, Daily Log, thói quen và "Hôm nay
   làm". Deadline / "quá hạn" ở các màn khác và Ngày xong của việc vẫn đổi lúc 0:00.
 - Lời chào theo buổi + tên người dùng; đếm ngược là dòng phụ (chưa đặt hạn thì không hiện).
-- **Hôm nay làm** (thẻ tiêu điểm, rộng hết hàng), ghi "x/y việc xong":
+- **3 việc hôm nay** (thẻ tiêu điểm, trên cùng; Trung chốt 19/11/2026): tối đa 3 việc giúp tiến gần hơn 1% hôm nay, ghi
+  "x/3 xong". Tích xong tại chỗ có Hoàn tác; việc xong ở lại (gạch ngang). Trống thì một câu hướng dẫn bấm ☆.
+  - Gắn / bỏ bằng nút **☆** ở mỗi dòng "Hôm nay làm"; gắn sao việc trễ thì Ngày làm = hôm nay. Đủ 3 thì ☆ mờ, rê vào
+    thấy lý do; server chặn việc thứ 4.
+  - Buổi tối chọn cho ngày mai ở **Ngày mai làm** (☆ cạnh mỗi việc: Ngày làm + "3 việc" = ngày mai).
+  - Không tự chuyển: sang ngày mới, việc chưa xong mất sao và nằm ở mục trễ để chọn lại. Dời Ngày làm của việc đang có
+    sao sang ngày khác (hoặc bỏ lịch) cũng mất sao; sao của ngày đã qua giữ làm lịch sử cho Dashboard.
+- **Hôm nay làm** (rộng hết hàng, ngay dưới "3 việc"; không lặp việc đã ở "3 việc"):
   1. việc chưa xong có Ngày làm hôm nay, xếp Cao → Thấp;
   2. việc trễ (Ngày làm đã qua): nhãn "trễ từ …", nút **Làm hôm nay**;
   3. việc có Deadline hôm nay mà chưa xếp hôm nay.
   Tích xong tại chỗ, có Hoàn tác. Luôn có ô **"Thêm việc cho hôm nay…"** (chỉ tên; dự án / ưu tiên / deadline đặt ở
   Tasks). Khi trống nói rõ lý do (chưa có việc / xong hết / đã xếp ngày khác). Cuối thẻ liệt kê mục tiêu tuần Ưu tiên.
-- **Hạn · 14 ngày:** việc chưa xong có Deadline ≤ hôm nay + 14 ngày; không lặp việc đã nằm trong "Hôm nay làm".
+  Còn "3 việc" mà hết việc khác thì ghi "Không còn việc nào khác cho hôm nay".
+- **Hạn · 14 ngày:** việc chưa xong có Deadline ≤ hôm nay + 14 ngày; không lặp việc đã nằm trong "3 việc" / "Hôm nay làm".
 - **Thói quen · 7 ngày:** lưới 7 ngày gần nhất, bấm ô là lưu.
 - **Kiến thức mới:** 5 ghi chú mới nhất (tên, lĩnh vực, ngày); bấm tên mở Knowledge. Chưa có ghi chú thì một dòng
   hướng dẫn kèm link.
@@ -145,6 +153,15 @@ Màn nào chưa có dữ liệu thì hiện một câu hướng dẫn kèm đư�
 - **Bộ đếm:** tổng = mục tiêu có tên; % = xong / tổng, tính trên mục tiêu của chính kỳ đó (không cộng dồn kỳ con).
 - **Tự xong** (chỉ tính lúc hiển thị, không ghi vào `done`): đã tích tay; **hoặc** có gắn thói quen và % thói quen
   trong kỳ ≥ ngưỡng; **hoặc** có việc gắn và mọi việc đó đã xong. Có nhãn cho biết lý do và tiến độ.
+- **Chia mục tiêu tháng xuống tuần** (Trung chốt 19/11/2026): mục tiêu tuần có thể thuộc một mục tiêu tháng (tháng đó
+  chạm tuần; tuần vắt hai tháng chọn được cả hai).
+  - **Tháng:** dưới mỗi mục tiêu là các mục tiêu tuần con ("Tuần 47" mở tuần đó, ô tích như mục tiêu) + chip "x/y mục
+    tiêu tuần xong"; nút **"+ Chia cho tuần…"** (chọn tuần trong tháng, mặc định tuần này / tuần đầu + tên; cùng loại với
+    cha). Mục tiêu tháng **không** tự xong theo con.
+  - **Tuần:** form thêm có ô **"Thuộc mục tiêu tháng"** (không bắt buộc); mục tiêu có cha hiện dòng "↑ tên" (mở tháng);
+    menu "⋯" có **"Đổi mục tiêu tháng"** (gồm bỏ liên kết).
+  - Xoá mục tiêu tháng (xoá mềm) thì con mất dòng "↑", Hoàn tác hiện lại. "Chuyển sang tuần sau" giữ cha nếu tuần sau
+    còn chạm tháng của cha, không thì bỏ.
 - **Việc dưới mục tiêu:** "Gắn việc" mở popover có ô tìm (không phân biệt dấu), gắn liên tiếp được; mỗi việc đã gắn là
   dòng việc thật (ô tích, tên mở trang Tasks, Ngày làm hoặc "chưa xếp ngày", nút bỏ gắn có Hoàn tác).
 - **Kỳ con:** Năm có biểu đồ 4 quý + 12 tháng và 4 thẻ quý; Quý có 3 thẻ tháng; Tháng có biểu đồ các tuần. Biểu đồ chỉ
@@ -180,7 +197,8 @@ Chỉ đọc. Bộ chọn kỳ **7 / 30 / 90 ngày** (mặc định 30) và côn
   trung tính và số mờ khi chưa đủ dữ liệu để phán xét; thay đổi dưới 5% không tô màu.
 - **Khối:** Việc theo dự án (bấm cột → Tasks lọc theo dự án; chỉ một nhóm thì hiện một dòng chữ) · Mục tiêu tháng này ·
   Sắp đến hạn (quá hạn hoặc hạn ≤ 14 ngày) · Nhịp làm & học (việc xong và ghi chú mới mỗi tuần, 12 tuần) · Nhịp hằng
-  ngày (từ Daily Log) · Thói quen.
+  ngày (từ Daily Log; thêm nhãn "3 việc: N/M ngày xong hết" — M ngày có chọn "3 việc", N ngày xong hết các việc đã
+  chọn) · Thói quen.
 - **Thật là thật:** chế độ Thật không lấp bằng dữ liệu mẫu; khối chưa có dữ liệu gom vào khung "Chưa có dữ liệu" cuối
   trang, mỗi khối một dòng + link. Chế độ Mẫu (`lib/dashboard/sample.ts`, cố định theo ngày) có một dải thông báo đầu
   trang kèm nút "Về dữ liệu thật".
@@ -304,3 +322,10 @@ token mã hoá AES-GCM) còn trong lịch sử git của file này nếu sau nà
 | 12/11/2026 | Knowledge và Brain xong; trên Brain nhãn Dự án dùng chấm rỗng, Lĩnh vực chấm đặc (hai nhóm chung 4 màu) | mục 5.6, 5.7 |
 | 19/11/2026 | Goal mặc định mở cấp Tuần (thay Tháng); bảng thói quen thành phần chính, luôn ở trên cùng Goal ở mọi cấp | mục 5.3 |
 | 19/11/2026 | Thói quen ở Goal theo đúng kỳ: Tuần 7 ngày, Tháng cả tháng, Quý / Năm lưới kiểu GitHub chỉ xem; quản lý ở Tuần và Tháng | mục 5.3 |
+| 19/11/2026 | v1.2: "3 việc hôm nay" (☆, tối đa 3, chọn từ tối hôm trước, không tự chuyển) và chia mục tiêu tháng xuống tuần (chỉ chip x/y, không tự xong) | mục 3, 5.1, 5.3, 5.4, 12 |
+
+## 12. v1.2 — "3 việc hôm nay" và chia mục tiêu tháng xuống tuần (Trung duyệt 19/11/2026)
+
+Đã gộp vào mục 3, 5.1, 5.3, 5.4. Lý do (Trung): app cho một đích đến rồi chia nhỏ ra — năm muốn trở thành ai → tháng xây
+điều gì → tuần tập trung đâu → hôm nay 3 việc để tiến gần hơn 1%. Chưa làm: chuỗi đích đến ở đầu Today, mục tiêu chính
+tháng, câu "năm nay muốn trở thành ai". Plan: `docs/plans/completed/v1.2.md`.

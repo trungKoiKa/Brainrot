@@ -38,9 +38,18 @@ export type TodayPlan = {
   suggest: Task[];
 };
 
-/** Khối "Hôm nay làm" (SPEC.md mục 5.1). Chỉ task chưa xong; mỗi task chỉ thuộc một nhóm. */
+/** Số việc tối đa của "3 việc hôm nay" (SPEC.md mục 12.1). */
+export const MAX_TOP = 3;
+
+/** "3 việc" của ngày `day` (kể cả việc đã xong), theo ưu tiên. */
+export const topOf = (day: string, tasks: Task[]): Task[] => tasks.filter((t) => t.topOn === day).sort(compareTasks);
+
+/**
+ * Khối "Hôm nay làm" (SPEC.md mục 5.1). Chỉ task chưa xong; mỗi task chỉ thuộc một nhóm.
+ * Việc đã nằm trong "3 việc hôm nay" không lặp lại ở đây (SPEC.md mục 12.1).
+ */
 export function planToday(today: string, tasks: Task[]): TodayPlan {
-  const open = tasks.filter(isOpen);
+  const open = tasks.filter((t) => isOpen(t) && t.topOn !== today);
   const planned = open.filter((t) => t.plannedOn === today).sort(compareTasks);
   const late = open
     .filter((t): t is Task & { plannedOn: string } => t.plannedOn !== null && t.plannedOn < today)
@@ -102,4 +111,23 @@ export function deadlineLabel(daysLeft: number): string {
   if (daysLeft === 0) return "Hôm nay";
   if (daysLeft === 1) return "Ngày mai";
   return `Còn ${daysLeft} ngày`;
+}
+
+/**
+ * "3 việc" trong khoảng [from, to] tính tới hôm nay (SPEC.md mục 12.1, khối Nhịp làm ở Dashboard):
+ * `picked` = số ngày có chọn, `full` = số ngày xong hết các việc đã chọn.
+ */
+export function topStats(
+  tasks: { topOn?: string | null; status: Task["status"] }[],
+  from: string,
+  to: string,
+  today: string,
+): { picked: number; full: number } {
+  const byDay = new Map<string, { status: Task["status"] }[]>();
+  for (const t of tasks) {
+    if (!t.topOn || t.topOn < from || t.topOn > to || t.topOn > today) continue;
+    byDay.set(t.topOn, [...(byDay.get(t.topOn) ?? []), t]);
+  }
+  const full = [...byDay.values()].filter((list) => list.every((t) => t.status === "Xong")).length;
+  return { picked: byDay.size, full };
 }

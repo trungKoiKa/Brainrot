@@ -2,7 +2,7 @@
 
 import { getGoals, getTaskProjects } from "@/lib/db/data";
 import { BAD_REQUEST, okOnly, runWrite, type OkResult } from "@/lib/db/actions-db";
-import { createTask, deleteTask, markTaskDone, reopenTask, restoreTask, setTaskPlannedOn, updateTask, type TaskSnapshot } from "@/lib/db/tasks";
+import { createTask, deleteTask, markTaskDone, reopenTask, restoreTask, setTaskPlannedOn, setTaskTop, TOP_FULL, updateTask, type TaskSnapshot } from "@/lib/db/tasks";
 import { isDay, isId } from "@/lib/ids";
 import { MAX_TEXT } from "@/lib/quick-capture";
 import { SESSION_EXPIRED, isSignedIn } from "@/lib/session";
@@ -62,6 +62,14 @@ export async function planTaskAction(pageId: string, day: string | null): Promis
   return okOnly(await runWrite("planTask", (db, userId) => setTaskPlannedOn(db, userId, pageId, day)));
 }
 
+/** Gắn / bỏ sao "3 việc" cho một ngày (SPEC.md mục 12.1). `day` null = bỏ sao. */
+export async function setTopAction(pageId: string, day: string | null): Promise<CompleteTaskResult> {
+  if (!(await isSignedIn())) return { ok: false, error: SESSION_EXPIRED };
+  if (!isId(pageId)) return { ok: false, error: BAD_ID };
+  if (day !== null && !isDay(day)) return { ok: false, error: "Ngày không hợp lệ." };
+  return okOnly(await runWrite("setTop", (db, userId) => setTaskTop(db, userId, pageId, day), { [TOP_FULL]: TOP_FULL }));
+}
+
 const STATUS_SET = ["Chưa làm", "Đang làm", "Xong"];
 const PRIORITY_SET = ["Cao", "Vừa", "Thấp"];
 const dayOrNull = (v: unknown) => v === null || isDay(v);
@@ -84,6 +92,7 @@ export async function restoreTaskAction(snapshot: TaskSnapshot): Promise<Complet
     dayOrNull(s.deadline) &&
     dayOrNull(s.plannedOn) &&
     dayOrNull(s.doneOn) &&
+    (s.topOn === undefined || dayOrNull(s.topOn)) &&
     typeof s.createdTime === "string" &&
     !Number.isNaN(Date.parse(s.createdTime)) &&
     Array.isArray(s.goalIds) &&

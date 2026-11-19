@@ -5,7 +5,8 @@ import Link from "next/link";
 import { ArrowRightIcon } from "lucide-react";
 import { Card } from "@/components/card";
 import { Badge } from "@/components/reui/badge";
-import { formatDay } from "@/lib/date";
+import { addDays, formatDay } from "@/lib/date";
+import { topStats } from "@/lib/today";
 import { goalCounts } from "@/lib/goals";
 import { sampleDashboard } from "@/lib/dashboard/sample";
 import { backlogKpi, dailyRhythm, doneKpi, habitKpis, PERIODS, dueSoon, tasksByProject, thesisKpi, weeklyRhythm, weekSummary, type DashInput, type Period, weekKpi } from "@/lib/dashboard/stats";
@@ -58,6 +59,8 @@ export function DashboardView({ real }: { real: DashInput }) {
   const weekly = weeklyRhythm(src);
   const daily = dailyRhythm(src, period);
   const habitStats = habitKpis(src, period);
+  // "3 việc" (SPEC.md mục 12.1): ngày có chọn / ngày xong hết trong kỳ
+  const top = topStats(src.tasks, addDays(src.today, 1 - period), src.today, src.today);
   const due = dueSoon(src);
   const projects = tasksByProject(src.tasks, src.projects);
   // Biểu đồ Nhịp hằng ngày cần ít nhất ngần này ngày có log (7 ngày → 3, 30/90 ngày → 5)
@@ -167,6 +170,9 @@ export function DashboardView({ real }: { real: DashInput }) {
               {/* Số 0 không mang màu "tốt"/"cảnh báo" */}
               <Badge variant={daily.exercised > 0 ? "success-light" : "outline"} radius="full">{daily.exercised} ngày tập</Badge>
               <Badge variant={daily.dropped > 0 ? "warning-light" : "outline"} radius="full">{daily.dropped} ngày có việc chưa xong</Badge>
+              <Badge variant={top.full > 0 ? "success-light" : "outline"} radius="full">
+                3 việc: {top.full}/{top.picked} ngày xong hết
+              </Badge>
             </span>
           }
         >

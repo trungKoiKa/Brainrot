@@ -2,7 +2,7 @@
 // xóa tài khoản là xóa sạch dữ liệu của người đó.
 // Ngày lưu kiểu `date`, đọc ra chuỗi YYYY-MM-DD (giờ Việt Nam do app tính, như thời Notion).
 
-import { boolean, date, index, integer, pgEnum, pgTable, primaryKey, text, timestamp, unique, uuid } from "drizzle-orm/pg-core";
+import { type AnyPgColumn, boolean, date, index, integer, pgEnum, pgTable, primaryKey, text, timestamp, unique, uuid } from "drizzle-orm/pg-core";
 
 export const taskStatus = pgEnum("task_status", ["Chưa làm", "Đang làm", "Xong"]);
 export const priority = pgEnum("priority", ["Cao", "Vừa", "Thấp"]);
@@ -58,6 +58,8 @@ export const tasks = pgTable(
     /** "Ngày làm" (SPEC.md mục 3): ngày định làm, khác deadline */
     plannedOn: date("planned_on"),
     doneOn: date("done_on"),
+    /** "3 việc hôm nay" (SPEC.md mục 12.1): việc là một trong tối đa 3 việc của ngày này */
+    topOn: date("top_on"),
     note: text("note").notNull().default(""),
     createdAt: createdAt(),
   },
@@ -104,6 +106,8 @@ export const goals = pgTable(
     habitId: uuid("habit_id").references(() => habits.id, { onDelete: "set null" }),
     /** "Ngưỡng %" để thói quen làm goal tự xong */
     threshold: integer("threshold"),
+    /** Mục tiêu tuần thuộc mục tiêu tháng nào (SPEC.md mục 12.2); chỉ tuần có cha */
+    parentId: uuid("parent_id").references((): AnyPgColumn => goals.id, { onDelete: "set null" }),
     /** Xóa mềm: "Xóa" có nút Hoàn tác 5 giây (như Trash của Notion) */
     deletedAt: timestamp("deleted_at", { withTimezone: true }),
     createdAt: createdAt(),

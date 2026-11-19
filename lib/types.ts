@@ -16,6 +16,8 @@ export type Task = {
   plannedOn: string | null;
   /** Ngày đánh dấu Xong (YYYY-MM-DD), từ v0.3; task xong trước đó để trống */
   doneOn: string | null;
+  /** "3 việc hôm nay" (SPEC.md mục 12.1): việc là một trong tối đa 3 việc của ngày này */
+  topOn: string | null;
   /** ISO, lúc tạo */
   createdTime: string;
   /** Relation "Mục tiêu" (Goals, từ v0.4) */

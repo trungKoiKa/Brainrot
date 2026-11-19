@@ -62,6 +62,7 @@ async function DashboardContent() {
       status: t.status,
       deadline: t.deadline,
       doneOn: t.doneOn,
+      topOn: t.topOn,
       createdOn: toVNDate(t.createdTime),
     })),
     projects,

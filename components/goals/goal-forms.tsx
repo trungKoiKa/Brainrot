@@ -10,20 +10,25 @@ import { MAX_GOAL_TITLE, type Goal, type GoalType } from "@/lib/goals";
 import type { Level } from "@/lib/period";
 import { undoToast } from "@/components/undo-toast";
 import { NativeSelect } from "@/components/native-select";
+import { ParentSelect, type ParentOption } from "./goal-split";
 
 export function AddGoal({
   level,
   periodKey,
+  parents,
   onAdded,
   onError,
 }: {
   level: Level;
   periodKey: string;
+  /** Tuần: mục tiêu tháng chọn làm cha được (SPEC.md mục 12.2); rỗng thì không hiện ô chọn */
+  parents: ParentOption[];
   onAdded: (goal: Goal) => void;
   onError: (message: string) => void;
 }) {
   const [title, setTitle] = useState("");
   const [type, setType] = useState<GoalType>("Thường");
+  const [parent, setParent] = useState("");
   const [pending, start] = useTransition();
 
   return (
@@ -34,10 +39,10 @@ export function AddGoal({
         const text = title.trim();
         if (!text) return;
         start(async () => {
-          const res = await createGoalAction(level, periodKey, text, type);
+          const res = await createGoalAction(level, periodKey, text, type, parent || null);
           if (!res.ok) return onError(res.error);
           // "Kỳ" thật do server tính; ở client chỉ cần id để thao tác tiếp
-          onAdded({ id: res.id, title: text, level, start: "", type, done: false, habitId: null, threshold: null, taskIds: [] });
+          onAdded({ id: res.id, title: text, level, start: "", type, done: false, habitId: null, threshold: null, taskIds: [], parentId: parent || null });
           setTitle("");
         });
       }}
@@ -51,6 +56,7 @@ export function AddGoal({
         className="min-w-48 flex-1 max-md:h-10"
       />
       <NativeSelect label="Loại" value={type} options={["Thường", "Ưu tiên"]} onChange={(v) => setType(v as GoalType)} className="max-md:h-10" />
+      {parents.length > 0 && <ParentSelect parents={parents} value={parent} onChange={setParent} />}
       <Button type="submit" disabled={pending || !title.trim()} className="max-md:h-10">
         {pending ? "Đang thêm…" : "Thêm"}
       </Button>

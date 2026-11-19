@@ -2,7 +2,7 @@
 
 import { GOAL_TYPES, MAX_GOAL_TITLE, type GoalType } from "@/lib/goals";
 import { BAD_REQUEST, okOnly, runWrite, type OkResult } from "@/lib/db/actions-db";
-import { carryOverGoals, createGoal, setTaskGoal, trashGoal, updateGoal, type GoalPatch } from "@/lib/db/goals";
+import { BAD_PARENT, carryOverGoals, createGoal, setGoalParent, setTaskGoal, trashGoal, updateGoal, type GoalPatch } from "@/lib/db/goals";
 import { isId } from "@/lib/ids";
 import { LEVELS, parsePeriod, shiftPeriod, type Level } from "@/lib/period";
 import { SESSION_EXPIRED, isSignedIn } from "@/lib/session";
@@ -25,14 +25,33 @@ const isType = (t: unknown): t is GoalType => GOAL_TYPES.includes(t as GoalType)
 const periodOf = (level: Level, key: string) => (LEVELS.includes(level) ? parsePeriod(level, key) : null);
 
 /** Thêm mục tiêu vào kỳ `key` của cấp `level`; "Kỳ" luôn là ngày đầu kỳ do server tính. */
-export async function createGoalAction(level: Level, key: string, rawTitle: string, type: GoalType): Promise<CreateGoalResult> {
+export async function createGoalAction(
+  level: Level,
+  key: string,
+  rawTitle: string,
+  type: GoalType,
+  parentId: string | null = null,
+): Promise<CreateGoalResult> {
   if (!(await isSignedIn())) return EXPIRED;
   const period = periodOf(level, key);
-  if (!period || !isType(type)) return INVALID;
+  if (!period || !isType(type) || (parentId !== null && !isId(parentId))) return INVALID;
   const title = cleanTitle(rawTitle);
   if (typeof title !== "string") return { ok: false, ...title };
-  const r = await runWrite("createGoal", (db, userId) => createGoal(db, userId, period.level, period.start, title, type));
+  const r = await runWrite(
+    "createGoal",
+    (db, userId) => createGoal(db, userId, period.level, period.start, title, type, parentId),
+    PARENT_ERRORS,
+  );
   return r.ok ? { ok: true, id: r.value } : r;
+}
+
+const PARENT_ERRORS = { [BAD_PARENT]: BAD_PARENT };
+
+/** Gắn / bỏ mục tiêu tháng cho mục tiêu tuần (SPEC.md mục 12.2). */
+export async function setGoalParentAction(id: string, parentId: string | null): Promise<GoalResult> {
+  if (!(await isSignedIn())) return EXPIRED;
+  if (!isId(id) || (parentId !== null && !isId(parentId))) return INVALID;
+  return okOnly(await runWrite("setGoalParent", (db, userId) => setGoalParent(db, userId, id, parentId), PARENT_ERRORS));
 }
 
 /** Sửa tên / đổi Ưu tiên ↔ Thường / tích xong / gắn thói quen + ngưỡng % (SPEC.md mục 5.3). */

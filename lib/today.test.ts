@@ -8,12 +8,14 @@ import {
   todayEmptyKind,
   todayProgress,
   tomorrowCandidates,
+  topOf,
+  topStats,
   upcomingDeadlines,
 } from "./today";
 
 const task = (id: string, o: Partial<Task> = {}): Task => ({
   id, title: id, project: null, status: "Chưa làm", priority: null, deadline: null, plannedOn: null, note: "",
-  doneOn: null, createdTime: "2026-10-01T00:00:00.000Z", goalIds: [], ...o,
+  doneOn: null, topOn: null, createdTime: "2026-10-01T00:00:00.000Z", goalIds: [], ...o,
 });
 const today = "2026-10-22";
 const tasks = [
@@ -103,5 +105,31 @@ describe("Hôm nay làm trống và tiến độ (critique 06/11/2026)", () => {
         task("c", { plannedOn: "2026-10-21" }),
       ]),
     ).toEqual({ done: 1, total: 2 });
+  });
+});
+
+describe("3 việc hôm nay (SPEC.md mục 12.1)", () => {
+  const T = "2026-11-19";
+  it("việc gắn sao hôm nay nằm ở 3 việc, không lặp ở Hôm nay làm; sao ngày cũ không tính", () => {
+    const tasks = [
+      task("a", { plannedOn: T, topOn: T }),
+      task("b", { plannedOn: T }),
+      task("c", { plannedOn: "2026-11-18", topOn: "2026-11-18" }),
+      task("d", { plannedOn: T, topOn: T, status: "Xong", doneOn: T }),
+    ];
+    expect(topOf(T, tasks).map((t) => t.id).sort()).toEqual(["a", "d"]);
+    const p = planToday(T, tasks);
+    expect(p.planned.map((t) => t.id)).toEqual(["b"]);
+    expect(p.late.map((t) => t.id)).toEqual(["c"]); // mất sao, vẫn ở mục trễ để chọn lại
+  });
+  it("topStats: ngày có chọn và ngày xong hết, không tính ngày tương lai", () => {
+    const tasks = [
+      task("a", { topOn: "2026-11-17", status: "Xong" }),
+      task("b", { topOn: "2026-11-17", status: "Xong" }),
+      task("c", { topOn: "2026-11-18", status: "Xong" }),
+      task("d", { topOn: "2026-11-18" }),
+      task("e", { topOn: "2026-11-20" }),
+    ];
+    expect(topStats(tasks, "2026-11-16", "2026-11-22", T)).toEqual({ picked: 2, full: 1 });
   });
 });
