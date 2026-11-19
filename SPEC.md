@@ -328,4 +328,4 @@ token mã hoá AES-GCM) còn trong lịch sử git của file này nếu sau nà
 
 Đã gộp vào mục 3, 5.1, 5.3, 5.4. Lý do (Trung): app cho một đích đến rồi chia nhỏ ra — năm muốn trở thành ai → tháng xây
 điều gì → tuần tập trung đâu → hôm nay 3 việc để tiến gần hơn 1%. Chưa làm: chuỗi đích đến ở đầu Today, mục tiêu chính
-tháng, câu "năm nay muốn trở thành ai". Plan: `docs/plans/active/v1.2.md`.
+tháng, câu "năm nay muốn trở thành ai". Plan: `docs/plans/completed/v1.2.md`.
